@@ -1,7 +1,8 @@
-import rack from './rack';
+import Rack from './rack';
 import Mod from './mod';
+const rack = new Rack();
 const mod1 = new Mod();
-rack.addMod(mod1);
+rack.mods.push(mod1);
 rack.draw();
 
 

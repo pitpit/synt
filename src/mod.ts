@@ -1,4 +1,8 @@
+import Rack from "./rack";
+
 export default class Mod {
+  height: number = 2;
+  width: number = 3;
   constructor() {
   }
 
@@ -17,9 +21,11 @@ export default class Mod {
     return ctx;
   }
 
-  draw(ctx:CanvasRenderingContext2D) {
-    ctx.lineWidth = 10;
-    this.roundRect(ctx, 400, 300, 200, 100, 0.5);
+  draw(rack: Rack) {
+    const ctx = rack.context2d;
+    const thickness = 10;
+    ctx.lineWidth = thickness;
+    this.roundRect(ctx, rack.slotWidth + rack.padding + thickness/2, rack.slotHeight + rack.padding + thickness/2, this.width * rack.slotWidth - thickness, this.height * rack.slotHeight - thickness, 0.5);
     ctx.fillStyle = 'white';
     ctx.fill();
     ctx.stroke();
