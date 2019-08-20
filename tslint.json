@@ -1,0 +1,6 @@
+{
+    "extends": "tslint-config-airbnb-base",
+    "rules": {
+        "no-magic-numbers": false
+    }
+}
