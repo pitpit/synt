@@ -1,13 +1,12 @@
 {
     "compilerOptions": {
         "outDir": "./dist/",
-        "module": "es6",
+        // "module": "es6",
         "target": "es5",
         "sourceMap": true,
         "removeComments": false,
-        "allowJs": true
-    },
-    "exclude": [
-        "node_modules"
-    ]
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true
+    }
 }

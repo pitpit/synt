@@ -1,4 +1,5 @@
 import Rack from "./rack";
+import { Rect } from 'konva/lib/shapes/Rect.js';
 
 export default class Mod {
   height: number = 2;
@@ -6,28 +7,67 @@ export default class Mod {
   constructor() {
   }
 
-  roundRect = function(ctx, x, y, w, h, r): CanvasRenderingContext2D {
-    if (w < 2 * r) r = w / 2;
-    if (h < 2 * r) r = h / 2;
+  draw(rack: any, layer: any){
+    const strokeWidth = 10;
 
-    ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.arcTo(x+w, y,   x+w, y+h, r);
-    ctx.arcTo(x+w, y+h, x,   y+h, r);
-    ctx.arcTo(x,   y+h, x,   y,   r);
-    ctx.arcTo(x,   y,   x+w, y,   r);
-    ctx.closePath();
+    var rect = new Rect({
+      x: rack.slotWidth + rack.padding + strokeWidth/2,
+      y: rack.slotHeight + rack.padding + strokeWidth/2,
+      width:  this.width * rack.slotWidth - strokeWidth,
+      height: this.height * rack.slotHeight - strokeWidth,
+      fill: 'white',
+      stroke: 'black',
+      strokeWidth: strokeWidth,
+      cornerRadius: 0.5,
+      draggable: true
+    });
 
-    return ctx;
-  }
+    layer.add(rect);
 
-  draw(rack: Rack) {
-    const ctx = rack.context2d;
-    const thickness = 10;
-    ctx.lineWidth = thickness;
-    this.roundRect(ctx, rack.slotWidth + rack.padding + thickness/2, rack.slotHeight + rack.padding + thickness/2, this.width * rack.slotWidth - thickness, this.height * rack.slotHeight - thickness, 0.5);
-    ctx.fillStyle = 'white';
-    ctx.fill();
-    ctx.stroke();
+    // Draw drag and drop shadow
+    // See https://codepen.io/pierrebleroux/pen/gGpvxJ
+    var blockSnapSize = 100;
+    var dragRect = new Rect({
+      x: 0,
+      y: 0,
+      width:  this.width * rack.slotWidth,
+      height: this.height * rack.slotHeight,
+      fill: '#cccccc',
+      opacity: 0.6,
+      stroke: '#dddddd',
+      strokeWidth: 1,
+      // dash: [20, 2]
+    });
+    dragRect.hide();
+    layer.add(dragRect);
+    rect.on('dragstart', (e) => {
+      dragRect.show();
+      dragRect.moveToTop();
+      rect.moveToTop();
+    });
+    rect.on('dragend', (e) => {
+      let x = rack.padding + Math.round(rect.x() / rack.slotWidth) * rack.slotWidth + strokeWidth/2;
+      let y =  rack.padding + Math.round(rect.y() / rack.slotHeight) * rack.slotHeight + strokeWidth/2;
+      x = x > rack.padding ? x : rack.padding + strokeWidth/2;
+      y = y > rack.padding ? y : rack.padding  + strokeWidth/2;
+
+      rect.position({
+        x: x,
+        y: y
+      });
+      rack.stage.batchDraw();
+      dragRect.hide();
+    });
+    rect.on('dragmove', (e) => {
+      let x = rack.padding + Math.round(rect.x() / rack.slotWidth) * rack.slotWidth;
+      let y =  rack.padding + Math.round(rect.y() / rack.slotHeight) * rack.slotHeight;
+      x = x > rack.padding ? x : rack.padding;
+      y = y > rack.padding ? y : rack.padding;
+      dragRect.position({
+        x: x,
+        y: y
+      });
+      rack.stage.batchDraw();
+    });
   }
 }
