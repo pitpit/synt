@@ -1,8 +1,14 @@
 import Rack from './rack';
-import Mod from './mod';
+import Speaker from './speaker';
+
 const rack = new Rack();
-const mod1 = new Mod();
-rack.mods.push(mod1);
+const speaker1 = new Speaker();
+
+
+const speaker2 = new Speaker(3, 0);
+// rack.mods.push(speaker2);
+rack.add(speaker1);
+rack.add(speaker2);
 rack.draw();
 
 // if (module.hot) {

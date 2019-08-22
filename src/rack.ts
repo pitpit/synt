@@ -12,6 +12,12 @@ export default class Rack {
   padding: number = 10;
   mods:Array<Mod> = [];
 
+  add(mod:Mod) {
+    // TODO check if not already in rack
+    this.mods.push(mod);
+    mod.setRack(this);
+  }
+
   draw() {
     // Setup container
     const container = document.createElement('div');
@@ -56,15 +62,17 @@ export default class Rack {
       layer.add(line);
     }
 
-    this.stage.add(layer);
+    // this.stage.add(layer);
 
+    // var layer = new Konva.Layer();
     this.mods.forEach((mod, index) => {
-      var layer = new Konva.Layer();
-
-      mod.draw(this, layer);
-
-      this.stage.add(layer);
+      var group = new Konva.Group({
+        draggable: true
+      });
+      layer.add(group);
+      mod.draw(group);
     });
+    this.stage.add(layer);
 
     // Resize canvas when resizing window
     let instance = this;
@@ -87,5 +95,18 @@ export default class Rack {
     // this.stage.height(this.height * scale);
     // this.stage.scale({ x: scale, y: scale });
     // this.stage.draw();
+  }
+
+  isBusy(x: number, y: number, currentMod: Mod): boolean {
+    let busy = false;
+    this.mods.forEach((mod, index) => {
+      if (currentMod !== mod &&
+        ((x >= mod.x && x < mod.x + mod.width && y >= mod.y && y < mod.y + mod.height) || //(mod.x) -----x----- (mod.x + mod.width)
+        (mod.x >= x && mod.x < x + currentMod.width && mod.y >= y && mod.y < y + currentMod.height)))
+      {
+        busy = true;
+      }
+    });
+    return busy;
   }
 }
