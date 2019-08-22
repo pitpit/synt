@@ -1,4 +1,4 @@
-import Mod from "./mod";
+import Mod from './mod';
 import Konva from 'konva/lib/Core';
 import { Line } from 'konva/lib/shapes/Line.js';
 import { Rect } from 'konva/lib/shapes/Rect.js';
@@ -36,28 +36,38 @@ export default class Rack {
     this.stage = new Konva.Stage({
       container: container.id,
       width: this.width,
-      height: this.height
+      height: this.height,
     });
 
-    var layer = new Konva.Layer();
+    const layer = new Konva.Layer();
 
     // Draw grid
     const strokeWidth = 1;
-    for (var x = 0; x <= this.width; x += this.slotWidth) {
-      var line = new Line({
-        points: [strokeWidth + x + this.padding, this.padding, strokeWidth+ x + this.padding, this.height + this.padding],
+    for (let x = 0; x <= this.width; x += this.slotWidth) {
+      const line = new Line({
+        points: [
+          strokeWidth + x + this.padding,
+          this.padding,
+          strokeWidth+ x + this.padding,
+          this.height + this.padding,
+        ],
         stroke: '#dddddd',
-        strokeWidth: strokeWidth,
-        dash: [8, 5]
+        strokeWidth,
+        dash: [8, 5],
       });
       layer.add(line);
     }
-    for (var x = 0; x <= this.height; x += this.slotHeight) {
-      var line = new Line({
-        points: [this.padding,  strokeWidth + x + this.padding, this.width + this.padding, strokeWidth+ x + this.padding],
+    for (let x = 0; x <= this.height; x += this.slotHeight) {
+      const line = new Line({
+        points: [
+          this.padding,
+          strokeWidth + x + this.padding,
+          this.width + this.padding,
+          strokeWidth+ x + this.padding,
+        ],
         stroke: '#dddddd',
-        strokeWidth: strokeWidth,
-        dash: [8, 5]
+        strokeWidth,
+        dash: [8, 5],
       });
       layer.add(line);
     }
@@ -66,8 +76,8 @@ export default class Rack {
 
     // var layer = new Konva.Layer();
     this.mods.forEach((mod, index) => {
-      var group = new Konva.Group({
-        draggable: true
+      const group = new Konva.Group({
+        draggable: true,
       });
       layer.add(group);
       mod.draw(group);
@@ -75,14 +85,13 @@ export default class Rack {
     this.stage.add(layer);
 
     // Resize canvas when resizing window
-    let instance = this;
+    const instance = this;
     window.onresize = function() {
       instance.resize();
-    }
+    };
   }
 
   resize() {
-
     this.stage.width(window.innerWidth);
     this.stage.height(window.innerHeight);
 
@@ -100,10 +109,18 @@ export default class Rack {
   isBusy(x: number, y: number, currentMod: Mod): boolean {
     let busy = false;
     this.mods.forEach((mod, index) => {
-      if (currentMod !== mod &&
-        ((x >= mod.x && x < mod.x + mod.width && y >= mod.y && y < mod.y + mod.height) || //(mod.x) -----x----- (mod.x + mod.width)
-        (mod.x >= x && mod.x < x + currentMod.width && mod.y >= y && mod.y < y + currentMod.height)))
-      {
+      if (
+        currentMod !== mod &&
+        (
+          (
+            x >= mod.x && x < mod.x + mod.width &&
+            y >= mod.y && y < mod.y + mod.height) ||
+          (
+            mod.x >= x && mod.x < x + currentMod.width &&
+            mod.y >= y && mod.y < y + currentMod.height
+          )
+        )
+      ) {
         busy = true;
       }
     });

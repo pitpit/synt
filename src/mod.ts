@@ -1,4 +1,4 @@
-import Rack from "./rack";
+import Rack from './rack';
 import { Rect } from 'konva/lib/shapes/Rect.js';
 
 export default class Mod {
@@ -8,7 +8,11 @@ export default class Mod {
   y: number;
   rack:Rack;
 
-  constructor(x:number = 0, y:number = 0, width:number = 1, height:number = 1) {
+  constructor(
+    x:number = 0,
+    y:number = 0,
+    width:number = 1,
+    height:number = 1) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -32,15 +36,15 @@ export default class Mod {
       height: this.height * this.rack.slotHeight,
     });
 
-    var rect = new Rect({
+    const rect = new Rect({
       x: 0 + strokeWidth/2,
       y: 0 + strokeWidth/2,
       width:  this.width * this.rack.slotWidth - strokeWidth,
       height: this.height * this.rack.slotHeight - strokeWidth,
       fill: 'white',
       stroke: 'black',
-      strokeWidth: strokeWidth,
-      cornerRadius: 0.5
+      strokeWidth,
+      cornerRadius: 0.5,
     });
     group.add(rect);
 
@@ -49,7 +53,7 @@ export default class Mod {
 
     let targetX = this.x;
     let targetY = this.y;
-    var dragRect = new Rect({
+    const dragRect = new Rect({
       x: targetX * this.rack.slotWidth + this.rack.padding + strokeWidth/2,
       y: targetY * this.rack.slotHeight + this.rack.padding + strokeWidth/2,
       width:  this.width * this.rack.slotWidth,
@@ -57,15 +61,15 @@ export default class Mod {
       fill: '#cccccc',
       opacity: 0.6,
       stroke: '#dddddd',
-      strokeWidth: 1
+      strokeWidth: 1,
     });
     dragRect.hide();
     group.getLayer().add(dragRect);
 
-    group.on('mouseover', function() {
+    group.on('mouseover', () => {
       document.body.style.cursor = 'pointer';
     });
-    group.on('mouseout', function() {
+    group.on('mouseout', () => {
       document.body.style.cursor = 'default';
     });
 
@@ -77,7 +81,7 @@ export default class Mod {
 
     group.on('dragend', (e) => {
       let x = Math.round(group.x() / this.rack.slotWidth);
-      let y =  Math.round(group.y() / this.rack.slotHeight);
+      let y = Math.round(group.y() / this.rack.slotHeight);
       x = x > 0 ? x : 0;
       y = y > 0 ? y : 0;
 
@@ -91,14 +95,14 @@ export default class Mod {
       }
       group.position({
         x: this.rack.padding + this.x * this.rack.slotWidth,
-        y: this.rack.padding + this.y * this.rack.slotHeight
+        y: this.rack.padding + this.y * this.rack.slotHeight,
       });
       targetX = this.x;
       targetY = this.y;
       dragRect.hide();
       dragRect.position({
         x: this.rack.padding + targetX * this.rack.slotWidth,
-        y: this.rack.padding + targetY * this.rack.slotHeight
+        y: this.rack.padding + targetY * this.rack.slotHeight,
       });
       group.getStage().batchDraw();
     });
@@ -114,7 +118,7 @@ export default class Mod {
         targetY = y;
         dragRect.position({
           x: this.rack.padding + targetX * this.rack.slotWidth,
-          y: this.rack.padding + targetY * this.rack.slotHeight
+          y: this.rack.padding + targetY * this.rack.slotHeight,
         });
         group.getStage().batchDraw();
       }

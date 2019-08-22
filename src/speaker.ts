@@ -1,4 +1,4 @@
-import Mod from "./mod";
+import Mod from './mod';
 import { Circle } from 'konva/lib/shapes/Circle.js';
 
 export default class Speaker extends Mod {
@@ -6,25 +6,25 @@ export default class Speaker extends Mod {
     super(x, y, 1, 1);
   }
 
-  draw(group:any){
+  draw(group:any) {
     super.draw(group);
 
-    let circle = new Circle({
+    const circle = new Circle({
       x: group.width() / 2,
       y: group.height() / 2,
       radius: 24,
       fill: 'white',
       stroke: 'black',
-      strokeWidth: 6
+      strokeWidth: 6,
     });
 
-    let innerCircle = new Circle({
+    const innerCircle = new Circle({
       x: group.width() / 2,
       y: group.height() / 2,
       radius: 12,
       fill: 'white',
       stroke: 'black',
-      strokeWidth: 3
+      strokeWidth: 3,
     });
 
     group.add(circle);
