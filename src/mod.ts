@@ -6,15 +6,11 @@ export default class Mod {
   width: number;
   x: number;
   y: number;
-  dragX: number;
-  dragY: number;
   rack:Rack;
 
   constructor(x:number = 0, y:number = 0, width:number = 1, height:number = 1) {
     this.x = x;
     this.y = y;
-    this.dragX = this.x;
-    this.dragY = this.y;
     this.width = width;
     this.height = height;
   }
@@ -50,9 +46,12 @@ export default class Mod {
 
     // Draw drag and drop shadow
     // See https://codepen.io/pierrebleroux/pen/gGpvxJ
+
+    let targetX = this.x;
+    let targetY = this.y;
     var dragRect = new Rect({
-      x: this.dragX * this.rack.slotWidth + this.rack.padding + strokeWidth/2,
-      y: this.dragY * this.rack.slotHeight + this.rack.padding + strokeWidth/2,
+      x: targetX * this.rack.slotWidth + this.rack.padding + strokeWidth/2,
+      y: targetY * this.rack.slotHeight + this.rack.padding + strokeWidth/2,
       width:  this.width * this.rack.slotWidth,
       height: this.height * this.rack.slotHeight,
       fill: '#cccccc',
@@ -84,8 +83,8 @@ export default class Mod {
 
       if (this.rack.isBusy(x, y, this)) {
         // Send back mod to prior slot
-        this.x = this.dragX;
-        this.y = this.dragY;
+        this.x = targetX;
+        this.y = targetY;
       } else {
         this.x = x;
         this.y = y;
@@ -94,12 +93,12 @@ export default class Mod {
         x: this.rack.padding + this.x * this.rack.slotWidth,
         y: this.rack.padding + this.y * this.rack.slotHeight
       });
-      this.dragX = this.x;
-      this.dragY = this.y;
+      targetX = this.x;
+      targetY = this.y;
       dragRect.hide();
       dragRect.position({
-        x: this.rack.padding + this.dragX * this.rack.slotWidth,
-        y: this.rack.padding + this.dragY * this.rack.slotHeight
+        x: this.rack.padding + targetX * this.rack.slotWidth,
+        y: this.rack.padding + targetY * this.rack.slotHeight
       });
       group.getStage().batchDraw();
     });
@@ -111,11 +110,11 @@ export default class Mod {
       y = y > 0 ? y : 0;
 
       if (!this.rack.isBusy(x, y, this)) {
-        this.dragX = x;
-        this.dragY = y;
+        targetX = x;
+        targetY = y;
         dragRect.position({
-          x: this.rack.padding + this.dragX * this.rack.slotWidth,
-          y: this.rack.padding + this.dragY * this.rack.slotHeight
+          x: this.rack.padding + targetX * this.rack.slotWidth,
+          y: this.rack.padding + targetY * this.rack.slotHeight
         });
         group.getStage().batchDraw();
       }
