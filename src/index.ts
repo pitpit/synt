@@ -1,14 +1,15 @@
 import Rack from './rack';
 import Speaker from './speaker';
+import Note from './note';
 
 const rack = new Rack();
 const speaker1 = new Speaker();
 
 
-const speaker2 = new Speaker(3, 0);
+const note1 = new Note(3, 0);
 // rack.mods.push(speaker2);
 rack.add(speaker1);
-rack.add(speaker2);
+rack.add(note1);
 rack.draw();
 
 // if (module.hot) {

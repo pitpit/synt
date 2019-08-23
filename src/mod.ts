@@ -26,8 +26,6 @@ export default class Mod {
     // TODO validate io
     this.io = io;
     this.io = [...this.io, ...Array(4-this.io.length).fill(IO.NULL)];
-
-    console.log(this.io);
   }
 
   setRack(rack) {
@@ -187,6 +185,8 @@ export default class Mod {
         y: this.rack.padding + targetY * this.rack.slotHeight,
       });
       group.getStage().batchDraw();
+
+      //propagate event (link ?)
     });
 
     group.on('dragmove', (e) => {
