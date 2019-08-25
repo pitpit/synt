@@ -2,6 +2,8 @@ import Rack from './rack';
 import IO from './io';
 import { Rect } from 'konva/lib/shapes/Rect.js';
 import { Line } from 'konva/lib/shapes/Line.js';
+import { Text } from 'konva/lib/shapes/Text.js';
+import * as EventEmitter from 'eventemitter3';
 
 export default class Mod {
   height: number;
@@ -10,6 +12,10 @@ export default class Mod {
   y: number;
   io:Array<Symbol>;
   rack:Rack;
+  events:EventEmitter;
+  fromX: number;
+  fromY: number;
+  label: string = '';
 
   constructor(
     x:number = 0,
@@ -26,6 +32,7 @@ export default class Mod {
     // TODO validate io
     this.io = io;
     this.io = [...this.io, ...Array(4-this.io.length).fill(IO.NULL)];
+    this.events = new EventEmitter();
   }
 
   setRack(rack) {
@@ -104,6 +111,22 @@ export default class Mod {
     });
     group.add(rect);
 
+    if (this.label) {
+      const text = new Text({
+        x: 0,
+        y: 0,
+        width: group.width(),
+        height: group.height(),
+        text: this.label,
+        fontSize: 14,
+        fontFamily: '"Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace',
+        fill: 'black',
+        align: 'center',
+        verticalAlign: 'middle',
+      });
+      group.add(text);
+    }
+
     // North IO
     if (IO.NULL !== this.io[0]) {
       const ioLine = this.drawIOLine(this.io[0], 0, strokeWidth);
@@ -157,6 +180,10 @@ export default class Mod {
       dragRect.show();
       dragRect.moveToTop();
       group.moveToTop();
+
+      // Keep previous position to pass it to moved event
+      this.fromX = this.x;
+      this.fromY = this.y;
     });
 
     group.on('dragend', (e) => {
@@ -186,7 +213,9 @@ export default class Mod {
       });
       group.getStage().batchDraw();
 
-      //propagate event (link ?)
+      this.events.emit('moved', this.fromX, this.fromY, this.x, this.y);
+      this.fromX = null;
+      this.fromY = null;
     });
 
     group.on('dragmove', (e) => {
