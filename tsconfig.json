@@ -7,6 +7,8 @@
         "removeComments": false,
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
-        "alwaysStrict": true
-    }
+        "alwaysStrict": true,
+        "strict": true,
+        // "typeRoots" : ["node_modules/@types", "node_modules/konva/types", "node_modules/konva/types/filters", "node_modules/konva/types/shapes"]
+    },
 }

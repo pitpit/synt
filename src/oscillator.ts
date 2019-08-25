@@ -1,9 +1,27 @@
 import Mod from './mod';
-import IO from './io';
+import ioType from './ioType';
+import * as Pizzicato from 'pizzicato';
 
 export default class Note extends Mod {
-  constructor(x:number = 0, y:number = 0) {
-    super(x, y, 1, 1, [IO.NULL, IO.NULL, IO.OUT]);
+  wave:Pizzicato.Sound;
+
+  constructor() {
+    super(1, 1, [ioType.NULL, ioType.NULL, ioType.OUT]);
     this.label = 'osc';
+
+    this.wave = new Pizzicato.Sound({
+      source: 'wave',
+      options: {
+        frequency: 440,
+      },
+    });
+  }
+
+  tune(group: Pizzicato) {
+    group.addSound(this.wave);
+  }
+
+  untune(group: Pizzicato) {
+    group.removeSound(this.wave);
   }
 }

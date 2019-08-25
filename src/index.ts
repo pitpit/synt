@@ -10,11 +10,11 @@ const reverb = new Reverb();
 
 
 // const note1 = new Note(3, 0);
-const oscillator = new Oscillator(1, 0);
+const oscillator = new Oscillator();
 // rack.mods.push(speaker2);
-rack.add(reverb);
-rack.add(speaker1);
-rack.add(oscillator);
+rack.add(reverb, 0, 0);
+rack.add(oscillator, 1, 1);
+rack.add(speaker1, 2, 2);
 // rack.add(note1);
 rack.draw();
 

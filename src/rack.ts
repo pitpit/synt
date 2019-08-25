@@ -1,37 +1,53 @@
 import Mod from './mod';
 import Konva from 'konva/lib/Core';
+import { Stage } from 'konva/lib/Stage.js';
 import { Line } from 'konva/lib/shapes/Line.js';
-import * as Pizzicato from 'pizzicato';
-import IO from './io';
+import ioType from './ioType';
+import Cardinal from './cardinal';
 
 export default class Rack {
-  stage;
+  stage: Stage;
   slotHeight: number = 100;
   slotWidth: number = 100;
   padding: number = 10;
   mods:Array<Mod> = [];
-  grid:Mod[][] = [];
+  grid:Array<Array<Mod|null>> = [];
 
-  add(mod:Mod) {
+  /**
+   * Add a Mod on the rack and set its position.
+   */
+  add(mod:Mod, x:number, y:number) {
+    if (this.isBusy(x, y, mod)) {
+      throw new Error('A mod already stand at this position');
+    }
+    mod.setPosition(x,y).setRack(this);
     // TODO check if not already in rack
     this.mods.push(mod);
     this._addToGrid(mod);
 
-    mod.setRack(this);
+    return this;
   }
 
+  /**
+   * @private
+   */
   _removeFromGrid(mod: Mod) {
     // TODO use an efficient array walk
     this.grid.forEach((row, x) => {
       row.forEach((item, y) => {
-        if (item === mod ) {
+        if (item === mod) {
           this.grid[x][y] = null;
           return;
         }
       });
     });
+
+    return this;
   }
 
+  /**
+   * @private
+   */
   _getFromGrid(x:number, y:number) {
     if (this.grid[x] && this.grid[x][y]) {
       return this.grid[x][y];
@@ -40,13 +56,21 @@ export default class Rack {
     return null;
   }
 
+  /**
+   * @private
+   */
   _addToGrid(mod:Mod) {
     if (!this.grid[mod.x]) {
       this.grid[mod.x] = [];
     }
     this.grid[mod.x][mod.y] = mod;
+
+    return this;
   }
 
+  /**
+   * Draw the rack and all positionned Mods
+   */
   draw() {
     // Setup container
     const container = document.createElement('div');
@@ -105,39 +129,42 @@ export default class Rack {
       });
 
       mod.events.on('moved', () => {
-        this._removeFromGrid(mod);
-        this._addToGrid(mod);
+        this._removeFromGrid(mod)._addToGrid(mod);
 
         const northSiblingMod = this._getFromGrid(mod.x, mod.y - 1);
         const eastSiblingMod = this._getFromGrid(mod.x+1, mod.y);
         const southSiblingMod = this._getFromGrid(mod.x, mod.y + 1);
         const westSiblingMod = this._getFromGrid(mod.x-1, mod.y);
-        if (mod.io[0] !== IO.NULL
+        if (mod.ioTypes[Cardinal.NORTH] !== ioType.NULL
           && northSiblingMod
-          && northSiblingMod.io[2] !== IO.NULL
-          && mod.io[0] !== northSiblingMod.io[2]) {
+          && northSiblingMod.ioTypes[Cardinal.SOUTH] !== ioType.NULL
+          && mod.ioTypes[Cardinal.NORTH] !== northSiblingMod.ioTypes[Cardinal.SOUTH]){
+          // Get current group and
+          // mod.untune(currentGroup);
+          // Get an existent group or create one
+
+          // Iterate through group and tune each mod
+          mod.io[Cardinal.NORTH] = northSiblingMod;
+          mod.io[Cardinal.SOUTH] = mod;
 
           mod.events.emit('linked-to-north', northSiblingMod);
           northSiblingMod.events.emit('linked-to-south', mod);
-        } else if (mod.io[1] !== IO.NULL
+        } else if (mod.ioTypes[Cardinal.EAST] !== ioType.NULL
           && eastSiblingMod
-          && eastSiblingMod.io[3] !== IO.NULL
-          && mod.io[1] !== eastSiblingMod.io[3]) {
-
+          && eastSiblingMod.ioTypes[Cardinal.WEST] !== ioType.NULL
+          && mod.ioTypes[Cardinal.EAST] !== eastSiblingMod.ioTypes[Cardinal.WEST]) {
           mod.events.emit('linked-to-east', eastSiblingMod);
           eastSiblingMod.events.emit('linked-to-west', mod);
-        } else if (mod.io[2] !== IO.NULL
+        } else if (mod.ioTypes[Cardinal.SOUTH] !== ioType.NULL
           && southSiblingMod
-          && southSiblingMod.io[0] !== IO.NULL
-          && mod.io[2] !== southSiblingMod.io[0]) {
-
+          && southSiblingMod.ioTypes[Cardinal.NORTH] !== ioType.NULL
+          && mod.ioTypes[Cardinal.SOUTH] !== southSiblingMod.ioTypes[Cardinal.NORTH]) {
           mod.events.emit('linked-to-south', southSiblingMod);
           southSiblingMod.events.emit('linked-to-north', mod);
-        } else if (mod.io[3] !== IO.NULL
+        } else if (mod.ioTypes[Cardinal.WEST] !== ioType.NULL
           && westSiblingMod
-          && westSiblingMod.io[1] !== IO.NULL
-          && mod.io[3] !== westSiblingMod.io[1]) {
-
+          && westSiblingMod.ioTypes[Cardinal.EAST] !== ioType.NULL
+          && mod.ioTypes[Cardinal.WEST] !== westSiblingMod.ioTypes[Cardinal.EAST]) {
           mod.events.emit('linked-to-west', westSiblingMod);
           westSiblingMod.events.emit('linked-to-east', mod);
         }
@@ -151,15 +178,15 @@ export default class Rack {
     // Resize canvas when resizing window
     const instance = this;
     window.onresize = () => {
-      instance.resize();
+      instance.stage.width(window.innerWidth);
+      instance.stage.height(window.innerHeight);
     };
   }
 
-  resize() {
-    this.stage.width(window.innerWidth);
-    this.stage.height(window.innerHeight);
-  }
-
+  /**
+   * Can currentMod be positionned onto the rack.
+   * Depndending on its width and height
+   */
   isBusy(x: number, y: number, currentMod: Mod): boolean {
     let busy = false;
 
@@ -180,6 +207,7 @@ export default class Rack {
         busy = true;
       }
     });
+
     return busy;
   }
 }

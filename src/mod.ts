@@ -1,71 +1,98 @@
 import Rack from './rack';
-import IO from './io';
+import ioType from './ioType';
+import Cardinal from './cardinal';
+import { Group } from 'konva/lib/Group.js';
 import { Rect } from 'konva/lib/shapes/Rect.js';
 import { Line } from 'konva/lib/shapes/Line.js';
 import { Text } from 'konva/lib/shapes/Text.js';
 import * as EventEmitter from 'eventemitter3';
+import * as Pizzicato from 'pizzicato';
 
 export default class Mod {
-  height: number;
-  width: number;
-  x: number;
-  y: number;
-  io:Array<Symbol>;
-  rack:Rack;
+  x:number = 0;
+  y:number = 0;
+  height:number;
+  width:number;
+  ioTypes:Array<Symbol>;
+  io:Array<Mod> = [];
+  rack:Rack|null = null;
   events:EventEmitter;
-  fromX: number;
-  fromY: number;
-  label: string = '';
+  fromX:number = 0;
+  fromY:number = 0;
+  label:string = '';
 
   constructor(
-    x:number = 0,
-    y:number = 0,
     width:number = 1,
     height:number = 1,
-    io:Array<Symbol> = [IO.NULL, IO.NULL, IO.NULL, IO.NULL],
+    ioTypes:Array<Symbol> = [ioType.NULL, ioType.NULL, ioType.NULL, ioType.NULL],
   ){
-    this.x = x;
-    this.y = y;
     this.width = width;
     this.height = height;
 
     // TODO validate io
-    this.io = io;
-    this.io = [...this.io, ...Array(4-this.io.length).fill(IO.NULL)];
+    this.ioTypes = ioTypes;
+    this.ioTypes = [...this.ioTypes, ...Array(4-this.ioTypes.length).fill(ioType.NULL)];
     this.events = new EventEmitter();
   }
 
-  setRack(rack) {
+  /**
+   * Set parent rack where this mod stands
+   */
+  setRack(rack: Rack) {
     this.rack = rack;
+
+    return this;
   }
 
-  drawIOLine(io: Symbol, cardinal:number, strokeWidth: number) {
+  /**
+   * Set slot position of this mod on the rack
+   */
+  setPosition(x:number, y:number) {
+    this.x = x;
+    this.y = y;
+
+    return this;
+  }
+
+  // getSibling(cardinal: Cardinal) {
+
+  // }
+
+  /**
+   * Draw input/output type indicator
+   * @private
+   */
+  _drawIOLine(io: ioType, cardinal: Cardinal, strokeWidth: number) {
+    if (!this.rack) {
+      throw new Error('Mod is not attached to a rack');
+    }
+
     const ioLineStrokeWidth = 5;
-    const color = (IO.IN === io) ? 'green' : ((IO.OUT === io) ? 'red': 'gray');
+    const color = (ioType.IN === io) ? 'green' : ((ioType.OUT === io) ? 'red': 'gray');
     let points: Array<number> = [0, 0, 0, 0];
 
-    if (0 === cardinal) {
+    if (Cardinal.NORTH === cardinal) {
       points = [
         strokeWidth,
         strokeWidth + ioLineStrokeWidth/2,
         this.rack.slotWidth - strokeWidth,
         strokeWidth+ ioLineStrokeWidth/2,
       ];
-    } else if (1 === cardinal) {
+    } else if (Cardinal.EAST === cardinal) {
       points = [
         this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         strokeWidth,
         this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         this.height * this.rack.slotHeight - strokeWidth,
       ];
-    } else if (2 === cardinal) {
+    } else if (Cardinal.SOUTH === cardinal) {  // South
       points = [
         strokeWidth,
         this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         this.rack.slotWidth - strokeWidth,
         this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
       ];
-    } else if (3 === cardinal) {
+    } else if (Cardinal.WEST === cardinal) { // West
       points = [
         strokeWidth+ ioLineStrokeWidth/2,
         strokeWidth,
@@ -86,7 +113,11 @@ export default class Mod {
     return ioLine;
   }
 
-  draw(group: any){
+  draw(group:Group){
+    if (!this.rack) {
+      throw new Error('Mod is not attached to a rack');
+    }
+
     const strokeWidth = 5;
 
     group.position({
@@ -128,26 +159,26 @@ export default class Mod {
     }
 
     // North IO
-    if (IO.NULL !== this.io[0]) {
-      const ioLine = this.drawIOLine(this.io[0], 0, strokeWidth);
+    if (ioType.NULL !== this.ioTypes[Cardinal.NORTH]) {
+      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.NORTH], Cardinal.NORTH, strokeWidth);
       group.add(ioLine);
     }
 
     // East IO
-    if (IO.NULL !== this.io[1]) {
-      const ioLine = this.drawIOLine(this.io[2], 1, strokeWidth);
+    if (ioType.NULL !== this.ioTypes[Cardinal.EAST]) {
+      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.EAST], Cardinal.EAST, strokeWidth);
       group.add(ioLine);
     }
 
     // South IO
-    if (IO.NULL !== this.io[2]) {
-      const ioLine = this.drawIOLine(this.io[2], 2, strokeWidth);
+    if (ioType.NULL !== this.ioTypes[Cardinal.SOUTH]) {
+      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.SOUTH], Cardinal.SOUTH, strokeWidth);
       group.add(ioLine);
     }
 
     // West IO
-    if (IO.NULL !== this.io[3]) {
-      const ioLine = this.drawIOLine(this.io[3], 3, strokeWidth);
+    if (ioType.NULL !== this.ioTypes[Cardinal.WEST]) {
+      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.WEST], Cardinal.WEST, strokeWidth);
       group.add(ioLine);
     }
 
@@ -176,7 +207,7 @@ export default class Mod {
       document.body.style.cursor = 'default';
     });
 
-    group.on('dragstart', (e) => {
+    group.on('dragstart', () => {
       dragRect.show();
       dragRect.moveToTop();
       group.moveToTop();
@@ -186,7 +217,11 @@ export default class Mod {
       this.fromY = this.y;
     });
 
-    group.on('dragend', (e) => {
+    group.on('dragend', () => {
+      if (!this.rack) {
+        throw new Error('Mod is not attached to a rack');
+      }
+
       let x = Math.round(group.x() / this.rack.slotWidth);
       let y = Math.round(group.y() / this.rack.slotHeight);
       x = x > 0 ? x : 0;
@@ -214,11 +249,13 @@ export default class Mod {
       group.getStage().batchDraw();
 
       this.events.emit('moved', this.fromX, this.fromY, this.x, this.y);
-      this.fromX = null;
-      this.fromY = null;
     });
 
-    group.on('dragmove', (e) => {
+    group.on('dragmove', () => {
+      if (!this.rack) {
+        throw new Error('Mod is not attached to a rack');
+      }
+
       let x = Math.round(group.x() / this.rack.slotWidth);
       let y = Math.round(group.y() / this.rack.slotHeight);
       x = x > 0 ? x : 0;
@@ -234,5 +271,13 @@ export default class Mod {
         group.getStage().batchDraw();
       }
     });
+  }
+
+  tune(group:Pizzicato.Group) {
+    // To override
+  }
+
+  untune(group:Pizzicato.Group) {
+    // To override
   }
 }
