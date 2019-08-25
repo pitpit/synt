@@ -14,11 +14,11 @@ export default class Rack {
   /**
    * Add a Mod on the rack and set its position.
    */
-  add(mod:Mod, x:number, y:number) {
+  add(mod:Mod, x:number, y:number): Rack {
     if (this.isBusy(x, y, mod)) {
       throw new Error('A mod already stand at this position');
     }
-    mod.setPosition(x,y).setRack(this);
+    mod.setRack(this, x, y);
     // TODO check if not already in rack
     this.mods.push(mod);
     this._addToGrid(mod);
@@ -29,13 +29,13 @@ export default class Rack {
   /**
    * @private
    */
-  _removeFromGrid(mod: Mod) {
+  _removeFromGrid(mod: Mod): Rack {
     // TODO use an efficient array walk
     this.grid.forEach((row, x) => {
       row.forEach((item, y) => {
         if (item === mod) {
           this.grid[x][y] = null;
-          return;
+          return this;
         }
       });
     });
@@ -46,7 +46,7 @@ export default class Rack {
   /**
    * @private
    */
-  _getFromGrid(x:number, y:number) {
+  _getFromGrid(x:number, y:number): Mod|null {
     if (this.grid[x] && this.grid[x][y]) {
       return this.grid[x][y];
     }
@@ -57,7 +57,7 @@ export default class Rack {
   /**
    * @private
    */
-  _addToGrid(mod:Mod) {
+  _addToGrid(mod:Mod): Rack {
     if (!this.grid[mod.x]) {
       this.grid[mod.x] = [];
     }
@@ -133,39 +133,37 @@ export default class Rack {
         const eastSiblingMod = this._getFromGrid(mod.x+1, mod.y);
         const southSiblingMod = this._getFromGrid(mod.x, mod.y + 1);
         const westSiblingMod = this._getFromGrid(mod.x-1, mod.y);
-        if (mod.ioTypes[Cardinal.NORTH] !== ioType.NULL
-          && northSiblingMod
-          && northSiblingMod.ioTypes[Cardinal.SOUTH] !== ioType.NULL
-          && mod.ioTypes[Cardinal.NORTH] !== northSiblingMod.ioTypes[Cardinal.SOUTH]){
-          // Get current group and
-          // mod.untune(currentGroup);
-          // Get an existent group or create one
+        mod.link(Cardinal.NORTH, northSiblingMod);
+        mod.link(Cardinal.EAST, eastSiblingMod);
+        mod.link(Cardinal.SOUTH, southSiblingMod);
+        mod.link(Cardinal.WEST, westSiblingMod);
+        // if (northSiblingMod && mod.isLnkable(Cardinal.NORTH, northSiblingMod)) {
+        //   mod.link(Cardinal.SOUTH, northSiblingMod);
+        //   northSiblingMod.link(Cardinal.NORTH, mod);
 
-          // Iterate through group and tune each mod
-          mod.io[Cardinal.NORTH] = northSiblingMod;
-          mod.io[Cardinal.SOUTH] = mod;
+        //   // TODO is it necessayre to trigger event ? (we've got a link chain)
+        //   mod.events.emit('linked-to-north', northSiblingMod);
+        //   northSiblingMod.events.emit('linked-to-south', mod);
+        //   console.log('linked-to-north');
+        // }
+        // if (eastSiblingMod && mod.isLnkable(Cardinal.EAST, eastSiblingMod)) {
+        //   mod.link(Cardinal.EAST, eastSiblingMod);
+        //   eastSiblingMod.link(Cardinal.WEST, mod);
 
-          mod.events.emit('linked-to-north', northSiblingMod);
-          northSiblingMod.events.emit('linked-to-south', mod);
-        } else if (mod.ioTypes[Cardinal.EAST] !== ioType.NULL
-          && eastSiblingMod
-          && eastSiblingMod.ioTypes[Cardinal.WEST] !== ioType.NULL
-          && mod.ioTypes[Cardinal.EAST] !== eastSiblingMod.ioTypes[Cardinal.WEST]) {
-          mod.events.emit('linked-to-east', eastSiblingMod);
-          eastSiblingMod.events.emit('linked-to-west', mod);
-        } else if (mod.ioTypes[Cardinal.SOUTH] !== ioType.NULL
-          && southSiblingMod
-          && southSiblingMod.ioTypes[Cardinal.NORTH] !== ioType.NULL
-          && mod.ioTypes[Cardinal.SOUTH] !== southSiblingMod.ioTypes[Cardinal.NORTH]) {
-          mod.events.emit('linked-to-south', southSiblingMod);
-          southSiblingMod.events.emit('linked-to-north', mod);
-        } else if (mod.ioTypes[Cardinal.WEST] !== ioType.NULL
-          && westSiblingMod
-          && westSiblingMod.ioTypes[Cardinal.EAST] !== ioType.NULL
-          && mod.ioTypes[Cardinal.WEST] !== westSiblingMod.ioTypes[Cardinal.EAST]) {
-          mod.events.emit('linked-to-west', westSiblingMod);
-          westSiblingMod.events.emit('linked-to-east', mod);
-        }
+        //   mod.events.emit('linked-to-east', eastSiblingMod);
+        //   eastSiblingMod.events.emit('linked-to-west', mod);
+        //   console.log('linked-to-east');
+        // }
+        // if (southSiblingMod && mod.isLnkable(Cardinal.SOUTH, southSiblingMod)) {
+        //   mod.events.emit('linked-to-south', southSiblingMod);
+        //   southSiblingMod.events.emit('linked-to-north', mod);
+        //   console.log('linked-to-south');
+        // }
+        // if (westSiblingMod && mod.isLnkable(Cardinal.WEST, westSiblingMod)) {
+        //   mod.events.emit('linked-to-west', westSiblingMod);
+        //   westSiblingMod.events.emit('linked-to-east', mod);
+        //   console.log('linked-to-west');
+        // }
         // TODO if linked
       });
       layer.add(group);

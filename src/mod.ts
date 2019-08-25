@@ -11,7 +11,7 @@ export default class Mod {
   height:number;
   width:number;
   ioTypes:Array<Symbol>;
-  io:Array<Mod> = [];
+  io:Array<Mod|null> = [];
   rack:Rack|null = null;
   events:EventEmitter;
   fromX:number = 0;
@@ -22,7 +22,7 @@ export default class Mod {
     width:number = 1,
     height:number = 1,
     ioTypes:Array<Symbol> = [ioType.NULL, ioType.NULL, ioType.NULL, ioType.NULL],
-  ){
+  ) {
     this.width = width;
     this.height = height;
 
@@ -33,33 +33,109 @@ export default class Mod {
   }
 
   /**
-   * Set parent rack where this mod stands
+   * Set parent rack and the postion of this Mod on it
    */
-  setRack(rack: Rack) {
+  setRack(rack: Rack, x:number, y:number) {
     this.rack = rack;
-
-    return this;
-  }
-
-  /**
-   * Set slot position of this mod on the rack
-   */
-  setPosition(x:number, y:number) {
     this.x = x;
     this.y = y;
 
     return this;
   }
 
-  // getSibling(cardinal: Cardinal) {
+  /**
+   * Get the type of the Io plug
+   */
+  getIoType(cardinal: number): Symbol|null{
+    if (this.ioTypes[cardinal]) {
+      return this.ioTypes[cardinal];
+    }
 
-  // }
+    return null;
+  }
+
+  /**
+   * Does the Mod have an Io plug
+   */
+  hasLinkableIo(cardinal: number): boolean {
+    return (this.ioTypes[cardinal] !== ioType.NULL);
+  }
+
+  link(cardinal: number, to: Mod|null): Mod {
+    if (!to || !this._isLinkable(cardinal, to)) {
+      return this;
+    }
+
+    // TODO validate link (is the mod linked to another plug of this mod)
+    const oppositeCardinal = Cardinal.opposite(cardinal);
+
+    const linked = this._getLinked(cardinal);
+    if (linked) {
+      if (to === linked) {
+        // Already linked, abort
+        return this;
+      }
+
+      linked.unlink(oppositeCardinal);
+    }
+
+    this.io[cardinal] = to;
+
+    // TODO is it necessayre to trigger event ? (we've got a link chain)
+    this.events.emit('linked', to, cardinal);
+    console.log('linked', [to, cardinal]);
+
+    // Link target Mod
+    to.link(oppositeCardinal, this);
+
+    return this;
+  }
+
+  unlink(cardinal: number): Mod {
+    const linked = this._getLinked(cardinal);
+    if (linked) {
+      this.io[cardinal] = null;
+      this.events.emit('unlinked', linked, cardinal);
+      console.log('unlinked', [linked, cardinal]);
+
+      // Unlink target Mod
+      linked.unlink(Cardinal.opposite(cardinal));
+    }
+
+    return this;
+  }
+
+  /**
+   * @private
+   */
+  _getLinked(cardinal: number): Mod|null {
+    if (this.io[cardinal]) {
+      return this.io[cardinal];
+    }
+
+    return null;
+  }
+
+  /**
+   * Can the current Mod be linked to the given Mod {to} through the {cardinal} Io plug
+   * @private
+   */
+  _isLinkable(cardinal: number, to:Mod): boolean {
+    const oppositeCardinal = Cardinal.opposite(cardinal);
+    if (this.hasLinkableIo(cardinal)
+    && to.hasLinkableIo(oppositeCardinal)
+    && this.getIoType(cardinal) !== to.getIoType(oppositeCardinal)) {
+      return true;
+    }
+
+    return false;
+  }
 
   /**
    * Draw input/output type indicator
    * @private
    */
-  _drawIOLine(io: ioType, cardinal: Cardinal, strokeWidth: number) {
+  _drawIOLine(io: Symbol, cardinal: number, strokeWidth: number): Konva.Line {
     if (!this.rack) {
       throw new Error('Mod is not attached to a rack');
     }
@@ -110,7 +186,11 @@ export default class Mod {
     return ioLine;
   }
 
-  draw(group:Konva.Group){
+  /**
+   * TODO move this.x and this.y in rack, draw the dragRect in rack
+   * So we don't need anymore to inject rack
+   */
+  draw(group:Konva.Group) {
     if (!this.rack) {
       throw new Error('Mod is not attached to a rack');
     }
@@ -209,6 +289,13 @@ export default class Mod {
       dragRect.moveToTop();
       group.moveToTop();
 
+
+      // Unlink all io plugs
+      this.unlink(Cardinal.NORTH);
+      this.unlink(Cardinal.EAST);
+      this.unlink(Cardinal.SOUTH);
+      this.unlink(Cardinal.WEST);
+
       // Keep previous position to pass it to moved event
       this.fromX = this.x;
       this.fromY = this.y;
@@ -236,6 +323,8 @@ export default class Mod {
         x: this.rack.padding + this.x * this.rack.slotWidth,
         y: this.rack.padding + this.y * this.rack.slotHeight,
       });
+
+      // Prepare dragRect for next move
       targetX = this.x;
       targetY = this.y;
       dragRect.hide();
@@ -245,6 +334,9 @@ export default class Mod {
       });
       group.getStage().batchDraw();
 
+      // TODO shall we realy send this.fromX, this.fromY,
+      // this.x, this.y are not realy useful because there are
+      // accessible externaly from mod triggering the event
       this.events.emit('moved', this.fromX, this.fromY, this.x, this.y);
     });
 
