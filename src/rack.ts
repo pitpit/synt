@@ -1,12 +1,10 @@
 import Mod from './mod';
-import Konva from 'konva/lib/Core';
-import { Stage } from 'konva/lib/Stage.js';
-import { Line } from 'konva/lib/shapes/Line.js';
+import Konva from 'konva/lib/index-umd.js';
 import ioType from './ioType';
 import Cardinal from './cardinal';
 
 export default class Rack {
-  stage: Stage;
+  stage: Konva.Stage|null = null;
   slotHeight: number = 100;
   slotWidth: number = 100;
   padding: number = 10;
@@ -95,7 +93,7 @@ export default class Rack {
     // Draw grid
     const strokeWidth = 1;
     for (let x = 0; x <= widthPx; x += this.slotWidth) {
-      const line = new Line({
+      const line = new Konva.Line({
         points: [
           strokeWidth + x + this.padding,
           this.padding,
@@ -109,7 +107,7 @@ export default class Rack {
       layer.add(line);
     }
     for (let x = 0; x <= heightPx; x += this.slotHeight) {
-      const line = new Line({
+      const line = new Konva.Line({
         points: [
           this.padding,
           strokeWidth + x + this.padding,
@@ -178,8 +176,10 @@ export default class Rack {
     // Resize canvas when resizing window
     const instance = this;
     window.onresize = () => {
-      instance.stage.width(window.innerWidth);
-      instance.stage.height(window.innerHeight);
+      if (instance.stage){
+        instance.stage.width(window.innerWidth);
+        instance.stage.height(window.innerHeight);
+      }
     };
   }
 

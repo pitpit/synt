@@ -1,7 +1,6 @@
 import Mod from './mod';
 import ioType from './ioType';
-import { Group } from 'konva/lib/Group.js';
-import { Circle } from 'konva/lib/shapes/Circle.js';
+import Konva from 'konva/lib/index-umd.js';
 import * as Pizzicato from 'pizzicato';
 
 export default class Speaker extends Mod {
@@ -13,10 +12,10 @@ export default class Speaker extends Mod {
     });
   }
 
-  draw(group:Group) {
+  draw(group:Konva.Group) {
     super.draw(group);
 
-    const circle = new Circle({
+    const circle = new Konva.Circle({
       x: group.width() / 2,
       y: group.height() / 2,
       radius: 24,
@@ -25,7 +24,7 @@ export default class Speaker extends Mod {
       strokeWidth: 6,
     });
 
-    const innerCircle = new Circle({
+    const innerCircle = new Konva.Circle({
       x: group.width() / 2,
       y: group.height() / 2,
       radius: 12,

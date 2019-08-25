@@ -1,10 +1,7 @@
 import Rack from './rack';
 import ioType from './ioType';
 import Cardinal from './cardinal';
-import { Group } from 'konva/lib/Group.js';
-import { Rect } from 'konva/lib/shapes/Rect.js';
-import { Line } from 'konva/lib/shapes/Line.js';
-import { Text } from 'konva/lib/shapes/Text.js';
+import Konva from 'konva/lib/index-umd.js';
 import * as EventEmitter from 'eventemitter3';
 import * as Pizzicato from 'pizzicato';
 
@@ -103,7 +100,7 @@ export default class Mod {
       throw new Error('Invalid cardinal value');
     }
 
-    const ioLine = new Line({
+    const ioLine = new Konva.Line({
       points,
       stroke: color,
       strokeWidth: ioLineStrokeWidth,
@@ -113,7 +110,7 @@ export default class Mod {
     return ioLine;
   }
 
-  draw(group:Group){
+  draw(group:Konva.Group){
     if (!this.rack) {
       throw new Error('Mod is not attached to a rack');
     }
@@ -130,7 +127,7 @@ export default class Mod {
       height: this.height * this.rack.slotHeight,
     });
 
-    const rect = new Rect({
+    const rect = new Konva.Rect({
       x: 0 + strokeWidth/2,
       y: 0 + strokeWidth/2,
       width:  this.width * this.rack.slotWidth - strokeWidth,
@@ -143,7 +140,7 @@ export default class Mod {
     group.add(rect);
 
     if (this.label) {
-      const text = new Text({
+      const text = new Konva.Text({
         x: 0,
         y: 0,
         width: group.width(),
@@ -187,7 +184,7 @@ export default class Mod {
 
     let targetX = this.x;
     let targetY = this.y;
-    const dragRect = new Rect({
+    const dragRect = new Konva.Rect({
       x: targetX * this.rack.slotWidth + this.rack.padding + strokeWidth/2,
       y: targetY * this.rack.slotHeight + this.rack.padding + strokeWidth/2,
       width:  this.width * this.rack.slotWidth,
@@ -219,7 +216,7 @@ export default class Mod {
 
     group.on('dragend', () => {
       if (!this.rack) {
-        throw new Error('Mod is not attached to a rack');
+        return;
       }
 
       let x = Math.round(group.x() / this.rack.slotWidth);
@@ -253,7 +250,7 @@ export default class Mod {
 
     group.on('dragmove', () => {
       if (!this.rack) {
-        throw new Error('Mod is not attached to a rack');
+        return;
       }
 
       let x = Math.round(group.x() / this.rack.slotWidth);
