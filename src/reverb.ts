@@ -1,9 +1,9 @@
 import Mod from './mod';
-import ioType from './ioType';
+import IoType from './ioType';
 
 export default class Reverb extends Mod {
   constructor() {
-    super(1, 1, [ioType.IN, ioType.NULL, ioType.OUT]);
+    super(1, 1, [IoType.IN, IoType.NULL, IoType.OUT]);
     this.label = 'reverb';
   }
 }

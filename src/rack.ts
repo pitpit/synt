@@ -1,6 +1,6 @@
 import Mod from './mod';
 import Konva from 'konva/lib/index-umd.js';
-import ioType from './ioType';
+import * as Pizzicato from 'pizzicato';
 import Cardinal from './cardinal';
 
 export default class Rack {
@@ -129,42 +129,16 @@ export default class Rack {
       mod.events.on('moved', () => {
         this._removeFromGrid(mod)._addToGrid(mod);
 
-        const northSiblingMod = this._getFromGrid(mod.x, mod.y - 1);
-        const eastSiblingMod = this._getFromGrid(mod.x+1, mod.y);
-        const southSiblingMod = this._getFromGrid(mod.x, mod.y + 1);
-        const westSiblingMod = this._getFromGrid(mod.x-1, mod.y);
-        mod.link(Cardinal.NORTH, northSiblingMod);
-        mod.link(Cardinal.EAST, eastSiblingMod);
-        mod.link(Cardinal.SOUTH, southSiblingMod);
-        mod.link(Cardinal.WEST, westSiblingMod);
-        // if (northSiblingMod && mod.isLnkable(Cardinal.NORTH, northSiblingMod)) {
-        //   mod.link(Cardinal.SOUTH, northSiblingMod);
-        //   northSiblingMod.link(Cardinal.NORTH, mod);
+        mod.link(Cardinal.NORTH, this._getFromGrid(mod.x, mod.y - 1));
+        mod.link(Cardinal.EAST, this._getFromGrid(mod.x+1, mod.y));
+        mod.link(Cardinal.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
+        mod.link(Cardinal.WEST, this._getFromGrid(mod.x-1, mod.y));
 
-        //   // TODO is it necessayre to trigger event ? (we've got a link chain)
-        //   mod.events.emit('linked-to-north', northSiblingMod);
-        //   northSiblingMod.events.emit('linked-to-south', mod);
-        //   console.log('linked-to-north');
-        // }
-        // if (eastSiblingMod && mod.isLnkable(Cardinal.EAST, eastSiblingMod)) {
-        //   mod.link(Cardinal.EAST, eastSiblingMod);
-        //   eastSiblingMod.link(Cardinal.WEST, mod);
-
-        //   mod.events.emit('linked-to-east', eastSiblingMod);
-        //   eastSiblingMod.events.emit('linked-to-west', mod);
-        //   console.log('linked-to-east');
-        // }
-        // if (southSiblingMod && mod.isLnkable(Cardinal.SOUTH, southSiblingMod)) {
-        //   mod.events.emit('linked-to-south', southSiblingMod);
-        //   southSiblingMod.events.emit('linked-to-north', mod);
-        //   console.log('linked-to-south');
-        // }
-        // if (westSiblingMod && mod.isLnkable(Cardinal.WEST, westSiblingMod)) {
-        //   mod.events.emit('linked-to-west', westSiblingMod);
-        //   westSiblingMod.events.emit('linked-to-east', mod);
-        //   console.log('linked-to-west');
-        // }
-        // TODO if linked
+        // Re-tune every mod
+        this.mods.forEach((mod, index) => {
+          const tuneGroup = new Pizzicato.Group();
+          mod.tune(tuneGroup);
+        });
       });
       layer.add(group);
       mod.draw(group);

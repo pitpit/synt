@@ -1,5 +1,5 @@
 import Rack from './rack';
-import ioType from './ioType';
+import IoType from './ioType';
 import Cardinal from './cardinal';
 import Konva from 'konva/lib/index-umd.js';
 import * as EventEmitter from 'eventemitter3';
@@ -21,14 +21,14 @@ export default class Mod {
   constructor(
     width:number = 1,
     height:number = 1,
-    ioTypes:Array<Symbol> = [ioType.NULL, ioType.NULL, ioType.NULL, ioType.NULL],
+    ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL],
   ) {
     this.width = width;
     this.height = height;
 
     // TODO validate io
     this.ioTypes = ioTypes;
-    this.ioTypes = [...this.ioTypes, ...Array(4-this.ioTypes.length).fill(ioType.NULL)];
+    this.ioTypes = [...this.ioTypes, ...Array(4-this.ioTypes.length).fill(IoType.NULL)];
     this.events = new EventEmitter();
   }
 
@@ -58,7 +58,7 @@ export default class Mod {
    * Does the Mod have an Io plug
    */
   hasLinkableIo(cardinal: number): boolean {
-    return (this.ioTypes[cardinal] !== ioType.NULL);
+    return (this.ioTypes[cardinal] !== IoType.NULL);
   }
 
   link(cardinal: number, to: Mod|null): Mod {
@@ -141,7 +141,7 @@ export default class Mod {
     }
 
     const ioLineStrokeWidth = 5;
-    const color = (ioType.IN === io) ? 'green' : ((ioType.OUT === io) ? 'red': 'gray');
+    const color = (IoType.IN === io) ? 'green' : ((IoType.OUT === io) ? 'red': 'gray');
     let points: Array<number> = [0, 0, 0, 0];
 
     if (Cardinal.NORTH === cardinal) {
@@ -236,25 +236,25 @@ export default class Mod {
     }
 
     // North IO
-    if (ioType.NULL !== this.ioTypes[Cardinal.NORTH]) {
+    if (IoType.NULL !== this.ioTypes[Cardinal.NORTH]) {
       const ioLine = this._drawIOLine(this.ioTypes[Cardinal.NORTH], Cardinal.NORTH, strokeWidth);
       group.add(ioLine);
     }
 
     // East IO
-    if (ioType.NULL !== this.ioTypes[Cardinal.EAST]) {
+    if (IoType.NULL !== this.ioTypes[Cardinal.EAST]) {
       const ioLine = this._drawIOLine(this.ioTypes[Cardinal.EAST], Cardinal.EAST, strokeWidth);
       group.add(ioLine);
     }
 
     // South IO
-    if (ioType.NULL !== this.ioTypes[Cardinal.SOUTH]) {
+    if (IoType.NULL !== this.ioTypes[Cardinal.SOUTH]) {
       const ioLine = this._drawIOLine(this.ioTypes[Cardinal.SOUTH], Cardinal.SOUTH, strokeWidth);
       group.add(ioLine);
     }
 
     // West IO
-    if (ioType.NULL !== this.ioTypes[Cardinal.WEST]) {
+    if (IoType.NULL !== this.ioTypes[Cardinal.WEST]) {
       const ioLine = this._drawIOLine(this.ioTypes[Cardinal.WEST], Cardinal.WEST, strokeWidth);
       group.add(ioLine);
     }
@@ -332,6 +332,7 @@ export default class Mod {
         x: this.rack.padding + targetX * this.rack.slotWidth,
         y: this.rack.padding + targetY * this.rack.slotHeight,
       });
+
       group.getStage().batchDraw();
 
       // TODO shall we realy send this.fromX, this.fromY,
@@ -364,9 +365,6 @@ export default class Mod {
 
   tune(group:Pizzicato.Group) {
     // To override
-  }
-
-  untune(group:Pizzicato.Group) {
-    // To override
+    // if (ioType this.getIoType(Cardinal.NORTH) && this._getLinked(Cardinal.NORTH))
   }
 }

@@ -1,8 +1,8 @@
 import Mod from './mod';
-import ioType from './ioType';
+import IoType from './ioType';
 
 export default class Note extends Mod {
   constructor() {
-    super(1, 1, [ioType.NULL, ioType.NULL, ioType.OUT]);
+    super(1, 1, [IoType.NULL, IoType.NULL, IoType.OUT]);
   }
 }

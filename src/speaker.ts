@@ -1,15 +1,17 @@
 import Mod from './mod';
-import ioType from './ioType';
+import IoType from './ioType';
 import Konva from 'konva/lib/index-umd.js';
 import * as Pizzicato from 'pizzicato';
 
 export default class Speaker extends Mod {
-  constructor() {
-    super(1, 1, [ioType.IN]);
+  group:Pizzicato.Group|null;
 
-    this.events.on('link-to-north', (mod:Mod, group:Pizzicato) => {
-      group.play();
-    });
+  constructor() {
+    super(1, 1, [IoType.IN]);
+
+    // this.events.on('linked', (mod: Mod, cardinal: number) => {
+    //   this.group.play();
+    // });
   }
 
   draw(group:Konva.Group) {
@@ -35,5 +37,13 @@ export default class Speaker extends Mod {
 
     group.add(circle);
     group.add(innerCircle);
+  }
+
+  tune(group:Pizzicato.Group) {
+    if (this.group) {
+      // this.group.stop();
+    }
+    this.group = group;
+    this.group.play();
   }
 }

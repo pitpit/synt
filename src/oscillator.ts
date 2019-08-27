@@ -1,12 +1,12 @@
 import Mod from './mod';
-import ioType from './ioType';
+import IoType from './ioType';
 import * as Pizzicato from 'pizzicato';
 
 export default class Note extends Mod {
   wave:Pizzicato.Sound;
 
   constructor() {
-    super(1, 1, [ioType.NULL, ioType.NULL, ioType.OUT]);
+    super(1, 1, [IoType.NULL, IoType.NULL, IoType.OUT]);
     this.label = 'osc';
 
     this.wave = new Pizzicato.Sound({
@@ -17,11 +17,12 @@ export default class Note extends Mod {
     });
   }
 
-  tune(group: Pizzicato) {
+  tune(group: Pizzicato.Group) {
+    console.log('osc tune');
     group.addSound(this.wave);
   }
 
-  untune(group: Pizzicato) {
-    group.removeSound(this.wave);
+  untune(group: Pizzicato.Group) {
+    // group.removeSound(this.wave);
   }
 }
