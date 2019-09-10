@@ -1,5 +1,5 @@
 import Mod from './mod';
-import Konva from 'konva/lib/index-umd.js';
+import * as Konva from 'konva';
 import * as Pizzicato from 'pizzicato';
 import Cardinal from './cardinal';
 
@@ -69,7 +69,7 @@ export default class Rack {
   /**
    * Draw the rack and all positionned Mods
    */
-  draw() {
+  init() {
     // Setup container
     const container = document.createElement('div');
     container.id = 'container';
@@ -129,16 +129,11 @@ export default class Rack {
       mod.events.on('moved', () => {
         this._removeFromGrid(mod)._addToGrid(mod);
 
+        // Try to link Mods
         mod.link(Cardinal.NORTH, this._getFromGrid(mod.x, mod.y - 1));
         mod.link(Cardinal.EAST, this._getFromGrid(mod.x+1, mod.y));
         mod.link(Cardinal.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
         mod.link(Cardinal.WEST, this._getFromGrid(mod.x-1, mod.y));
-
-        // Re-tune every mod
-        this.mods.forEach((mod, index) => {
-          const tuneGroup = new Pizzicato.Group();
-          mod.tune(tuneGroup);
-        });
       });
       layer.add(group);
       mod.draw(group);

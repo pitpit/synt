@@ -16,7 +16,7 @@ rack.add(reverb, 0, 0);
 rack.add(oscillator, 1, 1);
 rack.add(speaker1, 2, 2);
 // rack.add(note1);
-rack.draw();
+rack.init();
 
 // if (module.hot) {
 //     module.hot.accept('index.js', function() {

@@ -1,7 +1,7 @@
 import Rack from './rack';
 import IoType from './ioType';
 import Cardinal from './cardinal';
-import Konva from 'konva/lib/index-umd.js';
+import * as Konva from 'konva';
 import * as EventEmitter from 'eventemitter3';
 import * as Pizzicato from 'pizzicato';
 
@@ -83,7 +83,7 @@ export default class Mod {
 
     // TODO is it necessayre to trigger event ? (we've got a link chain)
     this.events.emit('linked', to, cardinal);
-    console.log('linked', [to, cardinal]);
+    // console.log('linked', [to, cardinal]);
 
     // Link target Mod
     to.link(oppositeCardinal, this);
@@ -96,7 +96,7 @@ export default class Mod {
     if (linked) {
       this.io[cardinal] = null;
       this.events.emit('unlinked', linked, cardinal);
-      console.log('unlinked', [linked, cardinal]);
+      // console.log('unlinked', [linked, cardinal]);
 
       // Unlink target Mod
       linked.unlink(Cardinal.opposite(cardinal));
@@ -335,10 +335,7 @@ export default class Mod {
 
       group.getStage().batchDraw();
 
-      // TODO shall we realy send this.fromX, this.fromY,
-      // this.x, this.y are not realy useful because there are
-      // accessible externaly from mod triggering the event
-      this.events.emit('moved', this.fromX, this.fromY, this.x, this.y);
+      this.events.emit('moved');
     });
 
     group.on('dragmove', () => {
@@ -346,6 +343,7 @@ export default class Mod {
         return;
       }
 
+      // Compute new position
       let x = Math.round(group.x() / this.rack.slotWidth);
       let y = Math.round(group.y() / this.rack.slotHeight);
       x = x > 0 ? x : 0;
@@ -363,8 +361,7 @@ export default class Mod {
     });
   }
 
-  tune(group:Pizzicato.Group) {
-    // To override
-    // if (ioType this.getIoType(Cardinal.NORTH) && this._getLinked(Cardinal.NORTH))
+  getOutput(cardinal: number): any {
+    return null;
   }
 }
