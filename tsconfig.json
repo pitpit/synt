@@ -1,14 +1,14 @@
 {
     "compilerOptions": {
         "outDir": "./dist/",
-        // "module": "es6",
         "target": "es5",
-        "sourceMap": true,
-        "removeComments": false,
+        // make Pizzicato, Konva et EventEmiiter imports works the es6 way. See https://github.com/konvajs/konva/issues/598
+        "esModuleInterop": true,
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
         "alwaysStrict": true,
         "strict": true,
-        // "typeRoots" : ["node_modules/@types", "node_modules/konva/types", "node_modules/konva/types/filters", "node_modules/konva/types/shapes"]
-    },
+        "sourceMap": true,
+        "removeComments": false
+    }
 }

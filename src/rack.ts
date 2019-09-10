@@ -1,6 +1,5 @@
 import Mod from './mod';
-import * as Konva from 'konva';
-import * as Pizzicato from 'pizzicato';
+import Konva from 'konva';
 import Cardinal from './cardinal';
 
 export default class Rack {

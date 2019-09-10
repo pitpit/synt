@@ -1,9 +1,8 @@
 import Rack from './rack';
 import IoType from './ioType';
 import Cardinal from './cardinal';
-import * as Konva from 'konva';
-import * as EventEmitter from 'eventemitter3';
-import * as Pizzicato from 'pizzicato';
+import Konva from 'konva';
+import EventEmitter from 'eventemitter3';
 
 export default class Mod {
   x:number = 0;
@@ -194,7 +193,6 @@ export default class Mod {
     if (!this.rack) {
       throw new Error('Mod is not attached to a rack');
     }
-
     const strokeWidth = 5;
 
     group.position({
@@ -275,7 +273,12 @@ export default class Mod {
       strokeWidth: 1,
     });
     dragRect.hide();
-    group.getLayer().add(dragRect);
+
+    const layer = group.getLayer();
+    if (!layer) {
+      throw new Error('No Layer attached to this Konva Group');
+    }
+    layer.add(dragRect);
 
     group.on('mouseover', () => {
       document.body.style.cursor = 'pointer';
@@ -333,7 +336,11 @@ export default class Mod {
         y: this.rack.padding + targetY * this.rack.slotHeight,
       });
 
-      group.getStage().batchDraw();
+      const stage = group.getStage();
+      if (!stage) {
+        throw new Error('No Stage attached to this Konva Group');
+      }
+      stage.batchDraw();
 
       this.events.emit('moved');
     });
@@ -356,7 +363,12 @@ export default class Mod {
           x: this.rack.padding + targetX * this.rack.slotWidth,
           y: this.rack.padding + targetY * this.rack.slotHeight,
         });
-        group.getStage().batchDraw();
+
+        const stage = group.getStage();
+        if (!stage) {
+          throw new Error('No Stage attached to this Konva Group');
+        }
+        stage.batchDraw();
       }
     });
   }

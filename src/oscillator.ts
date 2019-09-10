@@ -1,6 +1,6 @@
 import Mod from './mod';
 import IoType from './ioType';
-import * as Pizzicato from 'pizzicato';
+import Pizzicato from 'pizzicato';
 
 export default class Note extends Mod {
   group: Pizzicato.Group;

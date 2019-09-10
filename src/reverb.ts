@@ -1,10 +1,10 @@
 import Mod from './mod';
 import IoType from './ioType';
-import * as Pizzicato from 'pizzicato';
+import Pizzicato from 'pizzicato';
 
 export default class Reverb extends Mod {
   reverb: Pizzicato.Effects.Reverb;
-  group: Pizzicato.Group|null;
+  group: Pizzicato.Group|null = null;
 
   constructor() {
     super(1, 1, [IoType.IN, IoType.NULL, IoType.OUT]);

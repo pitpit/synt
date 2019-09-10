@@ -1,7 +1,7 @@
 import Mod from './mod';
 import IoType from './ioType';
-import * as Konva from 'konva';
-import * as Pizzicato from 'pizzicato';
+import Konva from 'konva';
+import Pizzicato from 'pizzicato';
 
 export default class Speaker extends Mod {
 
