@@ -68,13 +68,14 @@ export default class Mod {
     // TODO validate link (is the mod linked to another plug of this mod)
     const oppositeCardinal = Cardinal.opposite(cardinal);
 
-    const linked = this._getLinked(cardinal);
+    const linked = this._getCurrentLinked(cardinal);
     if (linked) {
       if (to === linked) {
-        // Already linked, abort
+        // Already linked to Mod {to}, abort
         return this;
       }
 
+      // Unlink current linked Mod to free Io plug
       linked.unlink(oppositeCardinal);
     }
 
@@ -84,20 +85,20 @@ export default class Mod {
     this.events.emit('linked', to, cardinal);
     // console.log('linked', [to, cardinal]);
 
-    // Link target Mod
+    // Link back target Mod
     to.link(oppositeCardinal, this);
 
     return this;
   }
 
   unlink(cardinal: number): Mod {
-    const linked = this._getLinked(cardinal);
+    const linked = this._getCurrentLinked(cardinal);
     if (linked) {
       this.io[cardinal] = null;
       this.events.emit('unlinked', linked, cardinal);
       // console.log('unlinked', [linked, cardinal]);
 
-      // Unlink target Mod
+      // Unlink back target Mod
       linked.unlink(Cardinal.opposite(cardinal));
     }
 
@@ -105,9 +106,10 @@ export default class Mod {
   }
 
   /**
+   * Get current mod linked to Io plug {cardinal}.
    * @private
    */
-  _getLinked(cardinal: number): Mod|null {
+  _getCurrentLinked(cardinal: number): Mod|null {
     if (this.io[cardinal]) {
       return this.io[cardinal];
     }
@@ -117,6 +119,7 @@ export default class Mod {
 
   /**
    * Can the current Mod be linked to the given Mod {to} through the {cardinal} Io plug
+   * TODO check that the input accept the output type (for instance: Pizzicato.Group)
    * @private
    */
   _isLinkable(cardinal: number, to:Mod): boolean {
@@ -186,6 +189,9 @@ export default class Mod {
   }
 
   /**
+   * Draw the Mod.
+   * Override this method to customize your Mod appearance.
+   *
    * TODO move this.x and this.y in rack, draw the dragRect in rack
    * So we don't need anymore to inject rack
    */
@@ -292,12 +298,7 @@ export default class Mod {
       dragRect.moveToTop();
       group.moveToTop();
 
-
-      // Unlink all io plugs
-      this.unlink(Cardinal.NORTH);
-      this.unlink(Cardinal.EAST);
-      this.unlink(Cardinal.SOUTH);
-      this.unlink(Cardinal.WEST);
+      this.events.emit('dragstart');
 
       // Keep previous position to pass it to moved event
       this.fromX = this.x;
@@ -342,7 +343,7 @@ export default class Mod {
       }
       stage.batchDraw();
 
-      this.events.emit('moved');
+      this.events.emit('dragend');
     });
 
     group.on('dragmove', () => {
@@ -373,6 +374,12 @@ export default class Mod {
     });
   }
 
+  /**
+   * Returns the ouput on a specific Output.
+   * Override this method to implement output from your Mod.
+   * If there is only one ouput, you can simply ignore {cardinal} value.
+   * @param cardinal
+   */
   getOutput(cardinal: number): any {
     return null;
   }

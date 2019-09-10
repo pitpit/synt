@@ -9,22 +9,24 @@ export default class Speaker extends Mod {
     super(1, 1, [IoType.IN]);
 
     this.events.on('linked', (mod: Mod, cardinal: number) => {
-
       console.log('speaker linked');
-      const output = mod.getOutput(cardinal);
-      console.log(output);
-      if (output && output instanceof Pizzicato.Group) {
-        output.play();
+      const group = mod.getOutput(cardinal);
+      if (group) {
+        if (!(group !instanceof Pizzicato.Group)) {
+          throw new Error('Uncompatible IO');
+        }
+        group.play();
       }
     });
 
     this.events.on('unlinked', (mod: Mod, cardinal: number) => {
-
       console.log('speaker unlinked');
-      const output = mod.getOutput(cardinal);
-      console.log(output);
-      if (output && output instanceof Pizzicato.Group) {
-        output.stop();
+      const group = mod.getOutput(cardinal);
+      if (group) {
+        if (!(group !instanceof Pizzicato.Group)) {
+          throw new Error('Uncompatible IO');
+        }
+        group.stop();
       }
     });
   }

@@ -19,20 +19,26 @@ export default class Reverb extends Mod {
 
     this.events.on('linked', (mod: Mod, cardinal: number) => {
       console.log('reverb linked');
-      const output = mod.getOutput(cardinal);
-      console.log(output);
-      if (output && output instanceof Pizzicato.Group) {
-        this.group = output;
-        output.addEffect(this.reverb);
+      const group = mod.getOutput(cardinal);
+      console.log(group);
+      if (group) {
+        if (!(group !instanceof Pizzicato.Group)) {
+          throw new Error('Uncompatible IO');
+        }
+        this.group = group;
+        group.addEffect(this.reverb);
       }
     });
 
     this.events.on('unlinked', (mod: Mod, cardinal: number) => {
-      const output = mod.getOutput(cardinal);
+      const group = mod.getOutput(cardinal);
       console.log('reverb unlinked');
-      if (output && output instanceof Pizzicato.Group) {
+      if (group) {
+        if (!(group !instanceof Pizzicato.Group)) {
+          throw new Error('Uncompatible IO');
+        }
         this.group = null;
-        output.removeEffect(this.reverb);
+        group.removeEffect(this.reverb);
       }
     });
   }

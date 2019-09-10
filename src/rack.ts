@@ -125,7 +125,16 @@ export default class Rack {
         draggable: true,
       });
 
-      mod.events.on('moved', () => {
+      mod.events.on('dragstart', () => {
+        // Unlink all io plugs
+        mod.unlink(Cardinal.NORTH);
+        mod.unlink(Cardinal.EAST);
+        mod.unlink(Cardinal.SOUTH);
+        mod.unlink(Cardinal.WEST);
+      });
+
+      mod.events.on('dragend', () => {
+        // Keep internal grid up to date
         this._removeFromGrid(mod)._addToGrid(mod);
 
         // Try to link Mods
@@ -134,6 +143,7 @@ export default class Rack {
         mod.link(Cardinal.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
         mod.link(Cardinal.WEST, this._getFromGrid(mod.x-1, mod.y));
       });
+
       layer.add(group);
       mod.draw(group);
     });
