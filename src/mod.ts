@@ -10,8 +10,6 @@ export default class Mod {
   io:Array<Mod|null> = [];
   rack:Rack|null = null;
   events:EventEmitter = new EventEmitter();
-  fromX:number = 0;
-  fromY:number = 0;
   label:string = '';
   height:number = 1;
   width:number = 1;
@@ -316,12 +314,14 @@ export default class Mod {
       group.add(ioLine);
     }
 
-    // Draw drag and drop shadow
-    // See https://codepen.io/pierrebleroux/pen/gGpvxJ
-
+    // Store the current position
+    // to move the Mod  back to this slot if dropped
     let targetX = this.x;
     let targetY = this.y;
-    const dragRect = new Konva.Rect({
+
+    // Draw drag and drop shadow
+    // See https://codepen.io/pierrebleroux/pen/gGpvxJ
+    const shadow = new Konva.Rect({
       x: targetX * slotWidth + padding + strokeWidth/2,
       y: targetY * slotHeight + padding + strokeWidth/2,
       width:  this.width * slotWidth,
@@ -331,13 +331,13 @@ export default class Mod {
       stroke: '#dddddd',
       strokeWidth: 1,
     });
-    dragRect.hide();
+    shadow.hide();
 
     const layer = group.getLayer();
     if (!layer) {
       throw new Error('No Layer attached to this Konva Group');
     }
-    layer.add(dragRect);
+    layer.add(shadow);
 
     group.on('mouseover', () => {
       document.body.style.cursor = 'pointer';
@@ -347,15 +347,11 @@ export default class Mod {
     });
 
     group.on('dragstart', () => {
-      dragRect.show();
-      dragRect.moveToTop();
+      shadow.show();
+      shadow.moveToTop();
       group.moveToTop();
 
       this.events.emit('dragstart');
-
-      // Keep previous position to pass it to moved event
-      this.fromX = this.x;
-      this.fromY = this.y;
     });
 
     group.on('dragend', () => {
@@ -363,13 +359,14 @@ export default class Mod {
         return;
       }
 
+      // Compute new Mod position
       let x = Math.round(group.x() / slotWidth);
       let y = Math.round(group.y() / slotHeight);
       x = x > 0 ? x : 0;
       y = y > 0 ? y : 0;
 
       if (this.rack.isBusy(x, y, this)) {
-        // Send back mod to prior slot
+        // Move the Mod back to its prior slot
         this.x = targetX;
         this.y = targetY;
       } else {
@@ -382,13 +379,13 @@ export default class Mod {
       });
 
       // Prepare dragRect for next move
-      targetX = this.x;
-      targetY = this.y;
-      dragRect.hide();
-      dragRect.position({
-        x: padding + targetX * slotWidth,
-        y: padding + targetY * slotHeight,
-      });
+      // targetX = this.x;
+      // targetY = this.y;
+      // shadow.hide();
+      // shadow.position({
+      //   x: padding + targetX * slotWidth,
+      //   y: padding + targetY * slotHeight,
+      // });
 
       const stage = group.getStage();
       if (!stage) {
@@ -411,18 +408,24 @@ export default class Mod {
       y = y > 0 ? y : 0;
 
       if (!this.rack.isBusy(x, y, this)) {
+        // Move the shadow to the current slot
+        shadow.position({
+          x: padding + x * slotWidth,
+          y: padding + y * slotHeight,
+        });
+
+        // Store the position, to move the Mod to this position
+        // if next slot is busy
         targetX = x;
         targetY = y;
-        dragRect.position({
-          x: padding + targetX * slotWidth,
-          y: padding + targetY * slotHeight,
-        });
 
         const stage = group.getStage();
         if (!stage) {
           throw new Error('No Stage attached to this Konva Group');
         }
         stage.batchDraw();
+
+        this.events.emit('dragmove');
       }
     });
 

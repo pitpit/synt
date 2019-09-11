@@ -6,6 +6,7 @@ export default class Rack {
   stage: Konva.Stage|null = null;
   slotHeight: number = 100;
   slotWidth: number = 100;
+  strokeWidth: number = 1;
   padding: number = 10;
   mods:Array<Mod> = [];
   grid:Array<Array<Mod|null>> = [];
@@ -66,6 +67,37 @@ export default class Rack {
     return this;
   }
 
+  _drawGrid(layer: Konva.Layer, widthPx: number, heightPx: number): void {
+    for (let x = 0; x <= widthPx; x += this.slotWidth) {
+      const line = new Konva.Line({
+        points: [
+          this.strokeWidth + x + this.padding,
+          this.padding,
+          this.strokeWidth+ x + this.padding,
+          heightPx + this.padding,
+        ],
+        stroke: '#dddddd',
+        strokeWidth: this.strokeWidth,
+        dash: [8, 5],
+      });
+      layer.add(line);
+    }
+    for (let x = 0; x <= heightPx; x += this.slotHeight) {
+      const line = new Konva.Line({
+        points: [
+          this.padding,
+          this.strokeWidth + x + this.padding,
+          widthPx + this.padding,
+          this.strokeWidth+ x + this.padding,
+        ],
+        stroke: '#dddddd',
+        strokeWidth: this.strokeWidth,
+        dash: [8, 5],
+      });
+      layer.add(line);
+    }
+  }
+
   /**
    * Draw the rack and all positionned Mods
    */
@@ -90,36 +122,7 @@ export default class Rack {
 
     const layer = new Konva.Layer();
 
-    // Draw grid
-    const strokeWidth = 1;
-    for (let x = 0; x <= widthPx; x += this.slotWidth) {
-      const line = new Konva.Line({
-        points: [
-          strokeWidth + x + this.padding,
-          this.padding,
-          strokeWidth+ x + this.padding,
-          heightPx + this.padding,
-        ],
-        stroke: '#dddddd',
-        strokeWidth,
-        dash: [8, 5],
-      });
-      layer.add(line);
-    }
-    for (let x = 0; x <= heightPx; x += this.slotHeight) {
-      const line = new Konva.Line({
-        points: [
-          this.padding,
-          strokeWidth + x + this.padding,
-          widthPx + this.padding,
-          strokeWidth+ x + this.padding,
-        ],
-        stroke: '#dddddd',
-        strokeWidth,
-        dash: [8, 5],
-      });
-      layer.add(line);
-    }
+    this._drawGrid(layer, widthPx, heightPx);
 
     this.mods.forEach((mod, index) => {
       const group = new Konva.Group({
