@@ -145,7 +145,7 @@ export default class Rack {
       });
 
       layer.add(group);
-      mod.draw(group);
+      mod.drawBase(group);
     });
     this.stage.add(layer);
 

@@ -7,31 +7,39 @@ import EventEmitter from 'eventemitter3';
 export default class Mod {
   x:number = 0;
   y:number = 0;
-  height:number;
-  width:number;
-  ioTypes:Array<Symbol>;
   io:Array<Mod|null> = [];
   rack:Rack|null = null;
-  events:EventEmitter;
+  events:EventEmitter = new EventEmitter();
   fromX:number = 0;
   fromY:number = 0;
   label:string = '';
+  height:number = 1;
+  width:number = 1;
+  ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL];
+
+  constructor() {
+    this.setup();
+  }
 
   /**
-   *  TODO develop a super method that is not overridable by inherited Mod
+   * @override
    */
-  constructor(
+  setup(): void {}
+
+  configure(
+    label: string,
     width:number = 1,
     height:number = 1,
-    ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL],
-  ) {
+    ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL]
+  ): void {
+    this.label = label;
+
     this.width = width;
     this.height = height;
 
     // TODO validate io
     this.ioTypes = ioTypes;
     this.ioTypes = [...this.ioTypes, ...Array(4-this.ioTypes.length).fill(IoType.NULL)];
-    this.events = new EventEmitter();
   }
 
   /**
@@ -203,7 +211,7 @@ export default class Mod {
    *
    * TODO develop a super method that is not overridable by inherited Mod
    */
-  draw(group:Konva.Group): void {
+  drawBase(group:Konva.Group): void {
     if (!this.rack) {
       throw new Error('Mod is not attached to a rack');
     }
@@ -380,5 +388,12 @@ export default class Mod {
         stage.batchDraw();
       }
     });
+
+    this.draw(group);
   }
+
+  /**
+   * @override
+   */
+  draw(group:Konva.Group): void {}
 }

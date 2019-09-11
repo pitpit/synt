@@ -3,14 +3,11 @@ import IoType from './ioType';
 import Konva from 'konva';
 
 export default class Speaker extends Mod {
-
-  constructor() {
-    super(1, 1, [IoType.IN]);
+  setup() {
+    this.configure('', 1, 1, [IoType.IN]);
   }
 
   draw(group:Konva.Group) {
-    super.draw(group);
-
     const circle = new Konva.Circle({
       x: group.width() / 2,
       y: group.height() / 2,
