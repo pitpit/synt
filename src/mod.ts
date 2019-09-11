@@ -26,11 +26,14 @@ export default class Mod {
    */
   setup(): void {}
 
+  /**
+   * Quickly configure the Mod
+   */
   configure(
     label: string,
     width:number = 1,
     height:number = 1,
-    ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL]
+    ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL],
   ): void {
     this.label = label;
 
@@ -43,10 +46,15 @@ export default class Mod {
   }
 
   /**
-   * Set parent rack and the postion of this Mod on it
+   * Set parent rack of this Mod
    */
-  setRack(rack: Rack, x:number, y:number) {
+  setRack(rack: Rack) {
     this.rack = rack;
+
+    return this;
+  }
+
+  setPosition(x:number, y:number) {
     this.x = x;
     this.y = y;
 
@@ -151,10 +159,13 @@ export default class Mod {
    * Draw input/output type indicator
    * @private
    */
-  _drawIOLine(io: Symbol, cardinal: number, strokeWidth: number): Konva.Line {
-    if (!this.rack) {
-      throw new Error('Mod is not attached to a rack');
-    }
+  _drawIo(
+    io: Symbol,
+    cardinal: number,
+    slotWidth: number,
+    slotHeight: number,
+    strokeWidth: number,
+  ): Konva.Line {
 
     const ioLineStrokeWidth = 5;
     const color = (IoType.IN === io) ? 'green' : ((IoType.OUT === io) ? 'red': 'gray');
@@ -164,29 +175,29 @@ export default class Mod {
       points = [
         strokeWidth,
         strokeWidth + ioLineStrokeWidth/2,
-        this.rack.slotWidth - strokeWidth,
+        slotWidth - strokeWidth,
         strokeWidth+ ioLineStrokeWidth/2,
       ];
     } else if (Cardinal.EAST === cardinal) {
       points = [
-        this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         strokeWidth,
-        this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
-        this.height * this.rack.slotHeight - strokeWidth,
+        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.height * slotHeight - strokeWidth,
       ];
     } else if (Cardinal.SOUTH === cardinal) {  // South
       points = [
         strokeWidth,
-        this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
-        this.rack.slotWidth - strokeWidth,
-        this.width * this.rack.slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        slotWidth - strokeWidth,
+        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
       ];
     } else if (Cardinal.WEST === cardinal) { // West
       points = [
         strokeWidth+ ioLineStrokeWidth/2,
         strokeWidth,
         strokeWidth+ ioLineStrokeWidth/2,
-        this.height * this.rack.slotHeight - strokeWidth,
+        this.height * slotHeight - strokeWidth,
       ];
     } else {
       throw new Error('Invalid cardinal value');
@@ -211,27 +222,29 @@ export default class Mod {
    *
    * TODO develop a super method that is not overridable by inherited Mod
    */
-  drawBase(group:Konva.Group): void {
-    if (!this.rack) {
-      throw new Error('Mod is not attached to a rack');
-    }
+  drawBase(
+    slotWidth: number,
+    slotHeight: number,
+    padding: number,
+    group:Konva.Group,
+  ): void {
     const strokeWidth = 5;
 
     group.position({
-      x: this.x * this.rack.slotWidth + this.rack.padding,
-      y: this.y * this.rack.slotHeight + this.rack.padding,
+      x: this.x * slotWidth + padding,
+      y: this.y * slotHeight + padding,
     });
 
     group.size({
-      width: this.width * this.rack.slotWidth,
-      height: this.height * this.rack.slotHeight,
+      width: this.width * slotWidth,
+      height: this.height * slotHeight,
     });
 
     const rect = new Konva.Rect({
       x: 0 + strokeWidth/2,
       y: 0 + strokeWidth/2,
-      width:  this.width * this.rack.slotWidth - strokeWidth,
-      height: this.height * this.rack.slotHeight - strokeWidth,
+      width:  this.width * slotWidth - strokeWidth,
+      height: this.height * slotHeight - strokeWidth,
       fill: 'white',
       stroke: 'black',
       strokeWidth,
@@ -257,25 +270,49 @@ export default class Mod {
 
     // North IO
     if (IoType.NULL !== this.ioTypes[Cardinal.NORTH]) {
-      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.NORTH], Cardinal.NORTH, strokeWidth);
+      const ioLine = this._drawIo(
+        this.ioTypes[Cardinal.NORTH],
+        Cardinal.NORTH,
+        slotWidth,
+        slotHeight,
+        strokeWidth,
+      );
       group.add(ioLine);
     }
 
     // East IO
     if (IoType.NULL !== this.ioTypes[Cardinal.EAST]) {
-      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.EAST], Cardinal.EAST, strokeWidth);
+      const ioLine = this._drawIo(
+        this.ioTypes[Cardinal.EAST],
+        Cardinal.EAST,
+        slotWidth,
+        slotHeight,
+        strokeWidth,
+      );
       group.add(ioLine);
     }
 
     // South IO
     if (IoType.NULL !== this.ioTypes[Cardinal.SOUTH]) {
-      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.SOUTH], Cardinal.SOUTH, strokeWidth);
+      const ioLine = this._drawIo(
+        this.ioTypes[Cardinal.SOUTH],
+        Cardinal.SOUTH,
+        slotWidth,
+        slotHeight,
+        strokeWidth,
+      );
       group.add(ioLine);
     }
 
     // West IO
     if (IoType.NULL !== this.ioTypes[Cardinal.WEST]) {
-      const ioLine = this._drawIOLine(this.ioTypes[Cardinal.WEST], Cardinal.WEST, strokeWidth);
+      const ioLine = this._drawIo(
+        this.ioTypes[Cardinal.WEST],
+        Cardinal.WEST,
+        slotWidth,
+        slotHeight,
+        strokeWidth,
+      );
       group.add(ioLine);
     }
 
@@ -285,10 +322,10 @@ export default class Mod {
     let targetX = this.x;
     let targetY = this.y;
     const dragRect = new Konva.Rect({
-      x: targetX * this.rack.slotWidth + this.rack.padding + strokeWidth/2,
-      y: targetY * this.rack.slotHeight + this.rack.padding + strokeWidth/2,
-      width:  this.width * this.rack.slotWidth,
-      height: this.height * this.rack.slotHeight,
+      x: targetX * slotWidth + padding + strokeWidth/2,
+      y: targetY * slotHeight + padding + strokeWidth/2,
+      width:  this.width * slotWidth,
+      height: this.height * slotHeight,
       fill: '#cccccc',
       opacity: 0.6,
       stroke: '#dddddd',
@@ -326,8 +363,8 @@ export default class Mod {
         return;
       }
 
-      let x = Math.round(group.x() / this.rack.slotWidth);
-      let y = Math.round(group.y() / this.rack.slotHeight);
+      let x = Math.round(group.x() / slotWidth);
+      let y = Math.round(group.y() / slotHeight);
       x = x > 0 ? x : 0;
       y = y > 0 ? y : 0;
 
@@ -340,8 +377,8 @@ export default class Mod {
         this.y = y;
       }
       group.position({
-        x: this.rack.padding + this.x * this.rack.slotWidth,
-        y: this.rack.padding + this.y * this.rack.slotHeight,
+        x: padding + this.x * slotWidth,
+        y: padding + this.y * slotHeight,
       });
 
       // Prepare dragRect for next move
@@ -349,8 +386,8 @@ export default class Mod {
       targetY = this.y;
       dragRect.hide();
       dragRect.position({
-        x: this.rack.padding + targetX * this.rack.slotWidth,
-        y: this.rack.padding + targetY * this.rack.slotHeight,
+        x: padding + targetX * slotWidth,
+        y: padding + targetY * slotHeight,
       });
 
       const stage = group.getStage();
@@ -368,8 +405,8 @@ export default class Mod {
       }
 
       // Compute new position
-      let x = Math.round(group.x() / this.rack.slotWidth);
-      let y = Math.round(group.y() / this.rack.slotHeight);
+      let x = Math.round(group.x() / slotWidth);
+      let y = Math.round(group.y() / slotHeight);
       x = x > 0 ? x : 0;
       y = y > 0 ? y : 0;
 
@@ -377,8 +414,8 @@ export default class Mod {
         targetX = x;
         targetY = y;
         dragRect.position({
-          x: this.rack.padding + targetX * this.rack.slotWidth,
-          y: this.rack.padding + targetY * this.rack.slotHeight,
+          x: padding + targetX * slotWidth,
+          y: padding + targetY * slotHeight,
         });
 
         const stage = group.getStage();

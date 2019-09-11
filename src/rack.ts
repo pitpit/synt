@@ -17,7 +17,8 @@ export default class Rack {
     if (this.isBusy(x, y, mod)) {
       throw new Error('A mod already stand at this position');
     }
-    mod.setRack(this, x, y);
+    mod.setRack(this);
+    mod.setPosition(x, y);
     // TODO check if not already in rack
     this.mods.push(mod);
     this._addToGrid(mod);
@@ -145,7 +146,7 @@ export default class Rack {
       });
 
       layer.add(group);
-      mod.drawBase(group);
+      mod.drawBase(this.slotWidth, this.slotHeight, this.padding, group);
     });
     this.stage.add(layer);
 
