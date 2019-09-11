@@ -2,7 +2,7 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "target": "es5",
-        // make Pizzicato, Konva et EventEmiiter imports works the es6 way. See https://github.com/konvajs/konva/issues/598
+        // make Konva et EventEmiiter imports works the es6 way. See https://github.com/konvajs/konva/issues/598
         "esModuleInterop": true,
         "allowJs": true,
         "allowSyntheticDefaultImports": true,

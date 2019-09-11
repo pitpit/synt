@@ -17,6 +17,9 @@ export default class Mod {
   fromY:number = 0;
   label:string = '';
 
+  /**
+   *  TODO develop a super method that is not overridable by inherited Mod
+   */
   constructor(
     width:number = 1,
     height:number = 1,
@@ -75,7 +78,7 @@ export default class Mod {
         return this;
       }
 
-      // Unlink current linked Mod to free Io plug
+      // Unlink current linked Mod to free the Io plug
       linked.unlink(oppositeCardinal);
     }
 
@@ -83,7 +86,6 @@ export default class Mod {
 
     // TODO is it necessayre to trigger event ? (we've got a link chain)
     this.events.emit('linked', to, cardinal);
-    // console.log('linked', [to, cardinal]);
 
     // Link back target Mod
     to.link(oppositeCardinal, this);
@@ -94,9 +96,9 @@ export default class Mod {
   unlink(cardinal: number): Mod {
     const linked = this._getCurrentLinked(cardinal);
     if (linked) {
-      this.io[cardinal] = null;
       this.events.emit('unlinked', linked, cardinal);
-      // console.log('unlinked', [linked, cardinal]);
+
+      this.io[cardinal] = null;
 
       // Unlink back target Mod
       linked.unlink(Cardinal.opposite(cardinal));
@@ -117,9 +119,13 @@ export default class Mod {
     return null;
   }
 
+  _isLinked(cardinal: number): boolean {
+    return (null !== this._getCurrentLinked(cardinal));
+  }
+
   /**
    * Can the current Mod be linked to the given Mod {to} through the {cardinal} Io plug
-   * TODO check that the input accept the output type (for instance: Pizzicato.Group)
+   * TODO check that the input accept the output type
    * @private
    */
   _isLinkable(cardinal: number, to:Mod): boolean {
@@ -194,8 +200,10 @@ export default class Mod {
    *
    * TODO move this.x and this.y in rack, draw the dragRect in rack
    * So we don't need anymore to inject rack
+   *
+   * TODO develop a super method that is not overridable by inherited Mod
    */
-  draw(group:Konva.Group) {
+  draw(group:Konva.Group): void {
     if (!this.rack) {
       throw new Error('Mod is not attached to a rack');
     }
@@ -372,15 +380,5 @@ export default class Mod {
         stage.batchDraw();
       }
     });
-  }
-
-  /**
-   * Returns the ouput on a specific Output.
-   * Override this method to implement output from your Mod.
-   * If there is only one ouput, you can simply ignore {cardinal} value.
-   * @param cardinal
-   */
-  getOutput(cardinal: number): any {
-    return null;
   }
 }
