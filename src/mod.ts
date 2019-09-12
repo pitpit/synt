@@ -15,11 +15,15 @@ export default class Mod {
   width:number = 1;
   ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL];
 
-  constructor() {
-    this.setup();
-  }
-
   /**
+   * This method is called when constructing.
+   * You'll have to override it to customize your Mod.
+   *
+   * For instance:
+   *   setup(): void {
+   *     this.configure('a label');
+   *   }
+   *
    * @override
    */
   setup(): void {
@@ -27,7 +31,21 @@ export default class Mod {
   }
 
   /**
-   * Quickly configure the Mod
+   * This method is called when drawing.
+   * You'll have to override it to customize your Mod appearance.
+   *
+   * @override
+   */
+  draw(group:Konva.Group): void {
+    //
+  }
+
+  constructor() {
+    this.setup();
+  }
+
+  /**
+   * Configure the Mod
    */
   configure(
     label: string,
@@ -54,6 +72,12 @@ export default class Mod {
     return this;
   }
 
+  /**
+   * Set position of this Mod.
+   *
+   * @param x Absciss slot number
+   * @param y Ordinate slot number
+   */
   setPosition(x:number, y:number) {
     this.x = x;
     this.y = y;
@@ -62,7 +86,7 @@ export default class Mod {
   }
 
   /**
-   * Get the type of the Io plug
+   * Get the signal type of the Io plug.
    */
   getIoType(cardinal: number): Symbol|null{
     if (this.ioTypes[cardinal]) {
@@ -73,7 +97,7 @@ export default class Mod {
   }
 
   /**
-   * Does the Mod have an Io plug
+   * Does the Mod have an Io plug?
    */
   hasLinkableIo(cardinal: number): boolean {
     return (this.ioTypes[cardinal] !== IoType.NULL);
@@ -84,7 +108,7 @@ export default class Mod {
       return this;
     }
 
-    // TODO validate link (is the mod linked to another plug of this mod)
+    // TODO validate link (is the mod linked to another plug of this mod?)
     const oppositeCardinal = Cardinal.opposite(cardinal);
 
     const linked = this._getCurrentLinked(cardinal);
@@ -125,6 +149,7 @@ export default class Mod {
 
   /**
    * Get current mod linked to Io plug {cardinal}.
+   *
    * @private
    */
   _getCurrentLinked(cardinal: number): Mod|null {
@@ -135,13 +160,20 @@ export default class Mod {
     return null;
   }
 
+  /**
+   * Is the Io plug {cardinal} linked to another Mod?
+   *
+   * @private
+   */
   _isLinked(cardinal: number): boolean {
     return (null !== this._getCurrentLinked(cardinal));
   }
 
   /**
-   * Can the current Mod be linked to the given Mod {to} through the {cardinal} Io plug
+   * Can the current Mod be linked to the given Mod {to} through the {cardinal} Io plug?
+   *
    * TODO check that the input accept the output type
+   *
    * @private
    */
   _isLinkable(cardinal: number, to:Mod): boolean {
@@ -157,6 +189,7 @@ export default class Mod {
 
   /**
    * Draw input/output type indicator
+   *
    * @private
    */
   _drawIo(
@@ -166,7 +199,6 @@ export default class Mod {
     slotHeight: number,
     strokeWidth: number,
   ): Konva.Line {
-
     const ioLineStrokeWidth = 5;
     const color = (IoType.IN === io) ? 'green' : ((IoType.OUT === io) ? 'red': 'gray');
     let points: Array<number> = [0, 0, 0, 0];
@@ -428,12 +460,5 @@ export default class Mod {
     });
 
     this.draw(group);
-  }
-
-  /**
-   * @override
-   */
-  draw(group:Konva.Group): void {
-    //
   }
 }
