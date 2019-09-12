@@ -99,7 +99,8 @@ export default class Rack {
   }
 
   /**
-   * Draw the rack and all positionned Mods
+   * Draw the rack and all positionned Mods.
+   * Attach events.
    */
   init() {
     // Setup container
@@ -149,7 +150,7 @@ export default class Rack {
       });
 
       layer.add(group);
-      mod.drawBase(this.slotWidth, this.slotHeight, this.padding, group);
+      mod.init(this.slotWidth, this.slotHeight, this.padding, group);
     });
     this.stage.add(layer);
 

@@ -1,4 +1,7 @@
 
+/**
+ * Used to represent one of the fourth Io plugs of a Mod.
+ */
 export default class Cardinal {
   static NORTH:number = 0;
   static EAST:number = 1;

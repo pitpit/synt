@@ -22,7 +22,9 @@ export default class Mod {
   /**
    * @override
    */
-  setup(): void {}
+  setup(): void {
+    //
+  }
 
   /**
    * Quickly configure the Mod
@@ -212,15 +214,11 @@ export default class Mod {
   }
 
   /**
-   * Draw the Mod.
-   * Override this method to customize your Mod appearance.
+   * Draw the Mod and attach events.
    *
-   * TODO move this.x and this.y in rack, draw the dragRect in rack
-   * So we don't need anymore to inject rack
-   *
-   * TODO develop a super method that is not overridable by inherited Mod
+   * TODO draw the dragRect in rack, and test isBusi o we don't need anymore to inject rack.
    */
-  drawBase(
+  init(
     slotWidth: number,
     slotHeight: number,
     padding: number,
@@ -315,7 +313,7 @@ export default class Mod {
     }
 
     // Store the current position
-    // to move the Mod  back to this slot if dropped
+    // to move the Mod back to this slot if dropped
     let targetX = this.x;
     let targetY = this.y;
 
@@ -435,5 +433,7 @@ export default class Mod {
   /**
    * @override
    */
-  draw(group:Konva.Group): void {}
+  draw(group:Konva.Group): void {
+    //
+  }
 }
