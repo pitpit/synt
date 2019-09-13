@@ -1,5 +1,5 @@
 import Mod from './mod';
-import PlugType from './plugType';
+import PlugType from './plug-type';
 
 export default class Oscillator extends Mod {
   oscillator: OscillatorNode|null = null;
@@ -10,7 +10,7 @@ export default class Oscillator extends Mod {
     this.configure('osc', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.OUT]);
   }
 
-  getOutput(cardinal: number): any {
+  getOutput(plugPosition: number): any {
     return this.oscillator;
   }
 

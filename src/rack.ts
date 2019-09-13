@@ -1,7 +1,7 @@
 import Mod from './mod';
 import Konva from 'konva';
-import Cardinal from './cardinal';
-import PlugType from './plugType';
+import PlugPosition from './plug-position';
+import PlugType from './plug-type';
 
 export default class Rack {
   audioContext: AudioContext;
@@ -163,10 +163,10 @@ export default class Rack {
         mod.superUnwire(this.audioContext);
 
         // Unlink all io plugs
-        mod.unlink(Cardinal.NORTH);
-        mod.unlink(Cardinal.EAST);
-        mod.unlink(Cardinal.SOUTH);
-        mod.unlink(Cardinal.WEST);
+        mod.unlink(PlugPosition.NORTH);
+        mod.unlink(PlugPosition.EAST);
+        mod.unlink(PlugPosition.SOUTH);
+        mod.unlink(PlugPosition.WEST);
       });
 
       mod.events.on('dragend', () => {
@@ -174,10 +174,10 @@ export default class Rack {
         this._removeFromGrid(mod)._addToGrid(mod);
 
         // Try to link Mods
-        mod.link(Cardinal.NORTH, this._getFromGrid(mod.x, mod.y - 1));
-        mod.link(Cardinal.EAST, this._getFromGrid(mod.x+1, mod.y));
-        mod.link(Cardinal.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
-        mod.link(Cardinal.WEST, this._getFromGrid(mod.x-1, mod.y));
+        mod.link(PlugPosition.NORTH, this._getFromGrid(mod.x, mod.y - 1));
+        mod.link(PlugPosition.EAST, this._getFromGrid(mod.x+1, mod.y));
+        mod.link(PlugPosition.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
+        mod.link(PlugPosition.WEST, this._getFromGrid(mod.x-1, mod.y));
 
         mod.superWire(this.audioContext);
       });

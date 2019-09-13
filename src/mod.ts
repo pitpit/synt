@@ -1,6 +1,6 @@
 import Rack from './rack';
-import PlugType from './plugType';
-import Cardinal from './cardinal';
+import PlugType from './plug-type';
+import PlugPosition from './plug-position';
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
 
@@ -44,11 +44,11 @@ export default class Mod {
   }
 
   /**
-   * What output does the current Mod returns on its plug {cardinal}.
+   * What output does the current Mod returns on its plug {plugPosition}.
    *
    * @override
    */
-  getOutput(cardinal: number): any {
+  getOutput(plugPosition: number): any {
     return null;
   }
 
@@ -96,9 +96,9 @@ export default class Mod {
   /**
    * Get the signal type of the plug.
    */
-  getPlugType(cardinal: number): Symbol|null{
-    if (this.plugTypes[cardinal]) {
-      return this.plugTypes[cardinal];
+  getPlugType(plugPosition: number): Symbol|null{
+    if (this.plugTypes[plugPosition]) {
+      return this.plugTypes[plugPosition];
     }
 
     return null;
@@ -107,19 +107,19 @@ export default class Mod {
   /**
    * Does the Mod have an plug?
    */
-  hasLinkablePlug(cardinal: number): boolean {
-    return (this.plugTypes[cardinal] !== PlugType.NULL);
+  hasLinkablePlug(plugPosition: number): boolean {
+    return (this.plugTypes[plugPosition] !== PlugType.NULL);
   }
 
-  link(cardinal: number, to: Mod|null): Mod {
-    if (!to || !this._isLinkable(cardinal, to)) {
+  link(plugPosition: number, to: Mod|null): Mod {
+    if (!to || !this._isLinkable(plugPosition, to)) {
       return this;
     }
 
     // TODO validate link (is the mod linked to another plug of this mod?)
-    const oppositeCardinal = Cardinal.opposite(cardinal);
+    const oppositePlugPosition = PlugPosition.opposite(plugPosition);
 
-    const linked = this._getLinkedMod(cardinal);
+    const linked = this._getLinkedMod(plugPosition);
     if (linked) {
       if (to === linked) {
         // Already linked to Mod {to}, abort
@@ -127,68 +127,68 @@ export default class Mod {
       }
 
       // Unlink current linked Mod to free the plug
-      linked.unlink(oppositeCardinal);
+      linked.unlink(oppositePlugPosition);
     }
 
-    this.plugs[cardinal] = to;
+    this.plugs[plugPosition] = to;
 
     // TODO is it necessayre to trigger event ? (we've got a link chain)
-    this.events.emit('linked', to, cardinal);
+    this.events.emit('linked', to, plugPosition);
 
     // Link back target Mod
-    to.link(oppositeCardinal, this);
+    to.link(oppositePlugPosition, this);
 
     return this;
   }
 
-  unlink(cardinal: number): Mod {
-    const linked = this._getLinkedMod(cardinal);
+  unlink(plugPosition: number): Mod {
+    const linked = this._getLinkedMod(plugPosition);
     if (linked) {
-      this.events.emit('unlinked', linked, cardinal);
+      this.events.emit('unlinked', linked, plugPosition);
 
-      this.plugs[cardinal] = null;
+      this.plugs[plugPosition] = null;
 
       // Unlink back target Mod
-      linked.unlink(Cardinal.opposite(cardinal));
+      linked.unlink(PlugPosition.opposite(plugPosition));
     }
 
     return this;
   }
 
   /**
-   * Get current mod linked to plug {cardinal}.
+   * Get current mod linked to plug {plugPosition}.
    *
    * @private
    */
-  _getLinkedMod(cardinal: number): Mod|null {
-    if (this.plugs[cardinal]) {
-      return this.plugs[cardinal];
+  _getLinkedMod(plugPosition: number): Mod|null {
+    if (this.plugs[plugPosition]) {
+      return this.plugs[plugPosition];
     }
 
     return null;
   }
 
   /**
-   * Is the plug {cardinal} linked to another Mod?
+   * Is the plug {plugPosition} linked to another Mod?
    *
    * @private
    */
-  _isLinked(cardinal: number): boolean {
-    return (null !== this._getLinkedMod(cardinal));
+  _isLinked(plugPosition: number): boolean {
+    return (null !== this._getLinkedMod(plugPosition));
   }
 
   /**
-   * Can the current Mod be linked to the given Mod {to} through the {cardinal} plug?
+   * Can the current Mod be linked to the given Mod {to} through the {plugPosition} plug?
    *
    * TODO check that the input accept the output type
    *
    * @private
    */
-  _isLinkable(cardinal: number, to:Mod): boolean {
-    const oppositeCardinal = Cardinal.opposite(cardinal);
-    if (this.hasLinkablePlug(cardinal)
-    && to.hasLinkablePlug(oppositeCardinal)
-    && this.getPlugType(cardinal) !== to.getPlugType(oppositeCardinal)) {
+  _isLinkable(plugPosition: number, to:Mod): boolean {
+    const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+    if (this.hasLinkablePlug(plugPosition)
+    && to.hasLinkablePlug(oppositePlugPosition)
+    && this.getPlugType(plugPosition) !== to.getPlugType(oppositePlugPosition)) {
       return true;
     }
 
@@ -202,7 +202,7 @@ export default class Mod {
    */
   _drawPlug(
     io: Symbol,
-    cardinal: number,
+    plugPosition: number,
     slotWidth: number,
     slotHeight: number,
     strokeWidth: number,
@@ -211,28 +211,28 @@ export default class Mod {
     const color = (PlugType.IN === io) ? 'green' : ((PlugType.OUT === io) ? 'red': 'gray');
     let points: Array<number> = [0, 0, 0, 0];
 
-    if (Cardinal.NORTH === cardinal) {
+    if (PlugPosition.NORTH === plugPosition) {
       points = [
         strokeWidth,
         strokeWidth + ioLineStrokeWidth/2,
         slotWidth - strokeWidth,
         strokeWidth+ ioLineStrokeWidth/2,
       ];
-    } else if (Cardinal.EAST === cardinal) {
+    } else if (PlugPosition.EAST === plugPosition) {
       points = [
         this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         strokeWidth,
         this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         this.height * slotHeight - strokeWidth,
       ];
-    } else if (Cardinal.SOUTH === cardinal) {  // South
+    } else if (PlugPosition.SOUTH === plugPosition) {  // South
       points = [
         strokeWidth,
         this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
         slotWidth - strokeWidth,
         this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
       ];
-    } else if (Cardinal.WEST === cardinal) { // West
+    } else if (PlugPosition.WEST === plugPosition) { // West
       points = [
         strokeWidth+ ioLineStrokeWidth/2,
         strokeWidth,
@@ -240,7 +240,7 @@ export default class Mod {
         this.height * slotHeight - strokeWidth,
       ];
     } else {
-      throw new Error('Invalid cardinal value');
+      throw new Error('Invalid plugPosition value');
     }
 
     const ioLine = new Konva.Line({
@@ -304,11 +304,11 @@ export default class Mod {
       group.add(text);
     }
 
-    this.plugTypes.forEach((plugType, cardinal) => {
+    this.plugTypes.forEach((plugType, plugPosition) => {
       if (PlugType.NULL !== plugType) {
         const ioLine = this._drawPlug(
           plugType,
-          cardinal,
+          plugPosition,
           slotWidth,
           slotHeight,
           strokeWidth,
@@ -436,19 +436,19 @@ export default class Mod {
   }
 
   /**
-   * Get ouput coming from Mod linked to {cardinal}, if linked.
+   * Get ouput coming from Mod linked to {plugPosition}, if linked.
    */
-  getInput(cardinal: number): any|null {
-    if (PlugType.IN !== this.getPlugType(cardinal)) {
+  getInput(plugPosition: number): any|null {
+    if (PlugType.IN !== this.getPlugType(plugPosition)) {
       return null;
     }
 
-    const mod = this._getLinkedMod(cardinal);
+    const mod = this._getLinkedMod(plugPosition);
     if (!mod) {
       return null;
     }
 
-    return mod.getOutput(Cardinal.opposite(cardinal));
+    return mod.getOutput(PlugPosition.opposite(plugPosition));
   }
 
   /**
@@ -457,9 +457,9 @@ export default class Mod {
   superWire(audioContext:AudioContext): void {
     this.wire(audioContext);
 
-    this.plugTypes.forEach((plugType, cardinal) => {
+    this.plugTypes.forEach((plugType, plugPosition) => {
       if (PlugType.OUT === plugType) {
-        const mod = this._getLinkedMod(cardinal);
+        const mod = this._getLinkedMod(plugPosition);
         if (mod) {
           mod.superWire(audioContext);
         }
@@ -468,9 +468,9 @@ export default class Mod {
   }
 
   superUnwire(audioContext:AudioContext): void {
-    this.plugTypes.forEach((plugType, cardinal) => {
+    this.plugTypes.forEach((plugType, plugPosition) => {
       if (PlugType.OUT === plugType) {
-        const mod = this._getLinkedMod(cardinal);
+        const mod = this._getLinkedMod(plugPosition);
         if (mod) {
           mod.superUnwire(audioContext);
         }

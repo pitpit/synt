@@ -5,4 +5,6 @@
 
 ## TODO
 
-Remove Mod:setRack
+* Remove Mod:setRack
+* Add a file player Mod
+* Add a control knob Mod

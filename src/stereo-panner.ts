@@ -1,6 +1,6 @@
 import Mod from './mod';
-import PlugType from './plugType';
-import Cardinal from './cardinal';
+import PlugType from './plug-type';
+import PlugPosition from './plug-position';
 
 export default class StereoPanner extends Mod {
   panner: StereoPannerNode|null = null;
@@ -11,7 +11,7 @@ export default class StereoPanner extends Mod {
     this.configure('panner', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
-  getOutput(cardinal: number): any {
+  getOutput(plugPosition: number): any {
     return this.panner;
   }
 
@@ -19,7 +19,7 @@ export default class StereoPanner extends Mod {
     this.panner = audioContext.createStereoPanner();
     this.panner.pan.value = -1;
 
-    const output = this.getInput(Cardinal.NORTH);
+    const output = this.getInput(PlugPosition.NORTH);
     if (output instanceof AudioNode) {
       output.connect(this.panner);
     }
@@ -27,7 +27,7 @@ export default class StereoPanner extends Mod {
 
   unwire(audioContext:AudioContext): void {
     if (this.panner) {
-      const output = this.getInput(Cardinal.NORTH);
+      const output = this.getInput(PlugPosition.NORTH);
       if (output instanceof AudioNode) {
         output.disconnect(this.panner);
       }

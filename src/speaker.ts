@@ -1,7 +1,7 @@
 import Mod from './mod';
-import PlugType from './plugType';
+import PlugType from './plug-type';
 import Konva from 'konva';
-import Cardinal from './cardinal';
+import PlugPosition from './plug-position';
 
 export default class Speaker extends Mod {
   constructor() {
@@ -35,7 +35,7 @@ export default class Speaker extends Mod {
 
   unwire(audioContext:AudioContext): void {
     // Get output from input plug
-    const output = this.getInput(Cardinal.NORTH);
+    const output = this.getInput(PlugPosition.NORTH);
     if (output instanceof AudioNode) {
       output.disconnect(audioContext.destination);
     }
@@ -43,7 +43,7 @@ export default class Speaker extends Mod {
 
   wire(audioContext:AudioContext): void {
     // Get output from input plug
-    const output = this.getInput(Cardinal.NORTH);
+    const output = this.getInput(PlugPosition.NORTH);
     if (output instanceof AudioNode) {
       output.connect(audioContext.destination);
     }

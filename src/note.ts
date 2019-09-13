@@ -1,5 +1,5 @@
 import Mod from './mod';
-import PlugType from './plugType';
+import PlugType from './plug-type';
 
 export default class Note extends Mod {
   constructor() {
