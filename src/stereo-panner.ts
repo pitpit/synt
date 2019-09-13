@@ -1,5 +1,5 @@
 import Mod from './mod';
-import IoType from './ioType';
+import PlugType from './plugType';
 import Cardinal from './cardinal';
 
 export default class StereoPanner extends Mod {
@@ -8,7 +8,7 @@ export default class StereoPanner extends Mod {
   constructor() {
     super();
 
-    this.configure('panner', 1, 1, [IoType.IN, IoType.NULL, IoType.OUT]);
+    this.configure('panner', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
   getOutput(cardinal: number): any {

@@ -1,5 +1,5 @@
 import Rack from './rack';
-import IoType from './ioType';
+import PlugType from './plugType';
 import Cardinal from './cardinal';
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
@@ -7,13 +7,13 @@ import EventEmitter from 'eventemitter3';
 export default class Mod {
   x:number = 0;
   y:number = 0;
-  io:Array<Mod|null> = [];
+  plugs:Array<Mod|null> = [];
   rack:Rack|null = null;
   events:EventEmitter = new EventEmitter();
   label:string = '';
   height:number = 1;
   width:number = 1;
-  ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL];
+  plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL];
 
   /**
    * This method is called when drawing.
@@ -59,7 +59,7 @@ export default class Mod {
     label: string,
     width:number = 1,
     height:number = 1,
-    ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL],
+    plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
   ): void {
     this.label = label;
 
@@ -67,8 +67,8 @@ export default class Mod {
     this.height = height;
 
     // TODO validate io
-    this.ioTypes = ioTypes;
-    this.ioTypes = [...this.ioTypes, ...Array(4-this.ioTypes.length).fill(IoType.NULL)];
+    this.plugTypes = plugTypes;
+    this.plugTypes = [...this.plugTypes, ...Array(4-this.plugTypes.length).fill(PlugType.NULL)];
   }
 
   /**
@@ -94,21 +94,21 @@ export default class Mod {
   }
 
   /**
-   * Get the signal type of the Io plug.
+   * Get the signal type of the plug.
    */
-  getIoType(cardinal: number): Symbol|null{
-    if (this.ioTypes[cardinal]) {
-      return this.ioTypes[cardinal];
+  getPlugType(cardinal: number): Symbol|null{
+    if (this.plugTypes[cardinal]) {
+      return this.plugTypes[cardinal];
     }
 
     return null;
   }
 
   /**
-   * Does the Mod have an Io plug?
+   * Does the Mod have an plug?
    */
-  hasLinkableIo(cardinal: number): boolean {
-    return (this.ioTypes[cardinal] !== IoType.NULL);
+  hasLinkablePlug(cardinal: number): boolean {
+    return (this.plugTypes[cardinal] !== PlugType.NULL);
   }
 
   link(cardinal: number, to: Mod|null): Mod {
@@ -126,11 +126,11 @@ export default class Mod {
         return this;
       }
 
-      // Unlink current linked Mod to free the Io plug
+      // Unlink current linked Mod to free the plug
       linked.unlink(oppositeCardinal);
     }
 
-    this.io[cardinal] = to;
+    this.plugs[cardinal] = to;
 
     // TODO is it necessayre to trigger event ? (we've got a link chain)
     this.events.emit('linked', to, cardinal);
@@ -146,7 +146,7 @@ export default class Mod {
     if (linked) {
       this.events.emit('unlinked', linked, cardinal);
 
-      this.io[cardinal] = null;
+      this.plugs[cardinal] = null;
 
       // Unlink back target Mod
       linked.unlink(Cardinal.opposite(cardinal));
@@ -156,20 +156,20 @@ export default class Mod {
   }
 
   /**
-   * Get current mod linked to Io plug {cardinal}.
+   * Get current mod linked to plug {cardinal}.
    *
    * @private
    */
   _getLinkedMod(cardinal: number): Mod|null {
-    if (this.io[cardinal]) {
-      return this.io[cardinal];
+    if (this.plugs[cardinal]) {
+      return this.plugs[cardinal];
     }
 
     return null;
   }
 
   /**
-   * Is the Io plug {cardinal} linked to another Mod?
+   * Is the plug {cardinal} linked to another Mod?
    *
    * @private
    */
@@ -178,7 +178,7 @@ export default class Mod {
   }
 
   /**
-   * Can the current Mod be linked to the given Mod {to} through the {cardinal} Io plug?
+   * Can the current Mod be linked to the given Mod {to} through the {cardinal} plug?
    *
    * TODO check that the input accept the output type
    *
@@ -186,9 +186,9 @@ export default class Mod {
    */
   _isLinkable(cardinal: number, to:Mod): boolean {
     const oppositeCardinal = Cardinal.opposite(cardinal);
-    if (this.hasLinkableIo(cardinal)
-    && to.hasLinkableIo(oppositeCardinal)
-    && this.getIoType(cardinal) !== to.getIoType(oppositeCardinal)) {
+    if (this.hasLinkablePlug(cardinal)
+    && to.hasLinkablePlug(oppositeCardinal)
+    && this.getPlugType(cardinal) !== to.getPlugType(oppositeCardinal)) {
       return true;
     }
 
@@ -200,7 +200,7 @@ export default class Mod {
    *
    * @private
    */
-  _drawIo(
+  _drawPlug(
     io: Symbol,
     cardinal: number,
     slotWidth: number,
@@ -208,7 +208,7 @@ export default class Mod {
     strokeWidth: number,
   ): Konva.Line {
     const ioLineStrokeWidth = 5;
-    const color = (IoType.IN === io) ? 'green' : ((IoType.OUT === io) ? 'red': 'gray');
+    const color = (PlugType.IN === io) ? 'green' : ((PlugType.OUT === io) ? 'red': 'gray');
     let points: Array<number> = [0, 0, 0, 0];
 
     if (Cardinal.NORTH === cardinal) {
@@ -304,10 +304,10 @@ export default class Mod {
       group.add(text);
     }
 
-    this.ioTypes.forEach((ioType, cardinal) => {
-      if (IoType.NULL !== ioType) {
-        const ioLine = this._drawIo(
-          ioType,
+    this.plugTypes.forEach((plugType, cardinal) => {
+      if (PlugType.NULL !== plugType) {
+        const ioLine = this._drawPlug(
+          plugType,
           cardinal,
           slotWidth,
           slotHeight,
@@ -439,7 +439,7 @@ export default class Mod {
    * Get ouput coming from Mod linked to {cardinal}, if linked.
    */
   getInput(cardinal: number): any|null {
-    if (IoType.IN !== this.getIoType(cardinal)) {
+    if (PlugType.IN !== this.getPlugType(cardinal)) {
       return null;
     }
 
@@ -452,13 +452,13 @@ export default class Mod {
   }
 
   /**
-   * Wire current Mod and trigger wiring on every Mods linked to each Io plugs.
+   * Wire current Mod and trigger wiring on every Mods linked to each plug.
    */
   superWire(audioContext:AudioContext): void {
     this.wire(audioContext);
 
-    this.ioTypes.forEach((ioType, cardinal) => {
-      if (IoType.OUT === ioType) {
+    this.plugTypes.forEach((plugType, cardinal) => {
+      if (PlugType.OUT === plugType) {
         const mod = this._getLinkedMod(cardinal);
         if (mod) {
           mod.superWire(audioContext);
@@ -468,8 +468,8 @@ export default class Mod {
   }
 
   superUnwire(audioContext:AudioContext): void {
-    this.ioTypes.forEach((ioType, cardinal) => {
-      if (IoType.OUT === ioType) {
+    this.plugTypes.forEach((plugType, cardinal) => {
+      if (PlugType.OUT === plugType) {
         const mod = this._getLinkedMod(cardinal);
         if (mod) {
           mod.superUnwire(audioContext);

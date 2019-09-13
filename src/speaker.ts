@@ -1,5 +1,5 @@
 import Mod from './mod';
-import IoType from './ioType';
+import PlugType from './plugType';
 import Konva from 'konva';
 import Cardinal from './cardinal';
 
@@ -7,7 +7,7 @@ export default class Speaker extends Mod {
   constructor() {
     super();
 
-    this.configure('', 1, 1, [IoType.IN]);
+    this.configure('', 1, 1, [PlugType.IN]);
   }
 
   draw(group:Konva.Group) {
@@ -34,7 +34,7 @@ export default class Speaker extends Mod {
   }
 
   unwire(audioContext:AudioContext): void {
-    // Get output from input Io
+    // Get output from input plug
     const output = this.getInput(Cardinal.NORTH);
     if (output instanceof AudioNode) {
       output.disconnect(audioContext.destination);
@@ -42,7 +42,7 @@ export default class Speaker extends Mod {
   }
 
   wire(audioContext:AudioContext): void {
-    // Get output from input Io
+    // Get output from input plug
     const output = this.getInput(Cardinal.NORTH);
     if (output instanceof AudioNode) {
       output.connect(audioContext.destination);

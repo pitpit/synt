@@ -1,5 +1,5 @@
 import Mod from './mod';
-import IoType from './ioType';
+import PlugType from './plugType';
 import Cardinal from './cardinal';
 
 export default class Flanger extends Mod {
@@ -8,7 +8,7 @@ export default class Flanger extends Mod {
   constructor() {
     super();
 
-    this.configure('flanger', 1, 1, [IoType.IN, IoType.NULL, IoType.OUT]);
+    this.configure('flanger', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
   getOutput(cardinal: number): any {

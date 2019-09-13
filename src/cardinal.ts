@@ -1,6 +1,6 @@
 
 /**
- * Used to represent one of the fourth Io plugs of a Mod.
+ * Used to represent one of the fourth plugs of a Mod.
  */
 export default class Cardinal {
   static NORTH:number = 0;

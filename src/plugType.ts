@@ -1,7 +1,7 @@
 /**
- * Used to represent type of an Io plug of a Mod.
+ * Used to represent type of a plug.
  */
-export default class IoType {
+export default class PlugType {
   static IN:symbol = Symbol('in');
   static OUT:symbol = Symbol('out');
   static NULL:symbol = Symbol('null');

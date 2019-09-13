@@ -1,7 +1,7 @@
 import Mod from './mod';
 import Konva from 'konva';
 import Cardinal from './cardinal';
-import IoType from './ioType';
+import PlugType from './plugType';
 
 export default class Rack {
   audioContext: AudioContext;
