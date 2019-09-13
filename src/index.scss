@@ -1,5 +1,17 @@
 @import '~tingle.js/dist/tingle.css';
 @import url('https://fonts.googleapis.com/css?family=Rubik:400,500&display=swap');
+
+
+$black: #111;
+$graylight: #ddd;
+$white: #fff;
+
+$btnColor: $black;
+$btnBackgroundColor: $graylight;
+$btnPrimaryBackgroundColor: $white;
+$btnHoverColor: $white;
+$btnHoverBackgroundColor: $black;
+
 body {
   font-family: 'Rubik',Helvetica,sans-serif;
   font-size: 16px;
@@ -21,31 +33,31 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(10px);
 
   .tingle-btn {
-    border: 2px solid #bbb;
+    border: 2px solid $btnBackgroundColor;
     border-radius: 3px;
     font-weight: 500;
-    background: #bbb;
-    color: #111;
+    background: $btnBackgroundColor;
+    color: $btnColor;
     font-size: 16px;
     padding: 8px 12px;
 
     &.tingle-btn--primary {
-      background-color: #fff;
-      border-color: #111;
+      background-color: $btnPrimaryBackgroundColor;
+      border-color: $btnBackgroundColor;
     }
 
     &.tingle-btn--danger {
-      background-color: #bbb;
+      background-color: $btnBackgroundColor;
     }
 
     &.tingle-btn--default {
-      background-color: #bbb;
+      background-color: $btnBackgroundColor;
     }
 
     &:hover {
-      background-color: #111;
-      border-color: #111;
-      color: #fff;
+      background-color: $btnHoverBackgroundColor;
+      border-color: $btnHoverBackgroundColor;
+      color: $btnHoverColor;
     }
   }
 
