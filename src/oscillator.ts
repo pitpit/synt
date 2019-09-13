@@ -10,6 +10,13 @@ export default class Oscillator extends Mod {
     this.configure('osc', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.OUT]);
   }
 
+  getOptions(): {} {
+    return {
+      type: ['sine', 'square', 'sawtooth', 'triangle'],
+      frequency: 440
+    }
+  }
+
   getOutput(plugPosition: number): any {
     return this.oscillator;
   }

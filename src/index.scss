@@ -8,7 +8,9 @@ $white: #fff;
 
 $btnColor: $black;
 $btnBackgroundColor: $graylight;
+$btnBorderColor: $graylight;
 $btnPrimaryBackgroundColor: $white;
+$btnPrimaryBorderColor: $black;
 $btnHoverColor: $white;
 $btnHoverBackgroundColor: $black;
 
@@ -28,30 +30,23 @@ h1, h2, h3, h4, h5, h6 {
 
 // MODAL
 .tingle-modal {
+
   background: rgba(255, 255, 255, 0.25);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 
   .tingle-btn {
-    border: 2px solid $btnBackgroundColor;
+    border: 2px solid $btnBorderColor;
     border-radius: 3px;
     font-weight: 500;
-    background: $btnBackgroundColor;
+    background-color: $btnBackgroundColor;
     color: $btnColor;
     font-size: 16px;
     padding: 8px 12px;
 
     &.tingle-btn--primary {
       background-color: $btnPrimaryBackgroundColor;
-      border-color: $btnBackgroundColor;
-    }
-
-    &.tingle-btn--danger {
-      background-color: $btnBackgroundColor;
-    }
-
-    &.tingle-btn--default {
-      background-color: $btnBackgroundColor;
+      border-color: $btnPrimaryBorderColor;
     }
 
     &:hover {
@@ -64,9 +59,11 @@ h1, h2, h3, h4, h5, h6 {
   .tingle-modal-box {
     border: 10px solid rgb(17, 17, 17);
     border-radius: 4px;
+
     .tingle-modal-box__content {
       padding: 20px;
     }
+
     .tingle-modal-box__footer {
       padding: 0 20px 20px 20px;
       background: none;

@@ -1,7 +1,7 @@
 import Mod from './mod';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
-import tingle from 'tingle.js';
+import Modal from './modal';
 
 export default class Rack {
   audioContext: AudioContext;
@@ -176,19 +176,7 @@ export default class Rack {
       });
 
       mod.events.on('dblclick', () => {
-        const modal = new tingle.modal({
-          footer: true,
-          stickyFooter: false,
-          closeMethods: ['overlay', 'escape']
-        });
-        modal.addFooterBtn('Save', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => {
-          modal.close();
-        });
-        modal.addFooterBtn('Cancel', 'tingle-btn tingle-btn--pull-right', () => {
-          modal.close();
-        });
-        modal.setContent('<h1>Title</h1><p>ok</p>');
-        modal.open();
+        new Modal().open();
       });
 
       layer.add(group);
