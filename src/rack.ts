@@ -1,7 +1,7 @@
 import Mod from './mod';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
-import PlugType from './plug-type';
+import tingle from 'tingle.js';
 
 export default class Rack {
   audioContext: AudioContext;
@@ -146,19 +146,12 @@ export default class Rack {
 
     this._drawGrid(layer, widthPx, heightPx);
 
-    // let audioContext:AudioContext;
-
     this.mods.forEach((mod, index) => {
       const group = new Konva.Group({
         draggable: true,
       });
 
       mod.events.on('dragstart', () => {
-        // this.audioContext.resume();
-
-        // if (!audioContext) {
-        //   audioContext = new AudioContext();
-        // }
 
         mod.superUnwire(this.audioContext);
 
@@ -180,6 +173,22 @@ export default class Rack {
         mod.link(PlugPosition.WEST, this._getFromGrid(mod.x-1, mod.y));
 
         mod.superWire(this.audioContext);
+      });
+
+      mod.events.on('dblclick', () => {
+        const modal = new tingle.modal({
+          footer: true,
+          stickyFooter: false,
+          closeMethods: ['overlay', 'escape']
+        });
+        modal.addFooterBtn('Save', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => {
+          modal.close();
+        });
+        modal.addFooterBtn('Cancel', 'tingle-btn tingle-btn--pull-right', () => {
+          modal.close();
+        });
+        modal.setContent('<h1>Title</h1><p>ok</p>');
+        modal.open();
       });
 
       layer.add(group);

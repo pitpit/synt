@@ -432,6 +432,11 @@ export default class Mod {
       }
     });
 
+    group.on('dblclick', () => {
+      console.log('dlbclick');
+      this.events.emit('dblclick');
+    });
+
     this.draw(group);
   }
 
