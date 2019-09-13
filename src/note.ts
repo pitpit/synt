@@ -2,7 +2,8 @@ import Mod from './mod';
 import IoType from './ioType';
 
 export default class Note extends Mod {
-  setup() {
+  constructor() {
+    super();
     this.configure('note', 1, 1, [IoType.NULL, IoType.NULL, IoType.OUT]);
   }
 }

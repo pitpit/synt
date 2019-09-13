@@ -3,20 +3,23 @@ import Speaker from './speaker';
 // import Note from './note';
 import Oscillator from './oscillator';
 import Reverb from './reverb';
+import Gate from './gate';
 
 const rack = new Rack();
 const speaker1 = new Speaker();
 const reverb = new Reverb();
+const gate = new Gate();
 
 
 // const note1 = new Note(3, 0);
 const oscillator = new Oscillator();
 // rack.mods.push(speaker2);
 rack.add(reverb, 0, 0);
+rack.add(gate, 4, 4);
 rack.add(oscillator, 1, 1);
 rack.add(speaker1, 2, 2);
 // rack.add(note1);
-rack.init();
+rack.draw();
 
 // if (module.hot) {
 //     module.hot.accept('index.js', function() {

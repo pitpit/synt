@@ -16,21 +16,6 @@ export default class Mod {
   ioTypes:Array<Symbol> = [IoType.NULL, IoType.NULL, IoType.NULL, IoType.NULL];
 
   /**
-   * This method is called when constructing.
-   * You'll have to override it to customize your Mod.
-   *
-   * For instance:
-   *   setup(): void {
-   *     this.configure('a label');
-   *   }
-   *
-   * @override
-   */
-  setup(): void {
-    //
-  }
-
-  /**
    * This method is called when drawing.
    * You'll have to override it to customize your Mod appearance.
    *
@@ -40,8 +25,31 @@ export default class Mod {
     //
   }
 
-  constructor() {
-    this.setup();
+  /**
+   * This method is called when a Mod is linked to your Mod.
+   *
+   * @override
+   */
+  wire(audioContext:AudioContext): void {
+    //
+  }
+
+  /**
+   * This method is called when a Mod is unlinked from your Mod.
+   *
+   * @override
+   */
+  unwire(audioContext:AudioContext): void {
+    //
+  }
+
+  /**
+   * What output does the current Mod returns on its plug {cardinal}.
+   *
+   * @override
+   */
+  getOutput(cardinal: number): any {
+    return null;
   }
 
   /**
@@ -111,7 +119,7 @@ export default class Mod {
     // TODO validate link (is the mod linked to another plug of this mod?)
     const oppositeCardinal = Cardinal.opposite(cardinal);
 
-    const linked = this._getCurrentLinked(cardinal);
+    const linked = this._getLinkedMod(cardinal);
     if (linked) {
       if (to === linked) {
         // Already linked to Mod {to}, abort
@@ -134,7 +142,7 @@ export default class Mod {
   }
 
   unlink(cardinal: number): Mod {
-    const linked = this._getCurrentLinked(cardinal);
+    const linked = this._getLinkedMod(cardinal);
     if (linked) {
       this.events.emit('unlinked', linked, cardinal);
 
@@ -152,7 +160,7 @@ export default class Mod {
    *
    * @private
    */
-  _getCurrentLinked(cardinal: number): Mod|null {
+  _getLinkedMod(cardinal: number): Mod|null {
     if (this.io[cardinal]) {
       return this.io[cardinal];
     }
@@ -166,7 +174,7 @@ export default class Mod {
    * @private
    */
   _isLinked(cardinal: number): boolean {
-    return (null !== this._getCurrentLinked(cardinal));
+    return (null !== this._getLinkedMod(cardinal));
   }
 
   /**
@@ -250,7 +258,7 @@ export default class Mod {
    *
    * TODO draw the dragRect in rack, and test isBusi o we don't need anymore to inject rack.
    */
-  init(
+  superDraw(
     slotWidth: number,
     slotHeight: number,
     padding: number,
@@ -296,53 +304,18 @@ export default class Mod {
       group.add(text);
     }
 
-    // North IO
-    if (IoType.NULL !== this.ioTypes[Cardinal.NORTH]) {
-      const ioLine = this._drawIo(
-        this.ioTypes[Cardinal.NORTH],
-        Cardinal.NORTH,
-        slotWidth,
-        slotHeight,
-        strokeWidth,
-      );
-      group.add(ioLine);
-    }
-
-    // East IO
-    if (IoType.NULL !== this.ioTypes[Cardinal.EAST]) {
-      const ioLine = this._drawIo(
-        this.ioTypes[Cardinal.EAST],
-        Cardinal.EAST,
-        slotWidth,
-        slotHeight,
-        strokeWidth,
-      );
-      group.add(ioLine);
-    }
-
-    // South IO
-    if (IoType.NULL !== this.ioTypes[Cardinal.SOUTH]) {
-      const ioLine = this._drawIo(
-        this.ioTypes[Cardinal.SOUTH],
-        Cardinal.SOUTH,
-        slotWidth,
-        slotHeight,
-        strokeWidth,
-      );
-      group.add(ioLine);
-    }
-
-    // West IO
-    if (IoType.NULL !== this.ioTypes[Cardinal.WEST]) {
-      const ioLine = this._drawIo(
-        this.ioTypes[Cardinal.WEST],
-        Cardinal.WEST,
-        slotWidth,
-        slotHeight,
-        strokeWidth,
-      );
-      group.add(ioLine);
-    }
+    this.ioTypes.forEach((ioType, cardinal) => {
+      if (IoType.NULL !== ioType) {
+        const ioLine = this._drawIo(
+          ioType,
+          cardinal,
+          slotWidth,
+          slotHeight,
+          strokeWidth,
+        );
+        group.add(ioLine);
+      }
+    });
 
     // Store the current position
     // to move the Mod back to this slot if dropped
@@ -460,5 +433,49 @@ export default class Mod {
     });
 
     this.draw(group);
+  }
+
+  /**
+   * Get ouput coming from Mod linked to {cardinal}, if linked.
+   */
+  getInput(cardinal: number): any|null {
+    if (IoType.IN !== this.getIoType(cardinal)) {
+      return null;
+    }
+
+    const mod = this._getLinkedMod(cardinal);
+    if (!mod) {
+      return null;
+    }
+
+    return mod.getOutput(Cardinal.opposite(cardinal));
+  }
+
+  /**
+   * Wire current Mod and trigger wiring on every Mods linked to each Io plugs.
+   */
+  superWire(audioContext:AudioContext): void {
+    this.wire(audioContext);
+
+    this.ioTypes.forEach((ioType, cardinal) => {
+      if (IoType.OUT === ioType) {
+        const mod = this._getLinkedMod(cardinal);
+        if (mod) {
+          mod.superWire(audioContext);
+        }
+      }
+    });
+  }
+
+  superUnwire(audioContext:AudioContext): void {
+    this.ioTypes.forEach((ioType, cardinal) => {
+      if (IoType.OUT === ioType) {
+        const mod = this._getLinkedMod(cardinal);
+        if (mod) {
+          mod.superUnwire(audioContext);
+        }
+      }
+    });
+    this.unwire(audioContext);
   }
 }

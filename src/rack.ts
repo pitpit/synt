@@ -1,9 +1,11 @@
 import Mod from './mod';
 import Konva from 'konva';
 import Cardinal from './cardinal';
+import IoType from './ioType';
 
 export default class Rack {
-  stage: Konva.Stage|null = null;
+  audioContext: AudioContext;
+  stage: Konva.Stage;
   slotHeight: number = 100;
   slotWidth: number = 100;
   strokeWidth: number = 1;
@@ -11,6 +13,31 @@ export default class Rack {
   mods:Array<Mod> = [];
   grid:Array<Array<Mod|null>> = [];
 
+  constructor() {
+    // Setup container
+    const container = document.createElement('div');
+    container.id = 'container';
+    const body = document.getElementsByTagName('body')[0];
+    body.style.margin = '0';
+    body.style.overflow = 'hidden';
+    body.appendChild(container);
+
+    // Setup stage
+    this.stage = new Konva.Stage({
+      container: container.id,
+    });
+
+    // We cannot initialize the AudioContext in constructor
+    // because of chrome autoplay policy:
+    //  https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
+    this.audioContext = new AudioContext();
+    const resumeAudioContext = () => {
+      this.audioContext.resume().then(() => {
+        document.removeEventListener('mousedown', resumeAudioContext);
+      });
+    };
+    document.addEventListener('mousedown', resumeAudioContext);
+  }
   /**
    * Add a Mod on the rack and set its position.
    */
@@ -67,6 +94,9 @@ export default class Rack {
     return this;
   }
 
+  /**
+   * @private
+   */
   _drawGrid(layer: Konva.Layer, widthPx: number, heightPx: number): void {
     for (let x = 0; x <= widthPx; x += this.slotWidth) {
       const line = new Konva.Line({
@@ -102,21 +132,12 @@ export default class Rack {
    * Draw the rack and all positionned Mods.
    * Attach events.
    */
-  init() {
-    // Setup container
-    const container = document.createElement('div');
-    container.id = 'container';
-    const body = document.getElementsByTagName('body')[0];
-    body.style.margin = '0';
-    body.style.overflow = 'hidden';
-    body.appendChild(container);
-
+  draw() {
     // Set canvas to screen size
     const widthPx = window.innerWidth;
     const heightPx = window.innerHeight;
 
-    this.stage = new Konva.Stage({
-      container: container.id,
+    this.stage.size({
       width: widthPx,
       height: heightPx,
     });
@@ -125,12 +146,22 @@ export default class Rack {
 
     this._drawGrid(layer, widthPx, heightPx);
 
+    // let audioContext:AudioContext;
+
     this.mods.forEach((mod, index) => {
       const group = new Konva.Group({
         draggable: true,
       });
 
       mod.events.on('dragstart', () => {
+        // this.audioContext.resume();
+
+        // if (!audioContext) {
+        //   audioContext = new AudioContext();
+        // }
+
+        mod.superUnwire(this.audioContext);
+
         // Unlink all io plugs
         mod.unlink(Cardinal.NORTH);
         mod.unlink(Cardinal.EAST);
@@ -147,10 +178,13 @@ export default class Rack {
         mod.link(Cardinal.EAST, this._getFromGrid(mod.x+1, mod.y));
         mod.link(Cardinal.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
         mod.link(Cardinal.WEST, this._getFromGrid(mod.x-1, mod.y));
+
+        mod.superWire(this.audioContext);
       });
 
       layer.add(group);
-      mod.init(this.slotWidth, this.slotHeight, this.padding, group);
+      mod.superDraw(this.slotWidth, this.slotHeight, this.padding, group);
+      mod.superWire(this.audioContext);
     });
     this.stage.add(layer);
 
