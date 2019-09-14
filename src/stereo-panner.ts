@@ -35,7 +35,7 @@ export default class StereoPanner extends Mod {
   wire(audioContext:AudioContext): void {
     if (!this.panner) {
       this.panner = audioContext.createStereoPanner();
-      this.panner.pan.value = -1;
+      this.panner.pan.value = 0;
     }
 
     const input = this.getInput(PlugPosition.NORTH);

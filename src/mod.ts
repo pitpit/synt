@@ -508,14 +508,14 @@ export default class Mod {
       return;
     }
 
-    // this.plugTypes.forEach((plugType, plugPosition) => {
-    //   if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
-    //     const mod = this._getLinkedMod(plugPosition);
-    //     if (mod) {
-    //       mod.superUnwire(audioContext, this.lastWiringID);
-    //     }
-    //   }
-    // });
+    this.plugTypes.forEach((plugType, plugPosition) => {
+      if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
+        const mod = this._getLinkedMod(plugPosition);
+        if (mod) {
+          mod.superUnwire(audioContext, this.lastWiringID);
+        }
+      }
+    });
 
     this.unwire(audioContext);
   }
