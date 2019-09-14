@@ -18,17 +18,17 @@ export default class Flanger extends Mod {
   wire(audioContext:AudioContext): void {
     this.gain = audioContext.createGain();
 
-    const output = this.getInput(PlugPosition.NORTH);
-    if (output instanceof AudioNode) {
-      output.connect(this.gain);
+    const input = this.getInput(PlugPosition.NORTH);
+    if (input instanceof AudioNode) {
+      input.connect(this.gain);
     }
   }
 
   unwire(audioContext:AudioContext): void {
     if (this.gain) {
-      const output = this.getInput(PlugPosition.NORTH);
-      if (output instanceof AudioNode) {
-        output.disconnect(this.gain);
+      const input = this.getInput(PlugPosition.NORTH);
+      if (input instanceof AudioNode) {
+        input.disconnect(this.gain);
       }
       this.gain = null;
     }

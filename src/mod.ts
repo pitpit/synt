@@ -104,18 +104,10 @@ export default class Mod {
     return null;
   }
 
-  /**
-   * Does the Mod have an plug?
-   */
-  hasLinkablePlug(plugPosition: number): boolean {
-    return (this.plugTypes[plugPosition] !== PlugType.NULL);
-  }
-
   link(plugPosition: number, to: Mod|null): Mod {
     if (!to || !this._isLinkable(plugPosition, to)) {
       return this;
     }
-
     // TODO validate link (is the mod linked to another plug of this mod?)
     const oppositePlugPosition = PlugPosition.opposite(plugPosition);
 
@@ -133,7 +125,7 @@ export default class Mod {
     this.plugs[plugPosition] = to;
 
     // TODO is it necessayre to trigger event ? (we've got a link chain)
-    this.events.emit('linked', to, plugPosition);
+    // this.events.emit('linked', to, plugPosition);
 
     // Link back target Mod
     to.link(oppositePlugPosition, this);
@@ -144,7 +136,7 @@ export default class Mod {
   unlink(plugPosition: number): Mod {
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
-      this.events.emit('unlinked', linked, plugPosition);
+      // this.events.emit('unlinked', linked, plugPosition);
 
       this.plugs[plugPosition] = null;
 
@@ -186,9 +178,11 @@ export default class Mod {
    */
   _isLinkable(plugPosition: number, to:Mod): boolean {
     const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-    if (this.hasLinkablePlug(plugPosition)
-    && to.hasLinkablePlug(oppositePlugPosition)
-    && this.getPlugType(plugPosition) !== to.getPlugType(oppositePlugPosition)) {
+    if (
+      (PlugType.OUT === this.getPlugType(plugPosition) && PlugType.IN === to.getPlugType(oppositePlugPosition))
+      || (PlugType.IN === this.getPlugType(plugPosition) && PlugType.OUT === to.getPlugType(oppositePlugPosition))
+      || (PlugType.CTRL === this.getPlugType(plugPosition) && PlugType.CTRL === to.getPlugType(oppositePlugPosition))
+    ) {
       return true;
     }
 
@@ -208,7 +202,16 @@ export default class Mod {
     strokeWidth: number,
   ): Konva.Line {
     const plugLineStrokeWidth = 5;
-    const color = (PlugType.IN === plugType) ? 'green' : ((PlugType.OUT === plugType) ? 'red': 'gray');
+    let color: string;
+    if (PlugType.IN === plugType) {
+      color = 'green';
+    } else if (PlugType.OUT === plugType) {
+      color = 'red';
+    } else if (PlugType.CTRL === plugType) {
+      color = 'blue';
+    } else {
+      color = 'gray';
+    }
     let points: Array<number> = [0, 0, 0, 0];
 
     if (PlugPosition.NORTH === plugPosition) {
@@ -433,7 +436,6 @@ export default class Mod {
     });
 
     group.on('dblclick', () => {
-      console.log('dlbclick');
       this.events.emit('dblclick');
     });
 
@@ -444,10 +446,10 @@ export default class Mod {
    * Get ouput coming from Mod linked to {plugPosition}, if linked.
    */
   getInput(plugPosition: number): any|null {
-    if (PlugType.IN !== this.getPlugType(plugPosition)) {
+    if (PlugType.IN !== this.getPlugType(plugPosition)
+      && PlugType.CTRL !== this.getPlugType(plugPosition)) {
       return null;
     }
-
     const mod = this._getLinkedMod(plugPosition);
     if (!mod) {
       return null;

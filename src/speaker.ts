@@ -33,19 +33,19 @@ export default class Speaker extends Mod {
     group.add(innerCircle);
   }
 
-  unwire(audioContext:AudioContext): void {
+  wire(audioContext:AudioContext): void {
     // Get output from input plug
-    const output = this.getInput(PlugPosition.NORTH);
-    if (output instanceof AudioNode) {
-      output.disconnect(audioContext.destination);
+    const input = this.getInput(PlugPosition.NORTH);
+    if (input instanceof AudioNode) {
+      input.connect(audioContext.destination);
     }
   }
 
-  wire(audioContext:AudioContext): void {
+  unwire(audioContext:AudioContext): void {
     // Get output from input plug
-    const output = this.getInput(PlugPosition.NORTH);
-    if (output instanceof AudioNode) {
-      output.connect(audioContext.destination);
+    const input = this.getInput(PlugPosition.NORTH);
+    if (input instanceof AudioNode) {
+      input.disconnect(audioContext.destination);
     }
   }
 }
