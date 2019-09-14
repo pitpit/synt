@@ -6,6 +6,11 @@ import Konva from 'konva';
 export default class Knob extends Mod {
   range: number = 400;
   value: number = 0.5;
+  group: Konva.Group|null = null;
+  centerX: number = 0;
+  centerY: number = 0;
+  innerCircle: Konva.Circle|null = null;
+  pinCircle: Konva.Circle|null = null;
   callback: any;
 
   constructor() {
@@ -31,7 +36,7 @@ export default class Knob extends Mod {
         }
       }
       this.value = (posX + this.range) / this.range * 0.5;
-      console.debug(this.value);
+      this._updatePinCirclePosition();
       if (this.callback) {
         this.callback(this.value);
       }
@@ -41,33 +46,53 @@ export default class Knob extends Mod {
   _drawKnob(group:Konva.Group) {
 
     const circle = new Konva.Circle({
-      x: group.width() / 2,
-      y: group.height() / 2,
+      x: this.centerX,
+      y: this.centerY,
       radius: 24,
-      // fill: 'white',
       stroke: 'black',
       strokeWidth: 4,
     });
 
-    const innerCircle = new Konva.Circle({
-      x: group.width() / 2,
-      y: group.height() / 2,
+    this.innerCircle = new Konva.Circle({
+      x: this.centerX,
+      y: this.centerY,
       radius: 19,
-      fill: 'black'
+      fill: 'black',
     });
-    const pinCircle = new Konva.Circle({
-      x: group.width() / 2,
-      y: group.height() / 2 - 12,
+
+    this.pinCircle = new Konva.Circle({
       radius: 2,
       fill: 'white',
     });
 
+
     group.add(circle);
-    group.add(innerCircle);
-    group.add(pinCircle);
+    group.add(this.innerCircle);
+    group.add(this.pinCircle);
+    this._updatePinCirclePosition();
+  }
+
+  _updatePinCirclePosition() {
+    if (this.pinCircle) {
+      const theta = Math.PI * - (this.value * 270 - 135 - 90) / 180;
+      const radius = 10;
+      const x = this.centerX + radius * Math.cos(theta);
+      const y = this.centerY - radius * Math.sin(theta);
+      this.pinCircle.position({
+        x,
+        y,
+      });
+      if (this.innerCircle) {
+        this.innerCircle.draw();
+      }
+      this.pinCircle.draw();
+    }
   }
 
   draw(group:Konva.Group) {
+    this.centerX = group.width() / 2;
+    this.centerY = group.height() / 2;
+
     this._drawKnob(group);
     this._addWheelListener(group);
   }
