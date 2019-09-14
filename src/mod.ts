@@ -14,6 +14,7 @@ export default class Mod {
   height:number = 1;
   width:number = 1;
   plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL];
+  lastWiringID: string|null = null;
 
   /**
    * This method is called when drawing.
@@ -124,9 +125,6 @@ export default class Mod {
 
     this.plugs[plugPosition] = to;
 
-    // TODO is it necessayre to trigger event ? (we've got a link chain)
-    // this.events.emit('linked', to, plugPosition);
-
     // Link back target Mod
     to.link(oppositePlugPosition, this);
 
@@ -136,8 +134,6 @@ export default class Mod {
   unlink(plugPosition: number): Mod {
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
-      // this.events.emit('unlinked', linked, plugPosition);
-
       this.plugs[plugPosition] = null;
 
       // Unlink back target Mod
@@ -179,9 +175,16 @@ export default class Mod {
   _isLinkable(plugPosition: number, to:Mod): boolean {
     const oppositePlugPosition = PlugPosition.opposite(plugPosition);
     if (
-      (PlugType.OUT === this.getPlugType(plugPosition) && PlugType.IN === to.getPlugType(oppositePlugPosition))
-      || (PlugType.IN === this.getPlugType(plugPosition) && PlugType.OUT === to.getPlugType(oppositePlugPosition))
-      || (PlugType.CTRL === this.getPlugType(plugPosition) && PlugType.CTRL === to.getPlugType(oppositePlugPosition))
+      (
+        PlugType.OUT === this.getPlugType(plugPosition)
+        && PlugType.IN === to.getPlugType(oppositePlugPosition)
+      ) || (
+        PlugType.IN === this.getPlugType(plugPosition)
+        && PlugType.OUT === to.getPlugType(oppositePlugPosition)
+      ) || (
+        PlugType.CTRL === this.getPlugType(plugPosition)
+        && PlugType.CTRL === to.getPlugType(oppositePlugPosition)
+      )
     ) {
       return true;
     }
@@ -458,31 +461,62 @@ export default class Mod {
     return mod.getOutput(PlugPosition.opposite(plugPosition));
   }
 
+
+  /**
+   * We generate an uniqid to detect if this
+   * Mod has already be wired in this superWire chain
+   * and avoid loop
+   */
+  _isWiringAlreadyDone(id: string|null) {
+    if (!id) {
+      id = Math.random().toString(36).substr(2, 9);
+    }
+
+    if (id === this.lastWiringID) {
+      return true;
+    }
+
+    this.lastWiringID = id;
+
+    return false;
+  }
+
   /**
    * Wire current Mod and trigger wiring on every Mods linked to each plug.
    */
-  superWire(audioContext:AudioContext): void {
+  superWire(audioContext:AudioContext, id: string|null = null): void {
+
+    if (this._isWiringAlreadyDone(id)) {
+      return;
+    }
+
     this.wire(audioContext);
 
     this.plugTypes.forEach((plugType, plugPosition) => {
-      if (PlugType.OUT === plugType) {
+      if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
         const mod = this._getLinkedMod(plugPosition);
         if (mod) {
-          mod.superWire(audioContext);
+          // If a Mod is linked, and if its Mod did not originate the superWire chain
+          mod.superWire(audioContext, this.lastWiringID);
         }
       }
     });
   }
 
-  superUnwire(audioContext:AudioContext): void {
-    this.plugTypes.forEach((plugType, plugPosition) => {
-      if (PlugType.OUT === plugType) {
-        const mod = this._getLinkedMod(plugPosition);
-        if (mod) {
-          mod.superUnwire(audioContext);
-        }
-      }
-    });
+  superUnwire(audioContext:AudioContext, id: string|null = null): void {
+    if (this._isWiringAlreadyDone(id)) {
+      return;
+    }
+
+    // this.plugTypes.forEach((plugType, plugPosition) => {
+    //   if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
+    //     const mod = this._getLinkedMod(plugPosition);
+    //     if (mod) {
+    //       mod.superUnwire(audioContext, this.lastWiringID);
+    //     }
+    //   }
+    // });
+
     this.unwire(audioContext);
   }
 }

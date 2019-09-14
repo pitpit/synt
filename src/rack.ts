@@ -1,6 +1,7 @@
 import Mod from './mod';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
+import PlugType from './plug-type';
 import Modal from './modal';
 
 export default class Rack {
@@ -181,7 +182,9 @@ export default class Rack {
 
       layer.add(group);
       mod.superDraw(this.slotWidth, this.slotHeight, this.padding, group);
-      mod.superWire(this.audioContext);
+
+      // Wire Mods depending on current positions
+      // mod.superWire(this.audioContext);
     });
     this.stage.add(layer);
 
