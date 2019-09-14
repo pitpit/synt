@@ -201,56 +201,56 @@ export default class Mod {
    * @private
    */
   _drawPlug(
-    io: Symbol,
+    plugType: Symbol,
     plugPosition: number,
     slotWidth: number,
     slotHeight: number,
     strokeWidth: number,
   ): Konva.Line {
-    const ioLineStrokeWidth = 5;
-    const color = (PlugType.IN === io) ? 'green' : ((PlugType.OUT === io) ? 'red': 'gray');
+    const plugLineStrokeWidth = 5;
+    const color = (PlugType.IN === plugType) ? 'green' : ((PlugType.OUT === plugType) ? 'red': 'gray');
     let points: Array<number> = [0, 0, 0, 0];
 
     if (PlugPosition.NORTH === plugPosition) {
       points = [
         strokeWidth,
-        strokeWidth + ioLineStrokeWidth/2,
+        strokeWidth + plugLineStrokeWidth/2,
         slotWidth - strokeWidth,
-        strokeWidth+ ioLineStrokeWidth/2,
+        strokeWidth+ plugLineStrokeWidth/2,
       ];
     } else if (PlugPosition.EAST === plugPosition) {
       points = [
-        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
         strokeWidth,
-        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
         this.height * slotHeight - strokeWidth,
       ];
     } else if (PlugPosition.SOUTH === plugPosition) {  // South
       points = [
         strokeWidth,
-        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
         slotWidth - strokeWidth,
-        this.width * slotWidth - (strokeWidth + ioLineStrokeWidth/2),
+        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
       ];
     } else if (PlugPosition.WEST === plugPosition) { // West
       points = [
-        strokeWidth+ ioLineStrokeWidth/2,
+        strokeWidth+ plugLineStrokeWidth/2,
         strokeWidth,
-        strokeWidth+ ioLineStrokeWidth/2,
+        strokeWidth+ plugLineStrokeWidth/2,
         this.height * slotHeight - strokeWidth,
       ];
     } else {
       throw new Error('Invalid plugPosition value');
     }
 
-    const ioLine = new Konva.Line({
+    const plugLine = new Konva.Line({
       points,
       stroke: color,
-      strokeWidth: ioLineStrokeWidth,
+      strokeWidth: plugLineStrokeWidth,
       lineCap: 'sqare',
     });
 
-    return ioLine;
+    return plugLine;
   }
 
   /**
@@ -306,14 +306,14 @@ export default class Mod {
 
     this.plugTypes.forEach((plugType, plugPosition) => {
       if (PlugType.NULL !== plugType) {
-        const ioLine = this._drawPlug(
+        const plugLine = this._drawPlug(
           plugType,
           plugPosition,
           slotWidth,
           slotHeight,
           strokeWidth,
         );
-        group.add(ioLine);
+        group.add(plugLine);
       }
     });
 
