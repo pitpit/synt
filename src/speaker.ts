@@ -11,26 +11,60 @@ export default class Speaker extends Mod {
   }
 
   draw(group:Konva.Group) {
-    const circle = new Konva.Circle({
+
+    const outterCircleRadius = 32;
+    const outterCircleStrokeWidth = 8;
+    const innerCircleRadius = 10;
+    const innerCircleStrokeWidth = 2;
+
+    const outterCircle = new Konva.Circle({
       x: group.width() / 2,
       y: group.height() / 2,
-      radius: 24,
-      fill: 'white',
+      radius: outterCircleRadius,
+      // fill: null,
+      fillEnabled: false,
       stroke: 'black',
-      strokeWidth: 6,
+      strokeWidth: outterCircleStrokeWidth,
     });
-
+    const topLeftArc = new Konva.Arc({
+      x: group.width() / 2,
+      y: group.height() / 2,
+      innerRadius: innerCircleRadius + innerCircleStrokeWidth / 2,
+      outerRadius: outterCircleRadius - outterCircleStrokeWidth / 2,
+      fill: 'lightgray',
+      angle: 180,
+      rotationDeg: 135,
+    });
+    // const bottomRightArc = new Konva.Arc({
+    //   x: group.width() / 2,
+    //   y: group.height() / 2,
+    //   innerRadius: innerCircleRadius + innerCircleStrokeWidth / 2,
+    //   outerRadius: outterCircleRadius - outterCircleStrokeWidth / 2,
+    //   fill: 'white',
+    //   angle: 180,
+    //   rotationDeg: -45,
+    // });
     const innerCircle = new Konva.Circle({
       x: group.width() / 2,
       y: group.height() / 2,
-      radius: 12,
-      fill: 'white',
+      radius: innerCircleRadius,
+      fill: 'black',
       stroke: 'black',
-      strokeWidth: 3,
+      strokeWidth: innerCircleStrokeWidth,
     });
 
-    group.add(circle);
+    const reflectCircle = new Konva.Circle({
+      x: group.width() / 2 + 4,
+      y: group.height() / 2 - 4,
+      radius: 2.5,
+      fill: 'white',
+    });
+
+    group.add(outterCircle);
+    group.add(topLeftArc);
+    // group.add(bottomRightArc);
     group.add(innerCircle);
+    group.add(reflectCircle);
   }
 
   wire(audioContext:AudioContext): void {

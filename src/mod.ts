@@ -320,16 +320,11 @@ export default class Mod {
       }
     });
 
-    // Store the current position
-    // to move the Mod back to this slot if dropped
-    let targetX = this.x;
-    let targetY = this.y;
-
     // Draw drag and drop shadow
     // See https://codepen.io/pierrebleroux/pen/gGpvxJ
     const shadow = new Konva.Rect({
-      x: targetX * slotWidth + padding + strokeWidth/2,
-      y: targetY * slotHeight + padding + strokeWidth/2,
+      x: this.x * slotWidth + padding + strokeWidth/2,
+      y: this.y * slotHeight + padding + strokeWidth/2,
       width:  this.width * slotWidth,
       height: this.height * slotHeight,
       fill: '#cccccc',
@@ -359,6 +354,11 @@ export default class Mod {
 
       this.events.emit('dragstart');
     });
+
+    // Store the current position
+    // to move the Mod back to this slot if dropped
+    let targetX = this.x;
+    let targetY = this.y;
 
     group.on('dragend', () => {
       if (!this.rack) {

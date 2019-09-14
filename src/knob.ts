@@ -5,7 +5,7 @@ import Konva from 'konva';
 
 export default class Knob extends Mod {
   range: number = 400;
-  value: number = 1.0;
+  value: number = 0.5;
   callback: any;
 
   constructor() {
@@ -13,7 +13,10 @@ export default class Knob extends Mod {
     this.configure('knob', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRL]);
   }
 
-  draw(group:Konva.Group) {
+  /**
+   * @private
+   */
+  _addWheelListener(group:Konva.Group) {
     let posX = 0;
     group.on('wheel', (e) => {
       const event = e.evt;
@@ -35,10 +38,45 @@ export default class Knob extends Mod {
     });
   }
 
+  _drawKnob(group:Konva.Group) {
+
+    const circle = new Konva.Circle({
+      x: group.width() / 2,
+      y: group.height() / 2,
+      radius: 24,
+      // fill: 'white',
+      stroke: 'black',
+      strokeWidth: 4,
+    });
+
+    const innerCircle = new Konva.Circle({
+      x: group.width() / 2,
+      y: group.height() / 2,
+      radius: 19,
+      fill: 'black'
+    });
+    const pinCircle = new Konva.Circle({
+      x: group.width() / 2,
+      y: group.height() / 2 - 12,
+      radius: 2,
+      fill: 'white',
+    });
+
+    group.add(circle);
+    group.add(innerCircle);
+    group.add(pinCircle);
+  }
+
+  draw(group:Konva.Group) {
+    this._drawKnob(group);
+    this._addWheelListener(group);
+  }
+
   wire(audioContext:AudioContext): void {
     const input = this.getInput(PlugPosition.WEST);
     if (input instanceof Function) {
       this.callback = input;
+      this.callback(this.value);
     }
   }
 
