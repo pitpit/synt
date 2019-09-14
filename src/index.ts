@@ -15,8 +15,10 @@ const speaker2 = new Speaker();
 const reverb = new Reverb();
 const gate = new Gate();
 const flanger = new Flanger();
-const panner = new StereoPanner();
+const panner1 = new StereoPanner();
+const panner2 = new StereoPanner();
 const knob1 = new Knob();
+const knob2 = new Knob();
 // const note1 = new Note(3, 0);
 
 const oscillator1 = new Oscillator();
@@ -27,10 +29,12 @@ rack.add(gate, 1, 0);
 rack.add(oscillator1, 2, 0);
 rack.add(speaker1, 3, 0);
 rack.add(flanger, 4, 0);
-rack.add(panner, 5, 0);
+rack.add(panner1, 5, 0);
+rack.add(panner2, 0, 1);
 rack.add(oscillator2, 6, 0);
 rack.add(speaker2, 7, 0);
 rack.add(knob1, 8, 0);
+rack.add(knob2, 9, 0);
 // rack.add(note1);
 rack.draw();
 

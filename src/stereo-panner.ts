@@ -12,7 +12,6 @@ export default class StereoPanner extends Mod {
   }
 
   getOutput(plugPosition: number): any {
-
     // This is the sound output
     if (PlugPosition.SOUTH === plugPosition) {
       return this.panner;

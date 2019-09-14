@@ -65,13 +65,16 @@ export default class Knob extends Mod {
       fill: 'white',
     });
 
-
     group.add(circle);
     group.add(this.innerCircle);
     group.add(this.pinCircle);
     this._updatePinCirclePosition();
   }
 
+  /**
+   * Draw and redraw the rotating button with the little round indicator
+   *  placed arround the button depending on set value.
+   */
   _updatePinCirclePosition() {
     if (this.pinCircle) {
       const theta = Math.PI * - (this.value * 270 - 135 - 90) / 180;
