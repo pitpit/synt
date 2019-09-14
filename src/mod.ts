@@ -509,7 +509,7 @@ export default class Mod {
     }
 
     this.plugTypes.forEach((plugType, plugPosition) => {
-      if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
+      if (PlugType.OUT === plugType) {
         const mod = this._getLinkedMod(plugPosition);
         if (mod) {
           mod.superUnwire(audioContext, this.lastWiringID);
