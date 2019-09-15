@@ -132,7 +132,7 @@ export default class Mod {
 
     this.plugs[plugPosition] = to;
 
-    this.propagateLink();
+    this.propagateLink(null, (PlugType.CTRL === this.getPlugType(plugPosition)));
 
     // Link back target Mod
     to.link(oppositePlugPosition, this);
@@ -141,7 +141,9 @@ export default class Mod {
   }
 
   unlink(plugPosition: number): Mod {
-    this.propagateUnlink();
+    if (PlugType.CTRL !== this.getPlugType(plugPosition)) {
+      this.propagateUnlink(null, (PlugType.CTRL === this.getPlugType(plugPosition)));
+    }
 
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
@@ -495,7 +497,7 @@ export default class Mod {
   /**
    * Wire current Mod and trigger wiring on every Mods linked to each plug.
    */
-  propagateLink(id: string|null = null): void {
+  propagateLink(id: string|null = null, stopPropagation: boolean = false): void {
     id = this._getPropagationId(id);
     if (null === id) {
       return;
@@ -505,31 +507,35 @@ export default class Mod {
       this.onLinked(this.audioContext);
     }
 
-    this.plugTypes.forEach((plugType, plugPosition) => {
-      if (PlugType.OUT === plugType) {
-        const mod = this._getLinkedMod(plugPosition);
-        if (mod) {
-          // If a Mod is linked, and if its Mod did not originate the superWire chain
-          mod.propagateLink(id);
+    if (!stopPropagation) {
+      this.plugTypes.forEach((plugType, plugPosition) => {
+        if (PlugType.OUT === plugType) {
+          const mod = this._getLinkedMod(plugPosition);
+          if (mod) {
+            // If a Mod is linked, and if its Mod did not originate the superWire chain
+            mod.propagateLink(id);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
-  propagateUnlink(id: string|null = null): void {
+  propagateUnlink(id: string|null = null, stopPropagation: boolean = false): void {
     id = this._getPropagationId(id);
     if (null === id) {
       return;
     }
 
-    this.plugTypes.forEach((plugType, plugPosition) => {
-      if (PlugType.OUT === plugType) {
-        const mod = this._getLinkedMod(plugPosition);
-        if (mod) {
-          mod.propagateUnlink(id);
+    if (!stopPropagation) {
+      this.plugTypes.forEach((plugType, plugPosition) => {
+        if (PlugType.OUT === plugType) {
+          const mod = this._getLinkedMod(plugPosition);
+          if (mod) {
+            mod.propagateUnlink(id);
+          }
         }
-      }
-    });
+      });
+    }
 
     if (this.audioContext) {
       this.onUnlinked(this.audioContext);
