@@ -6,6 +6,7 @@ import Reverb from './reverb';
 import Gate from './gate';
 import Flanger from './flanger';
 import StereoPanner from './stereo-panner';
+import Gain from './Gain';
 import Knob from './knob';
 import './index.scss';
 
@@ -19,6 +20,7 @@ const panner1 = new StereoPanner();
 const panner2 = new StereoPanner();
 const knob1 = new Knob();
 const knob2 = new Knob();
+const gain = new Gain();
 // const note1 = new Note(3, 0);
 
 const oscillator1 = new Oscillator();
@@ -35,6 +37,7 @@ rack.add(oscillator2, 6, 0);
 rack.add(speaker2, 7, 0);
 rack.add(knob1, 8, 0);
 rack.add(knob2, 9, 0);
+rack.add(gain, 1, 1);
 // rack.add(note1);
 rack.draw();
 

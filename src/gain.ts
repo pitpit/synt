@@ -2,19 +2,19 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 
-export default class StereoPanner extends Mod {
-  panner: StereoPannerNode|null = null;
+export default class Gain extends Mod {
+  gain: GainNode|null = null;
 
   constructor() {
     super();
 
-    this.configure('panner', 1, 1, [PlugType.IN, PlugType.CTRL, PlugType.OUT]);
+    this.configure('gain', 1, 1, [PlugType.IN, PlugType.CTRL, PlugType.OUT]);
   }
 
   getOutput(plugPosition: number): any {
     // This is the sound output
     if (PlugPosition.SOUTH === plugPosition) {
-      return this.panner;
+      return this.gain;
     }
 
     // This is the control plug to plug in a knob
@@ -23,8 +23,8 @@ export default class StereoPanner extends Mod {
         // value:0 => this.panner.pan.value:-1
         // value:0.5 => this.panner.pan.value:0
         // value:1 => this.panner.pan.value:1
-        if (this.panner) {
-          this.panner.pan.value = value * 2 - 1; // Range -1 to 1
+        if (this.gain) {
+          this.gain.gain.value = value * this.gain.gain.maxValue / this.gain.gain.maxValue;
         }
       };
     }
@@ -33,24 +33,24 @@ export default class StereoPanner extends Mod {
   }
 
   onLinked(audioContext:AudioContext): void {
-    if (!this.panner) {
-      this.panner = audioContext.createStereoPanner();
-      this.panner.pan.value = 0;
+    if (!this.gain) {
+      this.gain = audioContext.createGain();
+      this.gain.gain.value = this.gain.gain.defaultValue;
     }
 
     const input = this.getInput(PlugPosition.NORTH);
     if (input instanceof AudioNode) {
-      input.connect(this.panner);
+      input.connect(this.gain);
     }
   }
 
   onUnlinked(audioContext:AudioContext): void {
-    if (this.panner) {
+    if (this.gain) {
       const input = this.getInput(PlugPosition.NORTH);
       if (input instanceof AudioNode) {
-        input.disconnect(this.panner);
+        input.disconnect(this.gain);
       }
-      this.panner = null;
+      this.gain = null;
     }
   }
 }
