@@ -67,7 +67,7 @@ export default class Speaker extends Mod {
     group.add(reflectCircle);
   }
 
-  wire(audioContext:AudioContext): void {
+  onLinked(audioContext:AudioContext): void {
     // Get output from input plug
     const input = this.getInput(PlugPosition.NORTH);
     if (input instanceof AudioNode) {
@@ -75,7 +75,7 @@ export default class Speaker extends Mod {
     }
   }
 
-  unwire(audioContext:AudioContext): void {
+  onUnlinked(audioContext:AudioContext): void {
     // Get output from input plug
     const input = this.getInput(PlugPosition.NORTH);
     if (input instanceof AudioNode) {

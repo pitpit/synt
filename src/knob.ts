@@ -100,7 +100,7 @@ export default class Knob extends Mod {
     this._addWheelListener(group);
   }
 
-  wire(audioContext:AudioContext): void {
+  onLinked(audioContext:AudioContext): void {
     const input = this.getInput(PlugPosition.WEST);
     if (input instanceof Function) {
       this.callback = input;
@@ -108,7 +108,7 @@ export default class Knob extends Mod {
     }
   }
 
-  unwire(audioContext:AudioContext): void {
+  onUnlinked(audioContext:AudioContext): void {
     this.callback = null;
   }
 }

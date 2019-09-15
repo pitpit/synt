@@ -32,7 +32,7 @@ export default class Oscillator extends Mod {
     return null;
   }
 
-  wire(audioContext:AudioContext): void {
+  onLinked(audioContext:AudioContext): void {
     if (!this.oscillator) {
       this.oscillator = audioContext.createOscillator();
       this.oscillator.type = 'sine';
@@ -41,7 +41,7 @@ export default class Oscillator extends Mod {
     }
   }
 
-  unwire(audioContext:AudioContext): void {
+  onUnlinked(audioContext:AudioContext): void {
     if (this.oscillator) {
       this.oscillator.stop();
       this.oscillator = null;

@@ -32,7 +32,7 @@ export default class StereoPanner extends Mod {
     return null;
   }
 
-  wire(audioContext:AudioContext): void {
+  onLinked(audioContext:AudioContext): void {
     if (!this.panner) {
       this.panner = audioContext.createStereoPanner();
       this.panner.pan.value = 0;
@@ -44,7 +44,7 @@ export default class StereoPanner extends Mod {
     }
   }
 
-  unwire(audioContext:AudioContext): void {
+  onUnlinked(audioContext:AudioContext): void {
     if (this.panner) {
       const input = this.getInput(PlugPosition.NORTH);
       if (input instanceof AudioNode) {

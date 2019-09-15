@@ -15,11 +15,11 @@ export default class Reverb extends Mod {
     return this.output;
   }
 
-  wire(audioContext:AudioContext): void {
+  onLinked(audioContext:AudioContext): void {
     this.output = this.getInput(PlugPosition.NORTH);
   }
 
-  unwire(audioContext:AudioContext): void {
+  onUnlinked(audioContext:AudioContext): void {
     this.output = null;
   }
 }

@@ -47,6 +47,7 @@ export default class Rack {
       throw new Error('A mod already stand at this position');
     }
     mod.setRack(this);
+    mod.setAudioContext(this.audioContext);
     mod.setPosition(x, y);
     // TODO check if not already in rack
     this.mods.push(mod);
@@ -153,9 +154,6 @@ export default class Rack {
       });
 
       mod.events.on('dragstart', () => {
-
-        mod.superUnwire(this.audioContext);
-
         // Unlink all io plugs
         mod.unlink(PlugPosition.NORTH);
         mod.unlink(PlugPosition.EAST);
@@ -172,8 +170,6 @@ export default class Rack {
         mod.link(PlugPosition.EAST, this._getFromGrid(mod.x+1, mod.y));
         mod.link(PlugPosition.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
         mod.link(PlugPosition.WEST, this._getFromGrid(mod.x-1, mod.y));
-
-        mod.superWire(this.audioContext);
       });
 
       mod.events.on('dblclick', () => {
@@ -182,9 +178,6 @@ export default class Rack {
 
       layer.add(group);
       mod.superDraw(this.slotWidth, this.slotHeight, this.padding, group);
-
-      // Wire Mods depending on current positions
-      // mod.superWire(this.audioContext);
     });
     this.stage.add(layer);
 

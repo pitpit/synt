@@ -9,12 +9,13 @@ export default class Mod {
   y:number = 0;
   plugs:Array<Mod|null> = [];
   rack:Rack|null = null;
+  audioContext:AudioContext|null = null;
   events:EventEmitter = new EventEmitter();
   label:string = '';
   height:number = 1;
   width:number = 1;
   plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL];
-  lastWiringID: string|null = null;
+  lastPropagationId: string|null = null;
 
   /**
    * This method is called when drawing.
@@ -31,7 +32,7 @@ export default class Mod {
    *
    * @override
    */
-  wire(audioContext:AudioContext): void {
+  onLinked(audioContext:AudioContext): void {
     //
   }
 
@@ -40,7 +41,7 @@ export default class Mod {
    *
    * @override
    */
-  unwire(audioContext:AudioContext): void {
+  onUnlinked(audioContext:AudioContext): void {
     //
   }
 
@@ -77,6 +78,12 @@ export default class Mod {
    */
   setRack(rack: Rack) {
     this.rack = rack;
+
+    return this;
+  }
+
+  setAudioContext(audioContext: AudioContext) {
+    this.audioContext = audioContext;
 
     return this;
   }
@@ -125,6 +132,8 @@ export default class Mod {
 
     this.plugs[plugPosition] = to;
 
+    this.propagateLink();
+
     // Link back target Mod
     to.link(oppositePlugPosition, this);
 
@@ -132,6 +141,8 @@ export default class Mod {
   }
 
   unlink(plugPosition: number): Mod {
+    this.propagateUnlink();
+
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
       this.plugs[plugPosition] = null;
@@ -464,47 +475,50 @@ export default class Mod {
 
   /**
    * We generate an uniqid to detect if this
-   * Mod has already be wired in this superWire chain
-   * and avoid loop
+   *  propagation has already reach this Mod within the chain
+   *  and avoid loop.
    */
-  _isWiringAlreadyDone(id: string|null) {
+  _getPropagationId(id: string|null): string|null {
     if (!id) {
       id = Math.random().toString(36).substr(2, 9);
     }
 
-    if (id === this.lastWiringID) {
-      return true;
+    if (id === this.lastPropagationId) {
+      return null;
     }
 
-    this.lastWiringID = id;
+    this.lastPropagationId = id;
 
-    return false;
+    return this.lastPropagationId;
   }
 
   /**
    * Wire current Mod and trigger wiring on every Mods linked to each plug.
    */
-  superWire(audioContext:AudioContext, id: string|null = null): void {
-
-    if (this._isWiringAlreadyDone(id)) {
+  propagateLink(id: string|null = null): void {
+    id = this._getPropagationId(id);
+    if (null === id) {
       return;
     }
 
-    this.wire(audioContext);
+    if (this.audioContext) {
+      this.onLinked(this.audioContext);
+    }
 
     this.plugTypes.forEach((plugType, plugPosition) => {
-      if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
+      if (PlugType.OUT === plugType) {
         const mod = this._getLinkedMod(plugPosition);
         if (mod) {
           // If a Mod is linked, and if its Mod did not originate the superWire chain
-          mod.superWire(audioContext, this.lastWiringID);
+          mod.propagateLink(id);
         }
       }
     });
   }
 
-  superUnwire(audioContext:AudioContext, id: string|null = null): void {
-    if (this._isWiringAlreadyDone(id)) {
+  propagateUnlink(id: string|null = null): void {
+    id = this._getPropagationId(id);
+    if (null === id) {
       return;
     }
 
@@ -512,11 +526,13 @@ export default class Mod {
       if (PlugType.OUT === plugType) {
         const mod = this._getLinkedMod(plugPosition);
         if (mod) {
-          mod.superUnwire(audioContext, this.lastWiringID);
+          mod.propagateUnlink(id);
         }
       }
     });
 
-    this.unwire(audioContext);
+    if (this.audioContext) {
+      this.onUnlinked(this.audioContext);
+    }
   }
 }
