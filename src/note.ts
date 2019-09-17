@@ -15,7 +15,6 @@ export default class Note extends Mod {
   }
 
   process(inputSignals: Signals): Signals {
-    console.log('process')
     const outputSignals: Signals = [null, null, null, null];
     if (this.audioContext) {
       // This is a dirty fix: I don't know why but

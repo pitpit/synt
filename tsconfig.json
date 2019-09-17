@@ -9,6 +9,11 @@
         "alwaysStrict": true,
         "strict": true,
         "sourceMap": true,
-        "removeComments": false
-    }
+        "removeComments": false,
+        "moduleResolution": "node"
+    },
+    "exclude": [
+      "node_modules",
+      "tests/**/*.test.ts"
+  ]
 }
