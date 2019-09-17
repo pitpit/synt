@@ -1,3 +1,6 @@
+
+import { AudioContext, IAudioNode as AudioNode } from 'standardized-audio-context';
+
 interface Signal {}
 
 // TODO should we have a class instead to predefine an array of empty Signal

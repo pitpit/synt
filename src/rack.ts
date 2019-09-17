@@ -1,6 +1,5 @@
 import Mod from './mod';
 import Konva from 'konva';
-import PlugPosition from './plug-position';
 import Modal from './modal';
 import { AudioContext } from 'standardized-audio-context';
 
@@ -31,7 +30,9 @@ export default class Rack {
     // We cannot initialize the AudioContext in constructor
     // because of chrome autoplay policy:
     //  https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
-    this.audioContext = new AudioContext();
+    // We're also using compatibility trick https://developer.mozilla.org/fr/docs/Web/API/AudioContext
+    this.audioContext = new (AudioContext || (window as any).webkitAudioContext)();
+
     const resumeAudioContext = () => {
       this.audioContext.resume().then(() => {
         document.removeEventListener('mousedown', resumeAudioContext);
