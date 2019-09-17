@@ -477,6 +477,7 @@ export default class Mod {
 
     this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
       if (PlugType.OUT === plugType) {
+      // if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
         mod.push(id);
       }
     });

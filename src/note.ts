@@ -1,8 +1,10 @@
 import Mod from './mod';
 import PlugType from './plug-type';
+import { Signals, AudioSignal, ControlSignal } from './signal';
 import PlugPosition from './plug-position';
 
 export default class Note extends Mod {
+  oscillator: OscillatorNode|null = null;
   gain: GainNode|null = null;
 
   constructor() {
@@ -11,53 +13,35 @@ export default class Note extends Mod {
     this.configure('note', 1, 1, [PlugType.NULL, PlugType.CTRL, PlugType.OUT]);
   }
 
-  // getOutput(plugPosition: number): any {
-  //   // This is the sound output
-  //   if (PlugPosition.SOUTH === plugPosition) {
-  //     return this.gain;
-  //   }
+  process(inputSignals: Signals): Signals {
+    console.log('process')
+    const outputSignals: Signals = [null, null, null, null];
+    if (this.audioContext) {
+      // This is a dirty fix: I don't know why but
+      // gain and oscialltor has to be rebuilt because they seems to be
+      // one time use
+      this.gain = this.audioContext.createGain();
 
-  //   // This is the control plug to plug in a knob
-  //   if (PlugPosition.EAST === plugPosition) {
-  //     return () => {
-  //       if (this.gain && this.audioContext) {
-  //         const duration = 2;
+      this.oscillator = this.audioContext.createOscillator();
+      this.oscillator.type = 'sine';
+      this.oscillator.frequency.value = 440;
 
-  //         // This is a dirty fix: I don't know why but
-  //         // gain and oscialltor has to be rebuilt because they seems to be
-  //         // one time use
-  //         this.gain = this.audioContext.createGain();
+      outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
+    }
 
-  //         const oscillator = this.audioContext.createOscillator();
-  //         oscillator.type = 'sine';
-  //         oscillator.frequency.value = 440;
-  //         this.gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
-  //         oscillator.connect(this.gain);
+    outputSignals[PlugPosition.EAST] = new ControlSignal((value: number) => {
+      console.log('aaa')
+      if (this.audioContext && this.oscillator && this.gain) {
 
-  //         // Follow-up the dirty fix: here we trigger onLinked on the plugged Mod
-  //         // to be sure it has the last GainNode object
-  //         const mod = this._getLinkedMod(PlugPosition.SOUTH);
-  //         if (mod) {
-  //           mod.onLinked(this.audioContext);
-  //         }
-  //         oscillator.start(this.audioContext.currentTime);
-  //         oscillator.stop(this.audioContext.currentTime + duration);
-  //       }
-  //     };
-  //   }
+        const duration = 2;
+        this.gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
 
-  //   return null;
-  // }
+        this.oscillator.start(0);
+        this.oscillator.stop(this.audioContext.currentTime + duration);
+       // this.oscillator.frequency.value = value * 1400 + 40;
+      }
+    });
 
-  // onLinked(audioContext:AudioContext): void {
-  //   if (!this.gain) {
-  //     this.gain = audioContext.createGain();
-  //   }
-  // }
-
-  // onUnlinked(audioContext:AudioContext): void {
-  //   if (this.gain) {
-  //     this.gain = null;
-  //   }
-  // }
+    return outputSignals;
+  }
 }

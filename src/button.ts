@@ -2,49 +2,53 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import Konva from 'konva';
+import { Signals, BrokenAudioSignal, ControlSignal } from './signal';
 
 export default class Button extends Mod {
-  centerX: number = 0;
-  centerY: number = 0;
-  callback: any;
+  controlSignal: ControlSignal|null = null;
 
   constructor() {
     super();
-    this.configure('button', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRL]);
+    this.configure('', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRL]);
   }
 
-  _drawButton(group:Konva.Group) {
+  draw(group:Konva.Group) {
+    const centerX = group.width() / 2;
+    const centerY = group.height() / 2;
+
     const circle = new Konva.Circle({
-      x: this.centerX,
-      y: this.centerY,
-      radius: 24,
+      x: centerX,
+      y: centerY,
+      radius: 14,
       stroke: 'black',
+      fill: 'black',
       strokeWidth: 4,
     });
 
     group.on('click', () => {
-      if (this.callback) {
-        this.callback();
+      console.log('click');
+      if (this.controlSignal) {
+        console.log('callback')
+        this.controlSignal.callback();
       }
     });
     group.add(circle);
   }
 
-  draw(group:Konva.Group) {
-    this.centerX = group.width() / 2;
-    this.centerY = group.height() / 2;
+  process(inputSignals: Signals): Signals {
 
-    this._drawButton(group);
+    console.log(inputSignals);
+
+    const signal = inputSignals[PlugPosition.WEST];
+    if (signal instanceof ControlSignal) {
+      this.controlSignal = signal;
+      if (this.controlSignal) {
+        this.controlSignal.callback();
+      }
+    } else if (signal instanceof BrokenAudioSignal) {
+      this.controlSignal = null;
+    }
+
+    return [null, null, null, null];
   }
-
-  // onLinked(audioContext:AudioContext): void {
-  //   const input = this.getInput(PlugPosition.WEST);
-  //   if (input instanceof Function) {
-  //     this.callback = input;
-  //   }
-  // }
-
-  // onUnlinked(audioContext:AudioContext): void {
-  //   this.callback = null;
-  // }
 }

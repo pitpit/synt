@@ -1,7 +1,7 @@
 import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
-import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
+import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './signal';
 
 export default class Gain extends Mod {
   gain: GainNode|null = null;
@@ -35,18 +35,25 @@ export default class Gain extends Mod {
 
   process(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
-    if (this.audioContext) {
-      const signal = inputSignals[PlugPosition.NORTH];
-      if (signal instanceof AudioSignal) {
+    const signal = inputSignals[PlugPosition.NORTH];
+    if (signal instanceof AudioSignal) {
+      if (this.audioContext) {
         this.gain = this.audioContext.createGain();
         this.gain.gain.value = this.gain.gain.defaultValue;
         signal.node.connect(this.gain);
         outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.gain);
-      } else if (signal instanceof BrokenAudioSignal) {
-        // Transmit BrokenAudioSignal as it
-        outputSignals[PlugPosition.SOUTH] = signal;
       }
+    } else if (signal instanceof BrokenAudioSignal) {
+      // Transmit BrokenAudioSignal as it
+      outputSignals[PlugPosition.SOUTH] = signal;
     }
+
+
+    outputSignals[PlugPosition.EAST] = new ControlSignal((value: number) => {
+      if (this.gain) {
+        this.gain.gain.value = value;
+      }
+    });
 
     return outputSignals;
   }

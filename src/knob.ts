@@ -2,7 +2,7 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import Konva from 'konva';
-import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal } from './signal';
+import { Signals, BrokenAudioSignal, ControlSignal } from './signal';
 
 export default class Knob extends Mod {
   range: number = 400;
@@ -114,17 +114,4 @@ export default class Knob extends Mod {
 
     return [null, null, null, null];
   }
-
-
-  // onLinked(audioContext:AudioContext): void {
-  //   const input = this.getInput(PlugPosition.WEST);
-  //   if (input instanceof Function) {
-  //     this.callback = input;
-  //     this.callback(this.value);
-  //   }
-  // }
-
-  // onUnlinked(audioContext:AudioContext): void {
-  //   this.callback = null;
-  // }
 }

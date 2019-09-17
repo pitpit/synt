@@ -1,3 +1,6 @@
+# Tuune
+
+The incredible music machine.
 
 * https://konvajs.org
 * https://tonejs.github.io/
@@ -5,14 +8,14 @@
 
 ## TODO
 
-* Remove Mod:setRack
-* Add a file player Mod
-* Add a control knob Mod
-* Rotate the Mod
-* Add a top layer ?
-* Eviter le chevauchement des lignes d'indications de plugType
-* Specific draw for knob with animation when changing value
-* Specific draw for oscillator
-* PRotect against wiring loop
-* Do we really need to pass audioContext to wire/unwire (because we can get it from Mod property using this.audioContext)
-* implement Flanger & Reverb
+- [ ] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
+- [ ] Add a file player Mod
+- [ ] Ability to rotate Mod on Rack
+- [ ] Add a top layer to put more Mods?
+- [X] Specific draw for knob with animation when changing value
+- [ ] Specific draw for oscillator
+- [X] PRotect against link loop
+- [ ] implement Flanger & Reverb
+- [ ] transition sound when linking a Control Mod to avoic clicks
+- [ ] Gain value on Speaker should be controllable by Knob Mod
+- [ ] Camel case filenames
