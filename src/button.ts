@@ -37,14 +37,14 @@ export default class Button extends Mod {
     this._drawButton(group);
   }
 
-  onLinked(audioContext:AudioContext): void {
-    const input = this.getInput(PlugPosition.WEST);
-    if (input instanceof Function) {
-      this.callback = input;
-    }
-  }
+  // onLinked(audioContext:AudioContext): void {
+  //   const input = this.getInput(PlugPosition.WEST);
+  //   if (input instanceof Function) {
+  //     this.callback = input;
+  //   }
+  // }
 
-  onUnlinked(audioContext:AudioContext): void {
-    this.callback = null;
-  }
+  // onUnlinked(audioContext:AudioContext): void {
+  //   this.callback = null;
+  // }
 }

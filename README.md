@@ -15,3 +15,4 @@
 * Specific draw for oscillator
 * PRotect against wiring loop
 * Do we really need to pass audioContext to wire/unwire (because we can get it from Mod property using this.audioContext)
+* implement Flanger & Reverb

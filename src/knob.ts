@@ -2,6 +2,7 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import Konva from 'konva';
+import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal } from './signal';
 
 export default class Knob extends Mod {
   range: number = 400;
@@ -11,7 +12,7 @@ export default class Knob extends Mod {
   centerY: number = 0;
   innerCircle: Konva.Circle|null = null;
   pinCircle: Konva.Circle|null = null;
-  callback: any;
+  controlSignal: ControlSignal|null = null;
 
   constructor() {
     super();
@@ -37,8 +38,8 @@ export default class Knob extends Mod {
       }
       this.value = (posX + this.range) / this.range * 0.5;
       this._updatePinCirclePosition();
-      if (this.callback) {
-        this.callback(this.value);
+      if (this.controlSignal) {
+        this.controlSignal.callback(this.value);
       }
     });
   }
@@ -100,15 +101,30 @@ export default class Knob extends Mod {
     this._addWheelListener(group);
   }
 
-  onLinked(audioContext:AudioContext): void {
-    const input = this.getInput(PlugPosition.WEST);
-    if (input instanceof Function) {
-      this.callback = input;
-      this.callback(this.value);
+  process(inputSignals: Signals): Signals {
+    const signal = inputSignals[PlugPosition.WEST];
+    if (signal instanceof ControlSignal) {
+      this.controlSignal = signal;
+      if (this.controlSignal) {
+        this.controlSignal.callback(this.value);
+      }
+    } else if (signal instanceof BrokenAudioSignal) {
+      this.controlSignal = null;
     }
+
+    return [null, null, null, null];
   }
 
-  onUnlinked(audioContext:AudioContext): void {
-    this.callback = null;
-  }
+
+  // onLinked(audioContext:AudioContext): void {
+  //   const input = this.getInput(PlugPosition.WEST);
+  //   if (input instanceof Function) {
+  //     this.callback = input;
+  //     this.callback(this.value);
+  //   }
+  // }
+
+  // onUnlinked(audioContext:AudioContext): void {
+  //   this.callback = null;
+  // }
 }

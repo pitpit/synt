@@ -1,25 +1,20 @@
 import Mod from './mod';
 import PlugType from './plug-type';
+import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
 import PlugPosition from './plug-position';
 
 export default class Gate extends Mod {
-  output: any;
 
   constructor() {
     super();
 
-    this.configure('gate', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
+    this.configure('', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
-  getOutput(plugPosition: number): any {
-    return this.output;
-  }
+  process(inputSignals: Signals): Signals {
+    const outputSignals: Signals = [null, null, null, null];
+    outputSignals[PlugPosition.SOUTH] = inputSignals[PlugPosition.NORTH];
 
-  onLinked(audioContext:AudioContext): void {
-    this.output = this.getInput(PlugPosition.NORTH);
-  }
-
-  onUnlinked(audioContext:AudioContext): void {
-    this.output = null;
+    return outputSignals;
   }
 }

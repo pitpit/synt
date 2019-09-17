@@ -1,7 +1,6 @@
 import Mod from './mod';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
-import PlugType from './plug-type';
 import Modal from './modal';
 
 export default class Rack {
@@ -154,22 +153,19 @@ export default class Rack {
       });
 
       mod.events.on('dragstart', () => {
-        // Unlink all io plugs
-        mod.unlink(PlugPosition.NORTH);
-        mod.unlink(PlugPosition.EAST);
-        mod.unlink(PlugPosition.SOUTH);
-        mod.unlink(PlugPosition.WEST);
+        mod.unlinkAll();
       });
 
       mod.events.on('dragend', () => {
         // Keep internal grid up to date
         this._removeFromGrid(mod)._addToGrid(mod);
 
-        // Try to link Mods
-        mod.link(PlugPosition.NORTH, this._getFromGrid(mod.x, mod.y - 1));
-        mod.link(PlugPosition.EAST, this._getFromGrid(mod.x+1, mod.y));
-        mod.link(PlugPosition.SOUTH, this._getFromGrid(mod.x, mod.y + 1));
-        mod.link(PlugPosition.WEST, this._getFromGrid(mod.x-1, mod.y));
+        mod.linkAll([
+          this._getFromGrid(mod.x, mod.y - 1), // North
+          this._getFromGrid(mod.x+1, mod.y), // East
+          this._getFromGrid(mod.x, mod.y + 1), // South
+          this._getFromGrid(mod.x-1, mod.y), // South
+        ]);
       });
 
       mod.events.on('dblclick', () => {
@@ -177,7 +173,7 @@ export default class Rack {
       });
 
       layer.add(group);
-      mod.superDraw(this.slotWidth, this.slotHeight, this.padding, group);
+      mod.init(this.slotWidth, this.slotHeight, this.padding, group);
     });
     this.stage.add(layer);
 

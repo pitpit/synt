@@ -3,6 +3,7 @@ import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
+import { Signals, AudioSignal, BrokenAudioSignal, Signal } from './signal';
 
 export default class Mod {
   x:number = 0;
@@ -16,6 +17,7 @@ export default class Mod {
   width:number = 1;
   plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL];
   lastPropagationId: string|null = null;
+  outputSignals: Signals = [null, null, null, null];
 
   /**
    * This method is called when drawing.
@@ -25,33 +27,6 @@ export default class Mod {
    */
   draw(group:Konva.Group): void {
     //
-  }
-
-  /**
-   * This method is called when a Mod is linked to your Mod.
-   *
-   * @override
-   */
-  onLinked(audioContext:AudioContext): void {
-    //
-  }
-
-  /**
-   * This method is called when a Mod is unlinked from your Mod.
-   *
-   * @override
-   */
-  onUnlinked(audioContext:AudioContext): void {
-    //
-  }
-
-  /**
-   * What output does the current Mod returns on its plug {plugPosition}.
-   *
-   * @override
-   */
-  getOutput(plugPosition: number): any {
-    return null;
   }
 
   /**
@@ -112,17 +87,47 @@ export default class Mod {
     return null;
   }
 
-  link(plugPosition: number, to: Mod|null): Mod {
-    if (!to || !this._isLinkable(plugPosition, to)) {
-      return this;
-    }
+  process(inputSignals: Signals): Signals {
+    return [null, null, null, null];
+  }
+
+  _generateProcessId(): string {
+    return Math.random().toString(36).substr(2, 9);;
+  }
+
+  /**
+   * Link current Mod to every passed targets Mods (north, east, south, west)
+   */
+  linkAll(targets: Array<Mod|null>) {
+    targets.forEach((target, plugPosition) => {
+      if (target && this._isLinkable(plugPosition, target)) {
+        this.link(plugPosition, target);
+      }
+    });
+
+    this.push(this._generateProcessId());
+  }
+
+  /**
+   * Unlink current Mod from every linked Mods
+   */
+  unlinkAll() {
+    this.snatch(this._generateProcessId());
+
+    this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
+      this.unlink(plugPosition);
+    });
+  }
+
+  link(plugPosition: number, target: Mod): Mod {
+
     // TODO validate link (is the mod linked to another plug of this mod?)
     const oppositePlugPosition = PlugPosition.opposite(plugPosition);
 
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
-      if (to === linked) {
-        // Already linked to Mod {to}, abort
+      if (target === linked) {
+        // Already linked to Mod {target}, abort
         return this;
       }
 
@@ -130,26 +135,25 @@ export default class Mod {
       linked.unlink(oppositePlugPosition);
     }
 
-    this.plugs[plugPosition] = to;
+    this.plugs[plugPosition] = target;
 
-    this.propagateLink(null, (PlugType.CTRL === this.getPlugType(plugPosition)));
-
-    // Link back target Mod
-    to.link(oppositePlugPosition, this);
+    // Reserse link
+    target.link(oppositePlugPosition, this);
 
     return this;
   }
 
   unlink(plugPosition: number): Mod {
-    if (PlugType.CTRL !== this.getPlugType(plugPosition)) {
-      this.propagateUnlink(null, (PlugType.CTRL === this.getPlugType(plugPosition)));
-    }
+    // if (PlugType.CTRL !== this.getPlugType(plugPosition)) {
+    //   this.propagateUnlink(null, (PlugType.CTRL === this.getPlugType(plugPosition)));
+    // }
 
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
       this.plugs[plugPosition] = null;
 
-      // Unlink back target Mod
+      //TODO do we need to keep bilateral link ?
+      // Reverse unlink target Mod
       linked.unlink(PlugPosition.opposite(plugPosition));
     }
 
@@ -167,15 +171,6 @@ export default class Mod {
     }
 
     return null;
-  }
-
-  /**
-   * Is the plug {plugPosition} linked to another Mod?
-   *
-   * @private
-   */
-  _isLinked(plugPosition: number): boolean {
-    return (null !== this._getLinkedMod(plugPosition));
   }
 
   /**
@@ -211,7 +206,7 @@ export default class Mod {
    * @private
    */
   _drawPlug(
-    plugType: Symbol,
+    plugType: PlugType,
     plugPosition: number,
     slotWidth: number,
     slotHeight: number,
@@ -277,7 +272,7 @@ export default class Mod {
    *
    * TODO draw the dragRect in rack, and test isBusi o we don't need anymore to inject rack.
    */
-  superDraw(
+  init(
     slotWidth: number,
     slotHeight: number,
     padding: number,
@@ -323,7 +318,8 @@ export default class Mod {
       group.add(text);
     }
 
-    this.plugTypes.forEach((plugType, plugPosition) => {
+    // TODO use eachLinked()
+    this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
       if (PlugType.NULL !== plugType) {
         const plugLine = this._drawPlug(
           plugType,
@@ -459,86 +455,69 @@ export default class Mod {
   }
 
   /**
-   * Get ouput coming from Mod linked to {plugPosition}, if linked.
+   * Get signals from input plugs, process it via the current Mod and propagate output signals
+   * to every linked Mods.
    */
-  getInput(plugPosition: number): any|null {
-    if (PlugType.IN !== this.getPlugType(plugPosition)
-      && PlugType.CTRL !== this.getPlugType(plugPosition)) {
-      return null;
-    }
-    const mod = this._getLinkedMod(plugPosition);
-    if (!mod) {
-      return null;
-    }
-
-    return mod.getOutput(PlugPosition.opposite(plugPosition));
-  }
-
-
-  /**
-   * We generate an uniqid to detect if this
-   *  propagation has already reach this Mod within the chain
-   *  and avoid loop.
-   */
-  _getPropagationId(id: string|null): string|null {
-    if (!id) {
-      id = Math.random().toString(36).substr(2, 9);
-    }
-
+  push(id: string): void {
     if (id === this.lastPropagationId) {
-      return null;
+      return;
     }
-
     this.lastPropagationId = id;
 
-    return this.lastPropagationId;
+    // Get signal from input plugs
+    const inputSignals: Signals = [null, null, null, null];
+
+    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
+      if (PlugType.IN === plugType || PlugType.CTRL === plugType) {
+        const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+        inputSignals[plugPosition] = mod.getOutputSignal(oppositePlugPosition);
+      }
+    });
+    this.outputSignals = this.process(inputSignals);
+
+    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
+      if (PlugType.OUT === plugType) {
+        mod.push(id);
+      }
+    });
   }
 
   /**
-   * Wire current Mod and trigger wiring on every Mods linked to each plug.
+   * When the Mod is snatched: propagate BrokenSignal output to every linked Mod.
    */
-  propagateLink(id: string|null = null, stopPropagation: boolean = false): void {
-    id = this._getPropagationId(id);
-    if (null === id) {
-      return;
-    }
+  snatch(id: string) {
 
-    if (this.audioContext) {
-      this.onLinked(this.audioContext);
-    }
+    this.events.emit('snatched');
 
-    if (!stopPropagation) {
-      this.plugTypes.forEach((plugType, plugPosition) => {
-        if (PlugType.OUT === plugType) {
-          const mod = this._getLinkedMod(plugPosition);
-          if (mod) {
-            // If a Mod is linked, and if its Mod did not originate the superWire chain
-            mod.propagateLink(id);
-          }
-        }
-      });
-    }
+    const brokenOutputSignals: Signals = [null, null, null, null];
+    this.plugTypes.forEach((plugtype, plugPosition) => {
+      const outputSignal = this.outputSignals[plugPosition];
+      if (outputSignal instanceof AudioSignal) {
+        brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal);
+      }
+    });
+    this.outputSignals = brokenOutputSignals;
+
+    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
+      if (PlugType.OUT === plugType) {
+        mod.push(id);
+      }
+    });
   }
 
-  propagateUnlink(id: string|null = null, stopPropagation: boolean = false): void {
-    id = this._getPropagationId(id);
-    if (null === id) {
-      return;
-    }
+  /**
+   * Iterate over linked Mods and plugs.
+   */
+  eachLinked(callback: Function) {
+    this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
+      const mod = this._getLinkedMod(plugPosition);
+      if (mod) {
+        callback(mod, plugType, plugPosition);
+      }
+    });
+  }
 
-    if (!stopPropagation) {
-      this.plugTypes.forEach((plugType, plugPosition) => {
-        if (PlugType.OUT === plugType) {
-          const mod = this._getLinkedMod(plugPosition);
-          if (mod) {
-            mod.propagateUnlink(id);
-          }
-        }
-      });
-    }
-
-    if (this.audioContext) {
-      this.onUnlinked(this.audioContext);
-    }
+  getOutputSignal(plugPosition: number): Signal|null {
+    return this.outputSignals[plugPosition];
   }
 }

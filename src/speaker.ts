@@ -1,13 +1,26 @@
 import Mod from './mod';
 import PlugType from './plug-type';
+import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
 
 export default class Speaker extends Mod {
+  gain: GainNode|null = null;
+
   constructor() {
     super();
 
     this.configure('', 1, 1, [PlugType.IN]);
+
+    // This is particular to the speaker.
+    // We need to specifically disconnect fron AudioContext when snatching the Mod
+    // because it is the last one in the chain.
+    this.events.on('snatched', () => {
+      if (this.audioContext && this.gain) {
+        this.gain.disconnect(this.audioContext.destination);
+        this.gain = null;
+      }
+    });
   }
 
   draw(group:Konva.Group) {
@@ -67,19 +80,21 @@ export default class Speaker extends Mod {
     group.add(reflectCircle);
   }
 
-  onLinked(audioContext:AudioContext): void {
-    // Get output from input plug
-    const input = this.getInput(PlugPosition.NORTH);
-    if (input instanceof AudioNode) {
-      input.connect(audioContext.destination);
+  process(inputSignals: Signals): Signals {
+    if (this.audioContext) {
+      const signal = inputSignals[PlugPosition.NORTH];
+      if (signal instanceof AudioSignal) {
+        // We create an Gain just to disconnect it properly
+        this.gain = this.audioContext.createGain();
+        this.gain.gain.value = this.gain.gain.defaultValue;
+        signal.node.connect(this.gain);
+        this.gain.connect(this.audioContext.destination);
+      } else if (signal instanceof BrokenAudioSignal && this.gain) {
+        this.gain.disconnect(this.audioContext.destination);
+        this.gain = null;
+      }
     }
-  }
 
-  onUnlinked(audioContext:AudioContext): void {
-    // Get output from input plug
-    const input = this.getInput(PlugPosition.NORTH);
-    if (input instanceof AudioNode) {
-      input.disconnect(audioContext.destination);
-    }
+    return [null, null, null, null];
   }
 }
