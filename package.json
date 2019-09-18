@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "jest --no-cache",
+    "test": "jest",
     "test:clear-cache": "jest --clearCache",
     "build": "webpack",
     "start": "webpack-dev-server --open"
