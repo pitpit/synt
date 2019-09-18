@@ -12,15 +12,17 @@ class ControlSignal implements Signal {
   }
 }
 
+import { AudioContext, IAudioNode as AudioNode } from 'standardized-audio-context';
+
 class AudioSignal implements Signal {
-  node: AudioNode;
-  constructor(node: AudioNode) {
+  node: AudioNode<AudioContext>;
+  constructor(node: AudioNode<AudioContext>) {
     this.node = node;
   }
 }
 
 class BrokenAudioSignal implements Signal {
-  node: AudioNode;
+  node: AudioNode<AudioContext>;
   constructor(previous: AudioSignal) {
     this.node = previous.node;
   }

@@ -2,9 +2,10 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './signal';
+import { AudioContext, StereoPannerNode } from 'standardized-audio-context';
 
 export default class StereoPanner extends Mod {
-  panner: StereoPannerNode|null = null;
+  panner: StereoPannerNode<AudioContext>|null = null;
 
   constructor() {
     super();

@@ -2,9 +2,10 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './signal';
+import { AudioContext, GainNode } from 'standardized-audio-context';
 
 export default class Gain extends Mod {
-  gain: GainNode|null = null;
+  gain: GainNode<AudioContext>|null = null;
 
   constructor() {
     super();

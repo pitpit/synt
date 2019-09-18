@@ -2,10 +2,11 @@ import Mod from './mod';
 import PlugType from './plug-type';
 import { Signals, AudioSignal, ControlSignal } from './signal';
 import PlugPosition from './plug-position';
+import { AudioContext, OscillatorNode, GainNode } from 'standardized-audio-context';
 
 export default class Note extends Mod {
-  oscillator: OscillatorNode|null = null;
-  gain: GainNode|null = null;
+  oscillator: OscillatorNode<AudioContext>|null = null;
+  gain: GainNode<AudioContext>|null = null;
 
   constructor() {
     super();

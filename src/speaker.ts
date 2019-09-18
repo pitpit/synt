@@ -3,9 +3,10 @@ import PlugType from './plug-type';
 import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
+import { AudioContext, GainNode } from 'standardized-audio-context';
 
 export default class Speaker extends Mod {
-  gain: GainNode|null = null;
+  gain: GainNode<AudioContext>|null = null;
 
   constructor() {
     super();

@@ -2,6 +2,7 @@ import Mod from './mod';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
 import Modal from './modal';
+import { AudioContext } from 'standardized-audio-context';
 
 export default class Rack {
   audioContext: AudioContext;

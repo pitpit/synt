@@ -4,6 +4,7 @@ import PlugPosition from './plug-position';
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
 import { Signals, AudioSignal, BrokenAudioSignal, Signal } from './signal';
+import { AudioContext } from 'standardized-audio-context';
 
 export default class Mod {
   x:number = 0;
