@@ -540,8 +540,12 @@ export default class Mod {
     const inputSignals: Signals = this._getInputSignals();
     this.outputSignals = this.process(inputSignals);
 
+    this._pushToOutputs(id);
+  }
+
+  _pushToOutputs(id: string) {
     this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
-      if (PlugType.OUT === plugType) {
+      if (PlugType.OUT === plugType || PlugType.CTRLIN === plugType) {
       // if (PlugType.OUT === plugType || PlugType.CTRLIN === plugType) {
         mod.push(id);
       }
@@ -565,11 +569,7 @@ export default class Mod {
     });
     this.outputSignals = brokenOutputSignals;
 
-    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
-      if (PlugType.OUT === plugType) {
-        mod.push(id);
-      }
-    });
+    this._pushToOutputs(id);
   }
 
   /**
