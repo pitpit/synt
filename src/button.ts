@@ -9,7 +9,7 @@ export default class Button extends Mod {
 
   constructor() {
     super();
-    this.configure('', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRL]);
+    this.configure('', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT]);
   }
 
   draw(group:Konva.Group) {

@@ -145,10 +145,6 @@ export default class Mod {
   }
 
   unlink(plugPosition: number): Mod {
-    // if (PlugType.CTRL !== this.getPlugType(plugPosition)) {
-    //   this.propagateUnlink(null, (PlugType.CTRL === this.getPlugType(plugPosition)));
-    // }
-
     const linked = this._getLinkedMod(plugPosition);
     if (linked) {
       this.plugs[plugPosition] = null;
@@ -191,8 +187,11 @@ export default class Mod {
         PlugType.IN === this.getPlugType(plugPosition)
         && PlugType.OUT === to.getPlugType(oppositePlugPosition)
       ) || (
-        PlugType.CTRL === this.getPlugType(plugPosition)
-        && PlugType.CTRL === to.getPlugType(oppositePlugPosition)
+        PlugType.CTRLIN === this.getPlugType(plugPosition)
+        && PlugType.CTRLOUT === to.getPlugType(oppositePlugPosition)
+      ) || (
+        PlugType.CTRLOUT === this.getPlugType(plugPosition)
+        && PlugType.CTRLIN === to.getPlugType(oppositePlugPosition)
       )
     ) {
       return true;
@@ -201,59 +200,100 @@ export default class Mod {
     return false;
   }
 
-  /**
-   * Draw input/output type indicator
-   *
-   * @private
-   */
-  _drawPlug(
+  _drawCtrlPlug(
+    group: Konva.Group,
     plugType: PlugType,
     plugPosition: number,
     slotWidth: number,
     slotHeight: number,
     strokeWidth: number,
-  ): Konva.Line {
-    const plugLineStrokeWidth = 5;
+    plugLineStrokeWidth: number,
+  ): void {
+    let color1: string;
+    let color2: string;
+    if (PlugType.CTRLIN === plugType) {
+      color1 = 'blue';
+      color2 = 'orange';
+    } else if (PlugType.CTRLOUT === plugType) {
+      color1 = 'orange';
+      color2 = 'blue';
+    } else {
+      throw new Error('Invalid plug type');
+    }
+
+    let bottomPoints: Array<number> = [0, 0, 0, 0];
+    let topPoints: Array<number> = [0, 0, 0, 0];
+    if (PlugPosition.NORTH === plugPosition) {
+      const y = strokeWidth + plugLineStrokeWidth/2;
+      bottomPoints = [strokeWidth, y, slotWidth / 2, y];
+      topPoints = [slotWidth / 2, y, slotWidth - strokeWidth, y];
+    } else if (PlugPosition.EAST === plugPosition) {
+      const x = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+      bottomPoints = [x, strokeWidth, x, this.height * slotHeight / 2];
+      topPoints = [x, this.height * slotHeight / 2, x, this.height * slotHeight - strokeWidth];
+    } else if (PlugPosition.SOUTH === plugPosition) {  // South
+      const y = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+      bottomPoints = [strokeWidth, y, slotWidth / 2, y];
+      topPoints = [strokeWidth, y, slotWidth - strokeWidth,y];
+    } else if (PlugPosition.WEST === plugPosition) { // West
+      const x = strokeWidth+ plugLineStrokeWidth/2;
+      bottomPoints = [x, strokeWidth, x, this.height * slotHeight / 2];
+      topPoints = [x, this.height * slotHeight / 2, x, this.height * slotHeight - strokeWidth];
+    } else {
+      throw new Error('Invalid plugPosition value');
+    }
+    const plugLine1 = new Konva.Line({
+      points: bottomPoints,
+      stroke: color1,
+      strokeWidth: plugLineStrokeWidth,
+      lineCap: 'sqare',
+    });
+    const plugLine2 = new Konva.Line({
+      points: topPoints,
+      stroke: color2,
+      strokeWidth: plugLineStrokeWidth,
+      lineCap: 'sqare',
+    });
+    group.add(plugLine1);
+    group.add(plugLine2);
+  }
+
+  /**
+   * Draw input/output type indicator
+   *
+   * @private
+   */
+  _drawIoPlug(
+    group: Konva.Group,
+    plugType: PlugType,
+    plugPosition: number,
+    slotWidth: number,
+    slotHeight: number,
+    strokeWidth: number,
+    plugLineStrokeWidth: number,
+  ): void {
     let color: string;
     if (PlugType.IN === plugType) {
       color = 'green';
     } else if (PlugType.OUT === plugType) {
       color = 'red';
-    } else if (PlugType.CTRL === plugType) {
-      color = 'blue';
     } else {
-      color = 'gray';
+      throw new Error('Invalid plug type');
     }
     let points: Array<number> = [0, 0, 0, 0];
 
     if (PlugPosition.NORTH === plugPosition) {
-      points = [
-        strokeWidth,
-        strokeWidth + plugLineStrokeWidth/2,
-        slotWidth - strokeWidth,
-        strokeWidth+ plugLineStrokeWidth/2,
-      ];
+      const y = strokeWidth + plugLineStrokeWidth/2;
+      points = [strokeWidth, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.EAST === plugPosition) {
-      points = [
-        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
-        strokeWidth,
-        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
-        this.height * slotHeight - strokeWidth,
-      ];
+      const y = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+      points = [y, strokeWidth, y, this.height * slotHeight - strokeWidth];
     } else if (PlugPosition.SOUTH === plugPosition) {  // South
-      points = [
-        strokeWidth,
-        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
-        slotWidth - strokeWidth,
-        this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2),
-      ];
+      const y = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+      points = [strokeWidth, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.WEST === plugPosition) { // West
-      points = [
-        strokeWidth+ plugLineStrokeWidth/2,
-        strokeWidth,
-        strokeWidth+ plugLineStrokeWidth/2,
-        this.height * slotHeight - strokeWidth,
-      ];
+      const x = strokeWidth+ plugLineStrokeWidth/2;
+      points = [x, strokeWidth, x, this.height * slotHeight - strokeWidth];
     } else {
       throw new Error('Invalid plugPosition value');
     }
@@ -265,7 +305,7 @@ export default class Mod {
       lineCap: 'sqare',
     });
 
-    return plugLine;
+    group.add(plugLine);
   }
 
   /**
@@ -319,17 +359,34 @@ export default class Mod {
       group.add(text);
     }
 
-    // TODO use eachLinked()
+    const plugLineStrokeWidth = 5;
     this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
-      if (PlugType.NULL !== plugType) {
-        const plugLine = this._drawPlug(
+      if (
+        PlugType.IN === plugType
+        || PlugType.OUT === plugType
+      ) {
+        const plugLine = this._drawIoPlug(
+          group,
           plugType,
           plugPosition,
           slotWidth,
           slotHeight,
           strokeWidth,
+          plugLineStrokeWidth,
         );
-        group.add(plugLine);
+      } else if (
+        PlugType.CTRLIN === plugType
+        || PlugType.CTRLOUT === plugType
+      ) {
+        const plugLine = this._drawCtrlPlug(
+          group,
+          plugType,
+          plugPosition,
+          slotWidth,
+          slotHeight,
+          strokeWidth,
+          plugLineStrokeWidth,
+        );
       }
     });
 
@@ -462,7 +519,7 @@ export default class Mod {
     const inputSignals: Signals = [null, null, null, null];
 
     this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
-      if (PlugType.IN === plugType || PlugType.CTRL === plugType) {
+      if (PlugType.IN === plugType || PlugType.CTRLOUT === plugType) {
         const oppositePlugPosition = PlugPosition.opposite(plugPosition);
         inputSignals[plugPosition] = mod.getOutputSignal(oppositePlugPosition);
       }
@@ -485,7 +542,7 @@ export default class Mod {
 
     this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
       if (PlugType.OUT === plugType) {
-      // if (PlugType.OUT === plugType || PlugType.CTRL === plugType) {
+      // if (PlugType.OUT === plugType || PlugType.CTRLIN === plugType) {
         mod.push(id);
       }
     });

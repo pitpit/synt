@@ -11,7 +11,7 @@ export default class Note extends Mod {
   constructor() {
     super();
 
-    this.configure('note', 1, 1, [PlugType.NULL, PlugType.CTRL, PlugType.OUT]);
+    this.configure('note', 1, 1, [PlugType.NULL, PlugType.CTRLIN, PlugType.OUT]);
   }
 
   process(inputSignals: Signals): Signals {
