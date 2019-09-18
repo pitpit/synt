@@ -26,9 +26,7 @@ export default class Button extends Mod {
     });
 
     group.on('click', () => {
-      console.log('click');
       if (this.controlSignal) {
-        console.log('callback')
         this.controlSignal.callback();
       }
     });
@@ -36,15 +34,9 @@ export default class Button extends Mod {
   }
 
   process(inputSignals: Signals): Signals {
-
-    console.log(inputSignals);
-
     const signal = inputSignals[PlugPosition.WEST];
     if (signal instanceof ControlSignal) {
       this.controlSignal = signal;
-      if (this.controlSignal) {
-        this.controlSignal.callback();
-      }
     } else if (signal instanceof BrokenAudioSignal) {
       this.controlSignal = null;
     }

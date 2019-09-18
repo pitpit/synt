@@ -15,31 +15,26 @@ export default class Note extends Mod {
   }
 
   process(inputSignals: Signals): Signals {
-    console.log('process')
+    console.log(this.constructor.name + ' >process');
     const outputSignals: Signals = [null, null, null, null];
-    if (this.audioContext) {
-      // This is a dirty fix: I don't know why but
-      // gain and oscialltor has to be rebuilt because they seems to be
-      // one time use
-      this.gain = this.audioContext.createGain();
-
-      this.oscillator = this.audioContext.createOscillator();
-      this.oscillator.type = 'sine';
-      this.oscillator.frequency.value = 440;
-
-      outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
-    }
 
     outputSignals[PlugPosition.EAST] = new ControlSignal((value: number) => {
-      console.log('aaa')
-      if (this.audioContext && this.oscillator && this.gain) {
+      if (this.audioContext) {
+        this.gain = this.audioContext.createGain();
 
+        this.oscillator = this.audioContext.createOscillator();
+        this.oscillator.type = 'sine';
+        this.oscillator.frequency.value = 440;
+
+
+        console.log(this.constructor.name + ' > a sound has been emit');
         const duration = 2;
         this.gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
 
         this.oscillator.start(0);
         this.oscillator.stop(this.audioContext.currentTime + duration);
        // this.oscillator.frequency.value = value * 1400 + 40;
+        outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
       }
     });
 
