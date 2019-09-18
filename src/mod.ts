@@ -18,7 +18,7 @@ export default class Mod {
   width:number = 1;
   plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL];
   lastPropagationId: string|null = null;
-  outputSignals: Signals = [null, null, null, null];
+  outputSignals: Signals|null = null;
 
   /**
    * This method is called when drawing.
@@ -456,6 +456,21 @@ export default class Mod {
   }
 
   /**
+   * Get signals from input plugs.
+   */
+  _getInputSignals(): Signals {
+    const inputSignals: Signals = [null, null, null, null];
+
+    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
+      if (PlugType.IN === plugType || PlugType.CTRL === plugType) {
+        const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+        inputSignals[plugPosition] = mod.getOutputSignal(oppositePlugPosition);
+      }
+    });
+
+    return inputSignals;
+  }
+  /**
    * Get signals from input plugs, process it via the current Mod and propagate output signals
    * to every linked Mods.
    */
@@ -465,15 +480,7 @@ export default class Mod {
     }
     this.lastPropagationId = id;
 
-    // Get signal from input plugs
-    const inputSignals: Signals = [null, null, null, null];
-
-    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
-      if (PlugType.IN === plugType || PlugType.CTRL === plugType) {
-        const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-        inputSignals[plugPosition] = mod.getOutputSignal(oppositePlugPosition);
-      }
-    });
+    const inputSignals: Signals = this._getInputSignals();
     this.outputSignals = this.process(inputSignals);
 
     this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
@@ -493,7 +500,8 @@ export default class Mod {
 
     const brokenOutputSignals: Signals = [null, null, null, null];
     this.plugTypes.forEach((plugtype, plugPosition) => {
-      const outputSignal = this.outputSignals[plugPosition];
+
+      const outputSignal = this.outputSignals ? this.outputSignals[plugPosition]: null;
       if (outputSignal instanceof AudioSignal) {
         brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal);
       }
@@ -519,7 +527,17 @@ export default class Mod {
     });
   }
 
+  /**
+   * Get output signal emit on plug {plugPosition}
+   */
   getOutputSignal(plugPosition: number): Signal|null {
+    if (!this.outputSignals) {
+      // If Mod has not be linked before, push() has not been call
+      // So this.outputSignals is null, we need to compute it
+      const inputSignals: Signals = this._getInputSignals();
+      this.outputSignals = this.process(inputSignals);
+    }
+
     return this.outputSignals[plugPosition];
   }
 }

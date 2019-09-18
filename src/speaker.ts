@@ -90,6 +90,7 @@ export default class Speaker extends Mod {
         this.gain.gain.value = this.gain.gain.defaultValue;
         signal.node.connect(this.gain);
         this.gain.connect(this.audioContext.destination);
+        console.log('a sound can be ear');
       } else if (signal instanceof BrokenAudioSignal && this.gain) {
         this.gain.disconnect(this.audioContext.destination);
         this.gain = null;
