@@ -155,19 +155,26 @@ export default class Rack {
       });
 
       mod.events.on('dragstart', () => {
-        mod.unlinkAll();
+        mod.snatch();
       });
 
       mod.events.on('dragend', () => {
         // Keep internal grid up to date
         this._removeFromGrid(mod)._addToGrid(mod);
 
-        mod.linkAll([
+        mod.plug([
           this._getFromGrid(mod.x, mod.y - 1), // North
           this._getFromGrid(mod.x+1, mod.y), // East
           this._getFromGrid(mod.x, mod.y + 1), // South
           this._getFromGrid(mod.x-1, mod.y), // South
         ]);
+
+        // Go back following the link chain to find entries
+        // look for mods with at least one linked OUT plug or one linked CTRLOUT plug
+        // and with no linked mods on IN plug or a CTRLIN plug
+        mod.findEntries().forEach((currentMod, index) => {
+          currentMod.start();
+        });
       });
 
       mod.events.on('dblclick', () => {
