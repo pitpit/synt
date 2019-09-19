@@ -8,7 +8,7 @@ The incredible music machine.
 
 ## TODO
 
-- [ ] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
+- [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
 - [ ] Add a file player Mod
 - [ ] Ability to rotate Mod on Rack
 - [ ] Add a top layer to put more Mods?

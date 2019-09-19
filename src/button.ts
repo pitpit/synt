@@ -13,24 +13,37 @@ export default class Button extends Mod {
   }
 
   draw(group:Konva.Group) {
-    const centerX = group.width() / 2;
-    const centerY = group.height() / 2;
+    let padding: number = 30;
+    const cornerRadius = 5;
 
-    const circle = new Konva.Circle({
-      x: centerX,
-      y: centerY,
-      radius: 14,
+    const rect1 = new Konva.Rect({
+      x: padding,
+      y: padding,
+      width:  group.width() - padding*2,
+      height: group.height() - padding*2,
+      cornerRadius,
+      stroke: 'black',
+      strokeWidth: 3,
+    });
+    group.add(rect1);
+
+    padding += 4.5;
+    const rect2 = new Konva.Rect({
+      x: padding,
+      y: padding,
+      width:  group.width() - padding*2,
+      height: group.height() - padding*2,
+      cornerRadius,
       stroke: 'black',
       fill: 'black',
-      strokeWidth: 4,
     });
+    group.add(rect2);
 
     group.on('click', () => {
       if (this.controlSignal) {
-        this.controlSignal.callback();
+        this.controlSignal.callback(1);
       }
     });
-    group.add(circle);
   }
 
   process(inputSignals: Signals): Signals {

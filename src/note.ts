@@ -5,8 +5,7 @@ import PlugPosition from './plug-position';
 import { AudioContext, OscillatorNode, GainNode } from 'standardized-audio-context';
 
 export default class Note extends Mod {
-  oscillator: OscillatorNode<AudioContext>|null = null;
-  gain: GainNode<AudioContext>|null = null;
+  play: boolean = false;
 
   constructor() {
     super();
@@ -15,26 +14,28 @@ export default class Note extends Mod {
   }
 
   process(inputSignals: Signals): Signals {
-    console.log(this.constructor.name + ' >process');
     const outputSignals: Signals = [null, null, null, null];
 
+    if (this.audioContext && this.play) {
+      const gain = this.audioContext.createGain();
+
+      const oscillator = this.audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 440;
+
+      const duration = 0.1;
+      gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + duration);
+
+      outputSignals[PlugPosition.SOUTH] = new AudioSignal(oscillator);
+      this.play = false;
+    }
+
     outputSignals[PlugPosition.EAST] = new ControlSignal((value: number) => {
-      if (this.audioContext) {
-        this.gain = this.audioContext.createGain();
-
-        this.oscillator = this.audioContext.createOscillator();
-        this.oscillator.type = 'sine';
-        this.oscillator.frequency.value = 440;
-
-
-        console.log(this.constructor.name + ' > a sound has been emit');
-        const duration = 2;
-        this.gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
-
-        this.oscillator.start(0);
-        this.oscillator.stop(this.audioContext.currentTime + duration);
-       // this.oscillator.frequency.value = value * 1400 + 40;
-        outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
+      if (this.audioContext && value === 1) {
+        this.play = true;
+        this.push(this._generateProcessId());
       }
     });
 

@@ -9,7 +9,6 @@ export default class Oscillator extends Mod {
 
   constructor() {
     super();
-
     this.configure('osc', 1, 1, [PlugType.NULL, PlugType.CTRLIN, PlugType.OUT]);
   }
 
