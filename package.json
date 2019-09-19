@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "test": "jest",
-    "test:clear-cache": "jest --clearCache",
+    "test:coverage": "jest --coverage",
     "build": "webpack",
     "start": "webpack-dev-server --open"
   },

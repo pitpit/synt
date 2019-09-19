@@ -15,8 +15,6 @@ class ControlSignal implements Signal {
   }
 }
 
-import { AudioContext, IAudioNode as AudioNode } from 'standardized-audio-context';
-
 class AudioSignal implements Signal {
   node: AudioNode<AudioContext>;
   constructor(node: AudioNode<AudioContext>) {
