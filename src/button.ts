@@ -16,33 +16,31 @@ export default class Button extends Mod {
     let padding: number = 30;
     const cornerRadius = 5;
 
-    const rect1 = new Konva.Rect({
+    const outsideRect = new Konva.Rect({
       x: padding,
       y: padding,
       width:  group.width() - padding*2,
       height: group.height() - padding*2,
-      cornerRadius,
+      cornerRadius: 5,
       stroke: 'black',
       strokeWidth: 3,
     });
-    group.add(rect1);
+    group.add(outsideRect);
 
-    padding += 4.5;
-    const rect2 = new Konva.Rect({
+    padding += 5;
+    const insideRect = new Konva.Rect({
       x: padding,
       y: padding,
       width:  group.width() - padding*2,
       height: group.height() - padding*2,
-      cornerRadius,
+      cornerRadius: 2.5,
       stroke: 'black',
       fill: 'black',
     });
-    group.add(rect2);
+    group.add(insideRect);
 
-    group.on('click', () => {
-      if (this.controlSignal) {
-        this.controlSignal.callback(1);
-      }
+    group.on('mousedown', () => {
+      // this.push(id: string, plugPosition: number, signal: Signal|null): void {
     });
   }
 

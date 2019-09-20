@@ -574,7 +574,7 @@ export default class Mod {
     const inputSignals: Signals = [null, null, null, null];
     this.outputSignals = this.process(inputSignals);
 
-    this._pushOutput(this._generateProcessId(), this.outputSignals);
+    this._pushOutput(this.outputSignals);
   }
 
   /**
@@ -592,7 +592,7 @@ export default class Mod {
     });
     this.outputSignals = brokenOutputSignals;
 
-    this._pushOutput(this._generateProcessId(), this.outputSignals);
+    this._pushOutput(this.outputSignals);
 
     this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
       this.unlink(plugPosition);
@@ -602,7 +602,11 @@ export default class Mod {
   /**
    * Push input signal to a plug.
    */
-  push(id: string, plugPosition: number, signal: Signal|null): void {
+  push(plugPosition: number, signal: Signal|null, id: string|null = null): void {
+    if (!id) {
+      id = this._generateProcessId();
+    }
+
     if (id === this.lastPropagationId) {
       return;
     }
@@ -617,18 +621,18 @@ export default class Mod {
 
     this.outputSignals = this.process(this.inputSignals);
 
-    this._pushOutput(id, this.outputSignals);
+    this._pushOutput(this.outputSignals, id);
   }
 
   /**
    * @private
    */
-  _pushOutput(id: string, outputSignals: Signals) {
+  _pushOutput(outputSignals: Signals, id: string|null = null) {
     this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
       if (PlugType.OUT === plugType) {
       // if (PlugType.OUT === plugType || PlugType.CTRLIN === plugType) {
         const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-        mod.push(id, oppositePlugPosition, outputSignals[plugPosition]);
+        mod.push(oppositePlugPosition, outputSignals[plugPosition], id);
       }
     });
   }
