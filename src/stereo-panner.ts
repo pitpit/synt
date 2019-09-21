@@ -16,11 +16,15 @@ export default class StereoPanner extends AudioMod {
     const outputSignals: Signals = [null, null, null, null];
     const signal = inputSignals[PlugPosition.NORTH];
     if (this.audioContext && signal instanceof AudioSignal) {
-      this.panner = this.audioContext.createStereoPanner();
-      this.panner.pan.value = 0;
+      if (!this.panner) {
+        this.panner = this.audioContext.createStereoPanner();
+        this.panner.pan.value = 0;
+      }
       signal.node.connect(this.panner);
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.panner);
     } else if (signal instanceof BrokenAudioSignal) {
+      signal.node.disconnect();
+      this.panner = null;
       // Transmit BrokenAudioSignal as it
       outputSignals[PlugPosition.SOUTH] = signal;
     }
@@ -34,7 +38,6 @@ export default class StereoPanner extends AudioMod {
       // value:0.5 => this.panner.pan.value:0
       // value:1 => this.panner.pan.value:1
       this.panner.pan.value = controlSignal.value * 2 - 1; // Range -1 to 1
-      console.log(this.panner.pan.value)
     }
 
     return outputSignals;

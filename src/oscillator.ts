@@ -15,10 +15,12 @@ export default class Oscillator extends AudioMod {
   getOutputs(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
     if (this.audioContext) {
-      this.oscillator = this.audioContext.createOscillator();
-      this.oscillator.type = 'sine';
-      this.oscillator.frequency.value = 440;
-      this.oscillator.start(0);
+      if (!this.oscillator) {
+        this.oscillator = this.audioContext.createOscillator();
+        this.oscillator.type = 'sine';
+        this.oscillator.frequency.value = 440;
+        this.oscillator.start(0);
+      }
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
     }
 
@@ -29,7 +31,6 @@ export default class Oscillator extends AudioMod {
     ) {
       this.oscillator.frequency.value = controlSignal.value * 1400 + 40;
     }
-
     return outputSignals;
   }
 }

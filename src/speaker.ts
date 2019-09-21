@@ -16,6 +16,7 @@ export default class Speaker extends AudioMod {
     // This is particular to the speaker.
     // We need to specifically disconnect fron AudioContext when snatching the Mod
     // because it is the last one in the chain.
+    // TODO we should get rid of that using a ending hidden mod
     this.events.on('snatched', () => {
       if (this.audioContext && this.gain) {
         this.gain.disconnect(this.audioContext.destination);
@@ -85,13 +86,15 @@ export default class Speaker extends AudioMod {
     if (this.audioContext) {
       const signal = inputSignals[PlugPosition.NORTH];
       if (signal instanceof AudioSignal) {
-        // We create an Gain just to disconnect it properly
-        this.gain = this.audioContext.createGain();
-        this.gain.gain.value = this.gain.gain.defaultValue;
+        if (!this.gain) {
+          // We create an Gain just to disconnect it properly
+          this.gain = this.audioContext.createGain();
+          this.gain.gain.value = this.gain.gain.defaultValue;
+        }
         signal.node.connect(this.gain);
         this.gain.connect(this.audioContext.destination);
-        console.log('a sound can be ear');
       } else if (signal instanceof BrokenAudioSignal && this.gain) {
+        signal.node.disconnect();
         this.gain.disconnect(this.audioContext.destination);
         this.gain = null;
       }

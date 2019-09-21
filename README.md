@@ -19,3 +19,4 @@ The incredible music machine.
 - [ ] transition sound when linking a Control Mod to avoic clicks
 - [ ] Gain value on Speaker should be controllable by Knob Mod
 - [ ] Camel case filenames
+- [ ] when connecting a know on a Mod, it should set its internal value to the linked Mod value (and animate)

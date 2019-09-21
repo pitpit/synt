@@ -17,12 +17,15 @@ export default class Gain extends AudioMod {
     const signal = inputSignals[PlugPosition.NORTH];
     if (signal instanceof AudioSignal) {
       if (this.audioContext) {
-        this.gain = this.audioContext.createGain();
-        this.gain.gain.value = this.gain.gain.defaultValue;
+        if (!this.gain) {
+          this.gain = this.audioContext.createGain();
+          this.gain.gain.value = this.gain.gain.defaultValue;
+        }
         signal.node.connect(this.gain);
         outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.gain);
       }
     } else if (signal instanceof BrokenAudioSignal) {
+      signal.node.disconnect();
       // Transmit BrokenAudioSignal as it
       outputSignals[PlugPosition.SOUTH] = signal;
     }

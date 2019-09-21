@@ -22,12 +22,13 @@ export default class Note extends AudioMod {
       && this.audioContext
     ) {
       if (controlSignal.value === 1) {
+
         this.gain = this.audioContext.createGain();
 
         this.oscillator = this.audioContext.createOscillator();
         this.oscillator.type = 'sine';
         this.oscillator.frequency.value = 440;
-
+        this.oscillator.connect(this.gain);
         this.oscillator.start(this.audioContext.currentTime);
       } else if (this.gain && this.oscillator) {
         const duration = 0.1;
@@ -35,8 +36,8 @@ export default class Note extends AudioMod {
         this.oscillator.stop(this.audioContext.currentTime + duration);
       }
 
-      if (this.oscillator) {
-        outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
+      if (this.gain) {
+        outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.gain);
       }
     }
 

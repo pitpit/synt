@@ -27,7 +27,6 @@ abstract class BaseMod {
   private lastPropagationId: string|null = null;
   private outputSignals: Signals = [null, null, null, null];
   private inputSignals: Signals = [null, null, null, null];
-  private previousInputSignals: Signals = [null, null, null, null];
 
   /**
    * This method is called when drawing.
@@ -335,24 +334,12 @@ abstract class BaseMod {
   /**
    * Compute state changes on plugs and trigger Mod onChange
    */
-  private processInputs(): void {
-    let outputs: Signals = [null, null, null, null];
+  private processInputs(inputSignals: Signals): Signals {
+    let outputSignals: Signals = [null, null, null, null];
 
-    //compute diffed input signals
+    outputSignals = this.getOutputs(inputSignals);
 
-    this.plugs.forEach((plug: Plug, plugPosition: number) => {
-      // const outputSignal = this.outputSignals[plugPosition];
-      if (plug.isInput()) {
-        outputs = this.getOutput(plugPosition, inputSignal);
-        // this.pushOutput(plugPosition, outputSignal);
-      }
-    });
-
-    this.outputSignals = outputs;
-
-    //compute diffed output signals
-
-    return;
+    return outputSignals;
   }
 
   /**
@@ -361,18 +348,17 @@ abstract class BaseMod {
    * it propagate them to every output plugs.
    */
   start() {
-    this.previousInputSignals = [null, null, null, null];
     this.inputSignals = [null, null, null, null];
-    this.processInputs();
+    const outputSignals: Signals = this.processInputs(this.inputSignals);
 
-    this.pushOutputs();
+    this.pushOutputs(outputSignals);
   }
 
   /**
    * Plug current Mod to every passed targets Mods (north, east, south, west).
    */
   plug(targets: Array<Mod|null>): void {
-    this.plugs.resetUntriggeredLinkedInput();
+    // this.plugs.resetUntriggeredLinkedInput();
     targets.forEach((target, plugPosition) => {
       const oppositePlugPosition = PlugPosition.opposite(plugPosition);
       if (target) {
@@ -393,7 +379,7 @@ abstract class BaseMod {
   snatch(): void {
     this.events.emit('snatched');
 
-    this.plugs.resetUntriggeredLinkedInput();
+    // this.plugs.resetUntriggeredLinkedInput();
 
     const brokenOutputSignals: Signals = [null, null, null, null];
     this.plugs.forEach((plug: Plug, plugPosition: number) => {
@@ -402,9 +388,11 @@ abstract class BaseMod {
         brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal);
       }
     });
-    this.outputSignals = brokenOutputSignals;
 
-    this.pushOutputs();
+    // Reset stored outputs
+    this.outputSignals = [null, null, null, null];
+
+    this.pushOutputs(brokenOutputSignals);
 
     this.plugs.forEach((plug: Plug, plugPosition: number) => {
       this.unlink(plugPosition);
@@ -431,24 +419,24 @@ abstract class BaseMod {
 
     this.inputSignals[plugPosition] = signal;
 
-    if (!this.plugs.hasUntriggeredLinkedInput()) {
-      // Some linked input plug has not been triggered yet, waiting for other signals
-      // to be propagated from entries
-      return;
-    }
+    // if (this.plugs.hasUntriggeredLinkedInput()) {
+    //   // Some linked input plug has not been triggered yet, waiting for other signals
+    //   // to be propagated from entries
+    //   return;
+    // }
 
-    this.processInputs();
+    const outputSignals: Signals = this.processInputs(this.inputSignals);
 
-    this.pushOutputs(id);
+    this.pushOutputs(outputSignals, id);
   }
 
   /**
    * Push all output signals to the outpout plugs.
    * TODO move it to Plugs ?
    */
-  private pushOutputs(id: string|null = null): void {
+  private pushOutputs(outputSignals:Signals, id: string|null = null): void {
     this.plugs.forEach((plug: Plug, plugPosition: number) => {
-      const outputSignal = this.outputSignals[plugPosition];
+      const outputSignal = outputSignals[plugPosition];
       if (outputSignal) {
         this.pushOutput(plugPosition, outputSignal);
       }
@@ -461,9 +449,17 @@ abstract class BaseMod {
    */
   pushOutput(plugPosition: number, outputSignal: Signal|null): void {
 
-    // TODO if outputSignal did not change do not propagate it
+    // if outputSignal did not change do not propagate it
+    if (outputSignal === this.outputSignals[plugPosition]) {
+      console.log('no diff with previous output signal');
+      return;
+    }
+
+    // TODO store outputSignal for later diff
+    this.outputSignals[plugPosition] = outputSignal;
+
     const plug = this.plugs.getPlug(plugPosition);
-    if (plug.isOutput() && plug.mod) {
+    if (plug.mod && plug.isOutput()) {
       const oppositePlugPosition = PlugPosition.opposite(plugPosition);
       plug.mod.pushInput(oppositePlugPosition, outputSignal);
     }
