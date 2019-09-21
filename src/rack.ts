@@ -2,6 +2,7 @@ import Mod from './mod';
 import Konva from 'konva';
 import Modal from './modal';
 import { AudioContext } from 'standardized-audio-context';
+import AudioMod from './audio-mod';
 
 export default class Rack {
   audioContext: AudioContext;
@@ -28,10 +29,8 @@ export default class Rack {
     });
 
     // We cannot initialize the AudioContext in constructor
-    // because of chrome autoplay policy:
-    //  https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
-    // We're also using compatibility trick https://developer.mozilla.org/fr/docs/Web/API/AudioContext
-    this.audioContext = new (AudioContext || (window as any).webkitAudioContext)();
+    // because of chrome autoplay policy.
+    this.audioContext = new AudioContext();
 
     const resumeAudioContext = () => {
       this.audioContext.resume().then(() => {
@@ -47,9 +46,12 @@ export default class Rack {
     if (this.isBusy(x, y, mod)) {
       throw new Error('A mod already stand at this position');
     }
-    mod.setRack(this);
-    mod.setAudioContext(this.audioContext);
-    mod.setPosition(x, y);
+    mod.rack = this;
+    mod.x = x;
+    mod.y = y;
+    if (mod instanceof AudioMod) {
+      mod.audioContext = this.audioContext;
+    }
     // TODO check if not already in rack
     this.mods.push(mod);
     this._addToGrid(mod);
@@ -172,7 +174,7 @@ export default class Rack {
         // Go back following the link chain to find entries
         // look for mods with at least one linked OUT plug or one linked CTRLOUT plug
         // and with no linked mods on IN plug or a CTRLIN plug
-        mod.findEntries().forEach((currentMod, index) => {
+        mod.findEntries().forEach((currentMod) => {
           currentMod.start();
         });
       });

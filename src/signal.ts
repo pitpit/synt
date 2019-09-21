@@ -9,9 +9,9 @@ interface Signals {
 }
 
 class ControlSignal implements Signal {
-  callback: Function;
-  constructor(callback: Function) {
-    this.callback = callback;
+  value: number;
+  constructor(value: number) {
+    this.value = value;
   }
 }
 

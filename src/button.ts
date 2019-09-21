@@ -5,8 +5,6 @@ import Konva from 'konva';
 import { Signals, BrokenAudioSignal, ControlSignal } from './signal';
 
 export default class Button extends Mod {
-  controlSignal: ControlSignal|null = null;
-
   constructor() {
     super();
     this.configure('', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT]);
@@ -40,18 +38,11 @@ export default class Button extends Mod {
     group.add(insideRect);
 
     group.on('mousedown', () => {
-      // this.push(id: string, plugPosition: number, signal: Signal|null): void {
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(1));
     });
-  }
 
-  process(inputSignals: Signals): Signals {
-    const signal = inputSignals[PlugPosition.WEST];
-    if (signal instanceof ControlSignal) {
-      this.controlSignal = signal;
-    } else if (signal instanceof BrokenAudioSignal) {
-      this.controlSignal = null;
-    }
-
-    return [null, null, null, null];
+    group.on('mouseup', () => {
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(0));
+    });
   }
 }

@@ -6,7 +6,7 @@ test('test process with null Signals', () => {
   const note = new Note();
 
   const input: Signals = [];
-  const output = note.process(input);
+  const output = note._process(input);
 
   expect(output[PlugPosition.EAST]).toBeInstanceOf(ControlSignal);
 });

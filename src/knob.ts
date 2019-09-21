@@ -12,7 +12,6 @@ export default class Knob extends Mod {
   centerY: number = 0;
   innerCircle: Konva.Circle|null = null;
   pinCircle: Konva.Circle|null = null;
-  controlSignal: ControlSignal|null = null;
 
   constructor() {
     super();
@@ -38,9 +37,8 @@ export default class Knob extends Mod {
       }
       this.value = (posX + this.range) / this.range * 0.5;
       this._updatePinCirclePosition();
-      if (this.controlSignal) {
-        this.controlSignal.callback(this.value);
-      }
+
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
     });
   }
 
@@ -99,19 +97,5 @@ export default class Knob extends Mod {
 
     this._drawKnob(group);
     this._addWheelListener(group);
-  }
-
-  process(inputSignals: Signals): Signals {
-    const signal = inputSignals[PlugPosition.WEST];
-    if (signal instanceof ControlSignal) {
-      this.controlSignal = signal;
-      if (this.controlSignal) {
-        this.controlSignal.callback(this.value);
-      }
-    } else if (signal instanceof BrokenAudioSignal) {
-      this.controlSignal = null;
-    }
-
-    return [null, null, null, null];
   }
 }

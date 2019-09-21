@@ -1,26 +1,33 @@
 import Rack from './rack';
+import Plugs from './plugs';
+import Plug from './plug';
 import PlugType from './plug-type';
 import PlugPosition from './plug-position';
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
 import { Signals, AudioSignal, BrokenAudioSignal, Signal } from './signal';
-import { AudioContext } from 'standardized-audio-context';
 
-export default class Mod {
+abstract class BaseMod {
+  /**
+   *  Absciss slot number
+   */
   x:number = 0;
+
+  /**
+   * Ordinate slot number
+   */
   y:number = 0;
-  plugs:Array<Mod|null> = [];
+  readonly plugs: Plugs = new Plugs();
   rack:Rack|null = null;
-  audioContext:AudioContext|null = null;
-  events:EventEmitter = new EventEmitter();
   label:string = '';
   height:number = 1;
   width:number = 1;
-  plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL];
-  lastPropagationId: string|null = null;
-  outputSignals: Signals = [null, null, null, null];
-  inputSignals: Signals = [null, null, null, null];
-  untriggeredInputPlugs: Array<boolean> = [true, true, true, true];
+  readonly events:EventEmitter = new EventEmitter();
+
+  private lastPropagationId: string|null = null;
+  private outputSignals: Signals = [null, null, null, null];
+  private inputSignals: Signals = [null, null, null, null];
+  private previousInputSignals: Signals = [null, null, null, null];
 
   /**
    * This method is called when drawing.
@@ -28,12 +35,17 @@ export default class Mod {
    *
    * @override
    */
-  draw(group:Konva.Group): void {
-    //
-  }
+  abstract draw(group:Konva.Group): void;
+
+  /**
+   *
+   * @override
+   */
+  abstract getOutputs(diffInputSignals: Signals): Signals;
 
   /**
    * Configure the Mod
+   * @helper
    */
   configure(
     label: string,
@@ -42,214 +54,10 @@ export default class Mod {
     plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
   ): void {
     this.label = label;
-
     this.width = width;
     this.height = height;
 
-    // TODO validate io
-    this.plugTypes = plugTypes;
-    this.plugTypes = [...this.plugTypes, ...Array(4-this.plugTypes.length).fill(PlugType.NULL)];
-  }
-
-  /**
-   * Set parent rack of this Mod
-   */
-  setRack(rack: Rack) {
-    this.rack = rack;
-
-    return this;
-  }
-
-  setAudioContext(audioContext: AudioContext) {
-    this.audioContext = audioContext;
-
-    return this;
-  }
-
-  /**
-   * Set position of this Mod.
-   *
-   * @param x Absciss slot number
-   * @param y Ordinate slot number
-   */
-  setPosition(x:number, y:number) {
-    this.x = x;
-    this.y = y;
-
-    return this;
-  }
-
-  /**
-   * Get the signal type of the plug.
-   */
-  getPlugType(plugPosition: number): Symbol|null{
-    if (this.plugTypes[plugPosition]) {
-      return this.plugTypes[plugPosition];
-    }
-
-    return null;
-  }
-
-  /**
-   * @override
-   */
-  process(inputSignals: Signals): Signals {
-    return [null, null, null, null];
-  }
-
-  _generateProcessId(): string {
-    return Math.random().toString(36).substr(2, 9);;
-  }
-
-  /**
-   * Get current mod linked to plug {plugPosition}.
-   *
-   * @private
-   */
-  _getLinkedMod(plugPosition: number): Mod|null {
-    if (this.plugs[plugPosition]) {
-      return this.plugs[plugPosition];
-    }
-
-    return null;
-  }
-
-  /**
-   * Can the current Mod be linked to the given Mod {to} through the {plugPosition} plug?
-   *
-   * TODO check that the input accept the output type
-   *
-   * @private
-   */
-  _isLinkable(plugPosition: number, to:Mod): boolean {
-    const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-    if (
-      (
-        PlugType.OUT === this.getPlugType(plugPosition)
-        && PlugType.IN === to.getPlugType(oppositePlugPosition)
-      ) || (
-        PlugType.IN === this.getPlugType(plugPosition)
-        && PlugType.OUT === to.getPlugType(oppositePlugPosition)
-      ) || (
-        PlugType.CTRLIN === this.getPlugType(plugPosition)
-        && PlugType.CTRLOUT === to.getPlugType(oppositePlugPosition)
-      ) || (
-        PlugType.CTRLOUT === this.getPlugType(plugPosition)
-        && PlugType.CTRLIN === to.getPlugType(oppositePlugPosition)
-      )
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
-  _drawCtrlPlug(
-    group: Konva.Group,
-    plugType: PlugType,
-    plugPosition: number,
-    slotWidth: number,
-    slotHeight: number,
-    strokeWidth: number,
-    plugLineStrokeWidth: number,
-  ): void {
-    let color1: string;
-    let color2: string;
-    if (PlugType.CTRLIN === plugType) {
-      color1 = 'blue';
-      color2 = 'orange';
-    } else if (PlugType.CTRLOUT === plugType) {
-      color1 = 'orange';
-      color2 = 'blue';
-    } else {
-      throw new Error('Invalid plug type');
-    }
-
-    let bottomPoints: Array<number> = [0, 0, 0, 0];
-    let topPoints: Array<number> = [0, 0, 0, 0];
-    if (PlugPosition.NORTH === plugPosition) {
-      const y = strokeWidth + plugLineStrokeWidth/2;
-      bottomPoints = [strokeWidth, y, slotWidth / 2, y];
-      topPoints = [slotWidth / 2, y, slotWidth - strokeWidth, y];
-    } else if (PlugPosition.EAST === plugPosition) {
-      const x = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
-      bottomPoints = [x, strokeWidth, x, this.height * slotHeight / 2];
-      topPoints = [x, this.height * slotHeight / 2, x, this.height * slotHeight - strokeWidth];
-    } else if (PlugPosition.SOUTH === plugPosition) {  // South
-      const y = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
-      bottomPoints = [strokeWidth, y, slotWidth / 2, y];
-      topPoints = [strokeWidth, y, slotWidth - strokeWidth,y];
-    } else if (PlugPosition.WEST === plugPosition) { // West
-      const x = strokeWidth+ plugLineStrokeWidth/2;
-      bottomPoints = [x, strokeWidth, x, this.height * slotHeight / 2];
-      topPoints = [x, this.height * slotHeight / 2, x, this.height * slotHeight - strokeWidth];
-    } else {
-      throw new Error('Invalid plugPosition value');
-    }
-    const plugLine1 = new Konva.Line({
-      points: bottomPoints,
-      stroke: color1,
-      strokeWidth: plugLineStrokeWidth,
-      lineCap: 'sqare',
-    });
-    const plugLine2 = new Konva.Line({
-      points: topPoints,
-      stroke: color2,
-      strokeWidth: plugLineStrokeWidth,
-      lineCap: 'sqare',
-    });
-    group.add(plugLine1);
-    group.add(plugLine2);
-  }
-
-  /**
-   * Draw input/output type indicator
-   *
-   * @private
-   */
-  _drawIoPlug(
-    group: Konva.Group,
-    plugType: PlugType,
-    plugPosition: number,
-    slotWidth: number,
-    slotHeight: number,
-    strokeWidth: number,
-    plugLineStrokeWidth: number,
-  ): void {
-    let color: string;
-    if (PlugType.IN === plugType) {
-      color = 'green';
-    } else if (PlugType.OUT === plugType) {
-      color = 'red';
-    } else {
-      throw new Error('Invalid plug type');
-    }
-    let points: Array<number> = [0, 0, 0, 0];
-
-    if (PlugPosition.NORTH === plugPosition) {
-      const y = strokeWidth + plugLineStrokeWidth/2;
-      points = [strokeWidth, y, slotWidth - strokeWidth, y];
-    } else if (PlugPosition.EAST === plugPosition) {
-      const y = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
-      points = [y, strokeWidth, y, this.height * slotHeight - strokeWidth];
-    } else if (PlugPosition.SOUTH === plugPosition) {  // South
-      const y = this.width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
-      points = [strokeWidth, y, slotWidth - strokeWidth, y];
-    } else if (PlugPosition.WEST === plugPosition) { // West
-      const x = strokeWidth+ plugLineStrokeWidth/2;
-      points = [x, strokeWidth, x, this.height * slotHeight - strokeWidth];
-    } else {
-      throw new Error('Invalid plugPosition value');
-    }
-
-    const plugLine = new Konva.Line({
-      points,
-      stroke: color,
-      strokeWidth: plugLineStrokeWidth,
-      lineCap: 'sqare',
-    });
-
-    group.add(plugLine);
+    this.plugs.setTypes(plugTypes);
   }
 
   /**
@@ -303,35 +111,16 @@ export default class Mod {
       group.add(text);
     }
 
-    const plugLineStrokeWidth = 5;
-    this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
-      if (
-        PlugType.IN === plugType
-        || PlugType.OUT === plugType
-      ) {
-        const plugLine = this._drawIoPlug(
-          group,
-          plugType,
-          plugPosition,
-          slotWidth,
-          slotHeight,
-          strokeWidth,
-          plugLineStrokeWidth,
-        );
-      } else if (
-        PlugType.CTRLIN === plugType
-        || PlugType.CTRLOUT === plugType
-      ) {
-        const plugLine = this._drawCtrlPlug(
-          group,
-          plugType,
-          plugPosition,
-          slotWidth,
-          slotHeight,
-          strokeWidth,
-          plugLineStrokeWidth,
-        );
-      }
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
+      plug.draw(
+        group,
+        plugPosition,
+        this.width,
+        this.height,
+        slotWidth,
+        slotHeight,
+        strokeWidth,
+      );
     });
 
     // Draw drag and drop shadow
@@ -456,61 +245,6 @@ export default class Mod {
     this.draw(group);
   }
 
-  hasUntriggeredLinkedInputPlug(): boolean {
-    let untriggered = false;
-
-    const breakMe: object = {};
-    try {
-      this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
-        const mod = this._getLinkedMod(plugPosition);
-        if (plugType === PlugType.IN && mod && this.untriggeredInputPlugs[plugPosition]) {
-          untriggered = true;
-          throw breakMe;
-        }
-      });
-    } catch (e) {
-      if (e !== breakMe) throw e;
-    }
-
-    return untriggered;
-  }
-
-  link(plugPosition: number, target: Mod): Mod {
-
-    // TODO validate link (is the mod linked to another plug of this mod?)
-    const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-
-    const linked = this._getLinkedMod(plugPosition);
-    if (linked) {
-      if (target === linked) {
-        // Already linked to Mod {target}, abort
-        return this;
-      }
-
-      // Unlink current linked Mod to free the plug
-      linked.unlink(oppositePlugPosition);
-    }
-
-    this.plugs[plugPosition] = target;
-
-    // Reserse link
-    target.link(oppositePlugPosition, this);
-
-    return this;
-  }
-
-  unlink(plugPosition: number): Mod {
-    const linked = this._getLinkedMod(plugPosition);
-    if (linked) {
-      this.plugs[plugPosition] = null;
-
-      // Reverse unlink target Mod
-      linked.unlink(PlugPosition.opposite(plugPosition));
-    }
-
-    return this;
-  }
-
   /**
    * Is the mod an entry?
    * A mod is an entry if it has at least one linked OUT plug and no IN plug (linked or not)
@@ -521,12 +255,12 @@ export default class Mod {
 
     const breakMe: object = {};
     try {
-      this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
-        if (plugType === PlugType.IN) {
+      this.plugs.forEach((plug: Plug, plugPosition: number) => {
+        if (plug.type === PlugType.IN) {
           haveIn = true;
           throw breakMe;
         }
-        if (plugType === PlugType.OUT) {
+        if (plug.isOutput()) {
           haveLinkedOut = true;
         }
       });
@@ -546,45 +280,123 @@ export default class Mod {
     }
 
     let entries: Array<Mod> = [];
-    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
-      if (PlugType.IN === plugType) {
-        const subEntries = mod.findEntries();
-        entries = [...entries, ...subEntries];
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
+      if (plug.mod && plug.isInput()) {
+        const likedModEntries = plug.mod.findEntries();
+        entries = [...entries, ...likedModEntries];
       }
     });
-
     return entries;
   }
 
   /**
-   * Plug current Mod to every passed targets Mods (north, east, south, west)
+   * TODO move it to Plugs or Plug
    */
-  plug(targets: Array<Mod|null>) {
+  link(plugPosition: number, target: Mod): void {
+    // TODO validate link (is the mod linked to another plug of this mod?)
+    const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+
+    const plug = this.plugs.getPlug(plugPosition);
+    if (plug.mod) {
+      if (target === plug.mod) {
+        // Already linked to Mod {target}, abort
+        return;
+      }
+
+      // Unlink current linked Mod to free the plug
+      plug.mod.unlink(oppositePlugPosition);
+    }
+
+    plug.mod = target;
+
+    // Reserse link
+    target.link(oppositePlugPosition, this);
+
+    return;
+  }
+
+    /**
+   * TODO move it to Plugs or Plug
+   */
+  unlink(plugPosition: number): void {
+    const plug = this.plugs.getPlug(plugPosition);
+    const linked = plug.mod;
+    if (plug.mod) {
+      const mod = plug.mod;
+      plug.mod = null;
+
+      // Reverse unlink target Mod
+      mod.unlink(PlugPosition.opposite(plugPosition));
+    }
+
+    return;
+  }
+
+  /**
+   * Compute state changes on plugs and trigger Mod onChange
+   */
+  private processInputs(): void {
+    let outputs: Signals = [null, null, null, null];
+
+    //compute diffed input signals
+
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
+      // const outputSignal = this.outputSignals[plugPosition];
+      if (plug.isInput()) {
+        outputs = this.getOutput(plugPosition, inputSignal);
+        // this.pushOutput(plugPosition, outputSignal);
+      }
+    });
+
+    this.outputSignals = outputs;
+
+    //compute diffed output signals
+
+    return;
+  }
+
+  /**
+   * Start the signal chain.
+   * It computes output signals from empty signals then
+   * it propagate them to every output plugs.
+   */
+  start() {
+    this.previousInputSignals = [null, null, null, null];
+    this.inputSignals = [null, null, null, null];
+    this.processInputs();
+
+    this.pushOutputs();
+  }
+
+  /**
+   * Plug current Mod to every passed targets Mods (north, east, south, west).
+   */
+  plug(targets: Array<Mod|null>): void {
+    this.plugs.resetUntriggeredLinkedInput();
     targets.forEach((target, plugPosition) => {
-      if (target && this._isLinkable(plugPosition, target)) {
-        this.link(plugPosition, target);
+      const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+      if (target) {
+        const fromPlug = this.plugs.getPlug(plugPosition);
+        const toPlug = target.plugs.getPlug(oppositePlugPosition);
+        if (fromPlug.isLinkable(toPlug)) {
+          this.link(plugPosition, target);
+        }
       }
     });
   }
 
   /**
-   * Start the signal chain.
+   * Snatch current Mod from linked Mods.
+   * It propagates a BrokenAudioSignal through every output plugs
+   * then it unlinks each plug.
    */
-  start() {
-    const inputSignals: Signals = [null, null, null, null];
-    this.outputSignals = this.process(inputSignals);
-
-    this._pushOutput(this.outputSignals);
-  }
-
-  /**
-   * Snatch current Mod from linked Mods
-   */
-  snatch() {
+  snatch(): void {
     this.events.emit('snatched');
 
+    this.plugs.resetUntriggeredLinkedInput();
+
     const brokenOutputSignals: Signals = [null, null, null, null];
-    this.plugTypes.forEach((plugtype, plugPosition) => {
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
       const outputSignal = this.outputSignals[plugPosition];
       if (outputSignal instanceof AudioSignal) {
         brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal);
@@ -592,19 +404,24 @@ export default class Mod {
     });
     this.outputSignals = brokenOutputSignals;
 
-    this._pushOutput(this.outputSignals);
+    this.pushOutputs();
 
-    this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
       this.unlink(plugPosition);
     });
   }
 
+  private generateProcessId(): string {
+    return Math.random().toString(36).substr(2, 9);
+  }
+
   /**
-   * Push input signal to a plug.
+   * Push an input signal to a plug.
+   * TODO move it to Plugs ?
    */
-  push(plugPosition: number, signal: Signal|null, id: string|null = null): void {
+  pushInput(plugPosition: number, signal: Signal|null, id: string|null = null): void {
     if (!id) {
-      id = this._generateProcessId();
+      id = this.generateProcessId();
     }
 
     if (id === this.lastPropagationId) {
@@ -614,38 +431,52 @@ export default class Mod {
 
     this.inputSignals[plugPosition] = signal;
 
-    if (!this.hasUntriggeredLinkedInputPlug()) {
-      // Some linked input plug has not been triggered yet, waiting
+    if (!this.plugs.hasUntriggeredLinkedInput()) {
+      // Some linked input plug has not been triggered yet, waiting for other signals
+      // to be propagated from entries
       return;
     }
 
-    this.outputSignals = this.process(this.inputSignals);
+    this.processInputs();
 
-    this._pushOutput(this.outputSignals, id);
+    this.pushOutputs(id);
   }
 
   /**
-   * @private
+   * Push all output signals to the outpout plugs.
+   * TODO move it to Plugs ?
    */
-  _pushOutput(outputSignals: Signals, id: string|null = null) {
-    this.eachLinked((mod: Mod, plugType: PlugType, plugPosition: number) => {
-      if (PlugType.OUT === plugType) {
-      // if (PlugType.OUT === plugType || PlugType.CTRLIN === plugType) {
-        const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-        mod.push(oppositePlugPosition, outputSignals[plugPosition], id);
+  private pushOutputs(id: string|null = null): void {
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
+      const outputSignal = this.outputSignals[plugPosition];
+      if (outputSignal) {
+        this.pushOutput(plugPosition, outputSignal);
       }
     });
   }
 
   /**
-   * Iterate over linked Mods and plugs.
+   * Push an output signal to a plug.
+   * @helper
    */
-  eachLinked(callback: Function) {
-    this.plugTypes.forEach((plugType: PlugType, plugPosition: number) => {
-      const mod = this._getLinkedMod(plugPosition);
-      if (mod) {
-        callback(mod, plugType, plugPosition);
-      }
-    });
+  pushOutput(plugPosition: number, outputSignal: Signal|null): void {
+
+    // TODO if outputSignal did not change do not propagate it
+    const plug = this.plugs.getPlug(plugPosition);
+    if (plug.isOutput() && plug.mod) {
+      const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+      plug.mod.pushInput(oppositePlugPosition, outputSignal);
+    }
+  }
+}
+
+export default class Mod extends BaseMod
+{
+  draw(group:Konva.Group) {
+    //
+  }
+
+  getOutputs(diffInputSignals: Signals): Signals {
+    return [null, null, null, null];
   }
 }

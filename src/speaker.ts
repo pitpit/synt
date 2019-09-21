@@ -1,11 +1,11 @@
-import Mod from './mod';
+import AudioMod from './audio-mod';
 import PlugType from './plug-type';
 import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
 import Konva from 'konva';
 import PlugPosition from './plug-position';
 import { AudioContext, GainNode } from 'standardized-audio-context';
 
-export default class Speaker extends Mod {
+export default class Speaker extends AudioMod {
   gain: GainNode<AudioContext>|null = null;
 
   constructor() {
@@ -81,7 +81,7 @@ export default class Speaker extends Mod {
     group.add(reflectCircle);
   }
 
-  process(inputSignals: Signals): Signals {
+  getOutputs(inputSignals: Signals): Signals {
     if (this.audioContext) {
       const signal = inputSignals[PlugPosition.NORTH];
       if (signal instanceof AudioSignal) {
