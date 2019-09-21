@@ -12,8 +12,8 @@ export default class Button extends Mod {
 
   draw(group:Konva.Group) {
     let padding: number = 30;
-    const cornerRadius = 5;
 
+    const subgroup = new Konva.Group();
     const outsideRect = new Konva.Rect({
       x: padding,
       y: padding,
@@ -23,7 +23,7 @@ export default class Button extends Mod {
       stroke: 'black',
       strokeWidth: 3,
     });
-    group.add(outsideRect);
+    subgroup.add(outsideRect);
 
     padding += 5;
     const insideRect = new Konva.Rect({
@@ -34,15 +34,18 @@ export default class Button extends Mod {
       cornerRadius: 2.5,
       stroke: 'black',
       fill: 'black',
+      strokeWidth: 1,
     });
-    group.add(insideRect);
+    subgroup.add(insideRect);
 
-    group.on('mousedown', () => {
+    subgroup.on('mousedown', () => {
       this.pushOutput(PlugPosition.WEST, new ControlSignal(1));
     });
 
-    group.on('mouseup', () => {
+    subgroup.on('mouseup', () => {
       this.pushOutput(PlugPosition.WEST, new ControlSignal(0));
     });
+
+    group.add(subgroup);
   }
 }
