@@ -5,6 +5,7 @@ The incredible music machine.
 * https://konvajs.org
 * https://tonejs.github.io/
 * https://github.com/wavesjs/waves-ui
+* https://people.carleton.edu/~jellinge/mysynth.html
 
 ## TODO
 

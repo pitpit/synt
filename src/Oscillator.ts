@@ -2,10 +2,11 @@ import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import { Signals, AudioSignal, ControlSignal } from './Signal';
 import PlugPosition from './PlugPosition';
-import { AudioContext, OscillatorNode, GainNode } from 'standardized-audio-context';
+import { AudioContext, OscillatorNode, TOscillatorType } from 'standardized-audio-context';
 
-export default class Oscillator extends AudioMod {
+export default abstract class Oscillator extends AudioMod {
   oscillator: OscillatorNode<AudioContext>|null = null;
+  abstract type: TOscillatorType;
 
   constructor() {
     super();
@@ -17,7 +18,7 @@ export default class Oscillator extends AudioMod {
     if (this.audioContext) {
       if (!this.oscillator) {
         this.oscillator = this.audioContext.createOscillator();
-        this.oscillator.type = 'sine';
+        this.oscillator.type = this.type;
         this.oscillator.frequency.value = 440;
         this.oscillator.start(0);
       }
