@@ -1,7 +1,7 @@
-import PlugPosition from './plug-position';
-import PlugType from './plug-type';
+import PlugPosition from './PlugPosition';
+import PlugType from './PlugType';
 import Plug from './plug';
-import Mod from './mod';
+import Mod from './Mod';
 
 export default class Plugs {
   items:Array<Plug> = [new Plug(), new Plug(), new Plug(), new Plug()];

@@ -18,5 +18,5 @@ The incredible music machine.
 - [ ] implement Flanger & Reverb
 - [ ] transition sound when linking a Control Mod to avoic clicks
 - [ ] Gain value on Speaker should be controllable by Knob Mod
-- [ ] Camel case filenames
+- [X] Camel case filenames
 - [ ] when connecting a know on a Mod, it should set its internal value to the linked Mod value (and animate)

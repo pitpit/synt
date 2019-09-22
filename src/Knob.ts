@@ -1,8 +1,8 @@
-import Mod from './mod';
-import PlugType from './plug-type';
-import PlugPosition from './plug-position';
+import Mod from './Mod';
+import PlugType from './PlugType';
+import PlugPosition from './PlugPosition';
 import Konva from 'konva';
-import { Signals, BrokenAudioSignal, ControlSignal } from './signal';
+import { Signals, BrokenAudioSignal, ControlSignal } from './Signal';
 
 export default class Knob extends Mod {
   range: number = 400;

@@ -1,7 +1,7 @@
-import AudioMod from './audio-mod';
-import PlugType from './plug-type';
-import PlugPosition from './plug-position';
-import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './signal';
+import AudioMod from './AudioMod';
+import PlugType from './PlugType';
+import PlugPosition from './PlugPosition';
+import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './Signal';
 import { AudioContext, GainNode } from 'standardized-audio-context';
 
 export default class Gain extends AudioMod {

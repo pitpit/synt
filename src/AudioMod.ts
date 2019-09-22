@@ -1,6 +1,4 @@
-import Mod from './mod';
-import Konva from 'konva';
-import { Signals } from './signal';
+import Mod from './Mod';
 import { AudioContext } from 'standardized-audio-context';
 
 export default class AudioMod extends Mod {

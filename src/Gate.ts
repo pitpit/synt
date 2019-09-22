@@ -1,7 +1,7 @@
-import Mod from './mod';
-import PlugType from './plug-type';
-import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
-import PlugPosition from './plug-position';
+import Mod from './Mod';
+import PlugType from './PlugType';
+import { Signals, AudioSignal, BrokenAudioSignal} from './Signal';
+import PlugPosition from './PlugPosition';
 
 export default class Gate extends Mod {
   constructor() {

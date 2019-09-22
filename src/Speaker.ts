@@ -1,8 +1,8 @@
-import AudioMod from './audio-mod';
-import PlugType from './plug-type';
-import { Signals, AudioSignal, BrokenAudioSignal} from './signal';
+import AudioMod from './AudioMod';
+import PlugType from './PlugType';
+import { Signals, AudioSignal, BrokenAudioSignal} from './Signal';
 import Konva from 'konva';
-import PlugPosition from './plug-position';
+import PlugPosition from './PlugPosition';
 import { AudioContext, GainNode } from 'standardized-audio-context';
 
 export default class Speaker extends AudioMod {

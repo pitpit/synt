@@ -1,7 +1,7 @@
-import AudioMod from './audio-mod';
-import PlugType from './plug-type';
-import { Signals, AudioSignal, ControlSignal } from './signal';
-import PlugPosition from './plug-position';
+import AudioMod from './AudioMod';
+import PlugType from './PlugType';
+import { Signals, AudioSignal, ControlSignal } from './Signal';
+import PlugPosition from './PlugPosition';
 import { AudioContext, OscillatorNode, GainNode } from 'standardized-audio-context';
 
 export default class Oscillator extends AudioMod {

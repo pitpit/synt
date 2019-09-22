@@ -1,5 +1,5 @@
-import Gate from '../../src/gate';
-import {Signals , ControlSignal} from '../../src/signal';
+import Gate from '../../src/Gate';
+import {Signals , ControlSignal} from '../../src/Signal';
 
 test('test process with null Signals', () => {
   const gate = new Gate();

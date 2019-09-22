@@ -1,11 +1,11 @@
-import Rack from './rack';
+import Rack from './Rack';
 import Plugs from './plugs';
 import Plug from './plug';
-import PlugType from './plug-type';
-import PlugPosition from './plug-position';
+import PlugType from './PlugType';
+import PlugPosition from './PlugPosition';
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
-import { Signals, AudioSignal, BrokenAudioSignal, Signal } from './signal';
+import { Signals, AudioSignal, BrokenAudioSignal, Signal } from './Signal';
 
 abstract class BaseMod {
   /**

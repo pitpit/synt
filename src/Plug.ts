@@ -1,6 +1,6 @@
-import PlugType from './plug-type';
-import PlugPosition from './plug-position';
-import Mod from './mod';
+import PlugType from './PlugType';
+import PlugPosition from './PlugPosition';
+import Mod from './Mod';
 import Konva from 'konva';
 
 export default class Plug {

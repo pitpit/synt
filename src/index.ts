@@ -1,11 +1,11 @@
-import Rack from './rack';
-import Speaker from './speaker';
-import Oscillator from './oscillator';
-import Gate from './gate';
-import StereoPanner from './stereo-panner';
-import Gain from './gain';
-import Knob from './knob';
-import SwitchOn from './switch-on';
+import Rack from './Rack';
+import Speaker from './Speaker';
+import Oscillator from './Oscillator';
+import Gate from './Gate';
+import StereoPanner from './StereoPanner';
+import Gain from './Gain';
+import Knob from './Knob';
+import SwitchOn from './SwitchOn';
 import './index.scss';
 
 const rack = new Rack();
