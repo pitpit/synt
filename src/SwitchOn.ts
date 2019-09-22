@@ -10,7 +10,7 @@ export default class SwitchOn extends AudioMod {
 
   constructor() {
     super();
-    this.configure('', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
+    this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
   draw(group:Konva.Group) {

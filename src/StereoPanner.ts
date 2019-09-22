@@ -9,7 +9,7 @@ export default class StereoPanner extends AudioMod {
 
   constructor() {
     super();
-    this.configure('stereo', 1, 1, [PlugType.IN, PlugType.CTRLIN, PlugType.OUT]);
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'stereo');
   }
 
   getOutputs(inputSignals: Signals): Signals {

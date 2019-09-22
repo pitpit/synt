@@ -15,7 +15,7 @@ export default class Knob extends Mod {
 
   constructor() {
     super();
-    this.configure('knob', 1, 1, [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT]);
+    this.configure([PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT], 'knob');
   }
 
   /**

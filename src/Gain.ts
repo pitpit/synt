@@ -9,7 +9,7 @@ export default class Gain extends AudioMod {
 
   constructor() {
     super();
-    this.configure('gain', 1, 1, [PlugType.IN, PlugType.CTRLIN, PlugType.OUT]);
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'gain');
   }
 
   getOutputs(inputSignals: Signals): Signals {

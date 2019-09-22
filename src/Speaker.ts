@@ -11,7 +11,7 @@ export default class Speaker extends AudioMod {
   constructor() {
     super();
 
-    this.configure('', 1, 1, [PlugType.IN]);
+    this.configure([PlugType.IN]);
 
     // This is particular to the speaker.
     // We need to specifically disconnect fron AudioContext when snatching the Mod

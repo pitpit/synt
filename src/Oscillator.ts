@@ -10,7 +10,7 @@ export default abstract class Oscillator extends AudioMod {
 
   constructor() {
     super();
-    this.configure('osc', 1, 1, [PlugType.NULL, PlugType.CTRLIN, PlugType.OUT]);
+    this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT], 'osc');
   }
 
   getOutputs(inputSignals: Signals): Signals {

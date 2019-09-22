@@ -47,10 +47,10 @@ abstract class BaseMod {
    * @helper
    */
   configure(
-    label: string,
+    plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
+    label: string = '',
     width:number = 1,
     height:number = 1,
-    plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
   ): void {
     this.label = label;
     this.width = width;

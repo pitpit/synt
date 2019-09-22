@@ -6,7 +6,7 @@ import PlugPosition from './PlugPosition';
 export default class Gate extends Mod {
   constructor() {
     super();
-    this.configure('', 1, 1, [PlugType.IN, PlugType.NULL, PlugType.OUT]);
+    this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
   getOutputs(inputSignals: Signals): Signals {
