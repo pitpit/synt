@@ -85,18 +85,25 @@ export default class Speaker extends AudioMod {
   getOutputs(inputSignals: Signals): Signals {
     if (this.audioContext) {
       const signal = inputSignals[PlugPosition.NORTH];
+      const duration = 0.05;
       if (signal instanceof AudioSignal) {
         if (!this.gain) {
           // We create an Gain just to disconnect it properly
           this.gain = this.audioContext.createGain();
-          this.gain.gain.value = this.gain.gain.defaultValue;
+          this.gain.gain.value = 0.0001;
         }
+        this.gain.gain.exponentialRampToValueAtTime(1, this.audioContext.currentTime + duration);
         signal.node.connect(this.gain);
         this.gain.connect(this.audioContext.destination);
       } else if (signal instanceof BrokenAudioSignal && this.gain) {
-        signal.node.disconnect();
-        this.gain.disconnect(this.audioContext.destination);
-        this.gain = null;
+        this.gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
+        setTimeout(() => {
+          signal.node.disconnect();
+          if (this.gain && this.audioContext) {
+            this.gain.disconnect(this.audioContext.destination);
+            this.gain = null;
+          }
+        }, duration * 1000 + 1000);
       }
     }
 

@@ -24,8 +24,8 @@ class AudioSignal implements Signal {
 
 class BrokenAudioSignal implements Signal {
   node: AudioNode<AudioContext>;
-  constructor(previous: AudioSignal) {
-    this.node = previous.node;
+  constructor(node: AudioNode<AudioContext>) {
+    this.node = node;
   }
 }
 

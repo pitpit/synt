@@ -385,7 +385,7 @@ abstract class BaseMod {
     this.plugs.forEach((plug: Plug, plugPosition: number) => {
       const outputSignal = this.outputSignals[plugPosition];
       if (outputSignal instanceof AudioSignal) {
-        brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal);
+        brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal.node);
       }
     });
 
