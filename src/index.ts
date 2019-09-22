@@ -1,5 +1,6 @@
 import Rack from './Rack';
 import Speaker from './Speaker';
+import Keyboard from './Keyboard';
 import SineOscillator from './SineOscillator';
 import SquareOscillator from './SquareOscillator';
 import SawtoothOscillator from './SawtoothOscillator';
@@ -36,6 +37,7 @@ rack.add(new Speaker(), 1, 4);
 rack.add(new Speaker(), 2, 4);
 rack.add(new Speaker(), 3, 4);
 rack.add(new Speaker(), 4, 4);
+rack.add(new Keyboard(), 1, 5);
 
 rack.draw();
 
