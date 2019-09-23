@@ -1,9 +1,11 @@
+import Konva from 'konva';
+import { AudioContext, GainNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
-import { Signals, AudioSignal, BrokenAudioSignal} from './Signal';
-import Konva from 'konva';
+import { Signals } from './Signal';
+import AudioSignal from './AudioSignal';
+import BrokenAudioSignal from './BrokenAudioSignal';
 import PlugPosition from './PlugPosition';
-import { AudioContext, GainNode } from 'standardized-audio-context';
 
 export default class Speaker extends AudioMod {
   gain: GainNode<AudioContext>|null = null;
@@ -25,8 +27,7 @@ export default class Speaker extends AudioMod {
     });
   }
 
-  draw(group:Konva.Group) {
-
+  draw(group: Konva.Group) {
     const outterCircleRadius = 32;
     const outterCircleStrokeWidth = 8;
     const innerCircleRadius = 10;
@@ -92,11 +93,17 @@ export default class Speaker extends AudioMod {
           this.gain = this.audioContext.createGain();
           this.gain.gain.value = 0.0001;
         }
-        this.gain.gain.exponentialRampToValueAtTime(1, this.audioContext.currentTime + duration);
+        this.gain.gain.exponentialRampToValueAtTime(
+          1,
+          this.audioContext.currentTime + duration,
+        );
         signal.node.connect(this.gain);
         this.gain.connect(this.audioContext.destination);
       } else if (signal instanceof BrokenAudioSignal && this.gain) {
-        this.gain.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
+        this.gain.gain.exponentialRampToValueAtTime(
+          0.00001,
+          this.audioContext.currentTime + duration,
+        );
         setTimeout(() => {
           signal.node.disconnect();
           if (this.gain && this.audioContext) {

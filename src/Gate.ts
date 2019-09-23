@@ -1,6 +1,6 @@
 import Mod from './Mod';
 import PlugType from './PlugType';
-import { Signals, AudioSignal, BrokenAudioSignal} from './Signal';
+import { Signals } from './Signal';
 import PlugPosition from './PlugPosition';
 
 export default class Gate extends Mod {
@@ -11,7 +11,7 @@ export default class Gate extends Mod {
 
   getOutputs(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
-    outputSignals[PlugPosition.SOUTH] = inputSignals[PlugPosition.NORTH] ? inputSignals[PlugPosition.NORTH] : null;
+    outputSignals[PlugPosition.SOUTH] = inputSignals[PlugPosition.NORTH];
 
     return outputSignals;
   }

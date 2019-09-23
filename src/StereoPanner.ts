@@ -1,8 +1,10 @@
+import { AudioContext, StereoPannerNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
-import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './Signal';
-import { AudioContext, StereoPannerNode } from 'standardized-audio-context';
+import {
+  Signals, AudioSignal, BrokenAudioSignal, ControlSignal,
+} from './Signal';
 
 export default class StereoPanner extends AudioMod {
   panner: StereoPannerNode<AudioContext>|null = null;

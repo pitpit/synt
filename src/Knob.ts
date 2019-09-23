@@ -1,16 +1,22 @@
+import Konva from 'konva';
 import Mod from './Mod';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
-import Konva from 'konva';
-import { Signals, BrokenAudioSignal, ControlSignal } from './Signal';
+import ControlSignal from './ControlSignal';
 
 export default class Knob extends Mod {
   range: number = 400;
+
   value: number = 0.5;
+
   group: Konva.Group|null = null;
+
   centerX: number = 0;
+
   centerY: number = 0;
+
   innerCircle: Konva.Circle|null = null;
+
   pinCircle: Konva.Circle|null = null;
 
   constructor() {
@@ -18,10 +24,7 @@ export default class Knob extends Mod {
     this.configure([PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT], 'knob');
   }
 
-  /**
-   * @private
-   */
-  _addWheelListener(group:Konva.Group) {
+  private addWheelListener(group:Konva.Group) {
     let posX = 0;
     group.on('wheel', (e) => {
       const event = e.evt;
@@ -35,15 +38,14 @@ export default class Knob extends Mod {
           posX = this.range;
         }
       }
-      this.value = (posX + this.range) / this.range * 0.5;
-      this._updatePinCirclePosition();
+      this.value = (posX + this.range) / (this.range * 0.5);
+      this.updatePinCirclePosition();
 
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
     });
   }
 
-  _drawKnob(group:Konva.Group) {
-
+  private drawKnob(group:Konva.Group) {
     const circle = new Konva.Circle({
       x: this.centerX,
       y: this.centerY,
@@ -67,16 +69,16 @@ export default class Knob extends Mod {
     group.add(circle);
     group.add(this.innerCircle);
     group.add(this.pinCircle);
-    this._updatePinCirclePosition();
+    this.updatePinCirclePosition();
   }
 
   /**
    * Draw and redraw the rotating button with the little round indicator
    *  placed arround the button depending on set value.
    */
-  _updatePinCirclePosition() {
+  private updatePinCirclePosition() {
     if (this.pinCircle) {
-      const theta = Math.PI * - (this.value * 270 - 135 - 90) / 180;
+      const theta = (Math.PI * -(this.value * 270 - 135 - 90)) / 180;
       const radius = 10;
       const x = this.centerX + radius * Math.cos(theta);
       const y = this.centerY - radius * Math.sin(theta);
@@ -95,7 +97,7 @@ export default class Knob extends Mod {
     this.centerX = group.width() / 2;
     this.centerY = group.height() / 2;
 
-    this._drawKnob(group);
-    this._addWheelListener(group);
+    this.drawKnob(group);
+    this.addWheelListener(group);
   }
 }

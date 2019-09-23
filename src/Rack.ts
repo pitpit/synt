@@ -1,17 +1,24 @@
-import Mod from './Mod';
 import Konva from 'konva';
-import Modal from './modal';
 import { AudioContext } from 'standardized-audio-context';
+import Mod from './Mod';
+import Modal from './modal';
 import AudioMod from './AudioMod';
 
 export default class Rack {
   audioContext: AudioContext;
+
   stage: Konva.Stage;
+
   slotHeight: number = 100;
+
   slotWidth: number = 100;
+
   strokeWidth: number = 1;
+
   padding: number = 10;
+
   mods:Array<Mod> = [];
+
   grid:Array<Array<Mod|null>> = [];
 
   constructor() {
@@ -39,10 +46,11 @@ export default class Rack {
     };
     document.addEventListener('mousedown', resumeAudioContext);
   }
+
   /**
    * Add a Mod on the rack and set its position.
    */
-  add(mod:Mod, x:number, y:number): Rack {
+  add(mod: Mod, x:number, y:number): Rack {
     if (this.isBusy(x, y, mod)) {
       throw new Error('A mod already stand at this position');
     }
@@ -54,32 +62,28 @@ export default class Rack {
     }
     // TODO check if not already in rack
     this.mods.push(mod);
-    this._addToGrid(mod);
+    this.addToGrid(mod);
 
     return this;
   }
 
-  /**
-   * @private
-   */
-  _removeFromGrid(mod: Mod): Rack {
+  private removeFromGrid(mod: Mod): Rack {
     // TODO use an efficient array walk
     this.grid.forEach((row, x) => {
-      row.forEach((item, y) => {
+      row.forEach((item, y): any => {
         if (item === mod) {
           this.grid[x][y] = null;
           return this;
         }
+        return this;
       });
+      return this;
     });
 
     return this;
   }
 
-  /**
-   * @private
-   */
-  _getFromGrid(x:number, y:number): Mod|null {
+  private getFromGrid(x:number, y:number): Mod|null {
     if (this.grid[x] && this.grid[x][y]) {
       return this.grid[x][y];
     }
@@ -87,10 +91,7 @@ export default class Rack {
     return null;
   }
 
-  /**
-   * @private
-   */
-  _addToGrid(mod:Mod): Rack {
+  private addToGrid(mod:Mod): Rack {
     if (!this.grid[mod.x]) {
       this.grid[mod.x] = [];
     }
@@ -99,16 +100,13 @@ export default class Rack {
     return this;
   }
 
-  /**
-   * @private
-   */
-  _drawGrid(layer: Konva.Layer, widthPx: number, heightPx: number): void {
+  private drawGrid(layer: Konva.Layer, widthPx: number, heightPx: number): void {
     for (let x = 0; x <= widthPx; x += this.slotWidth) {
       const line = new Konva.Line({
         points: [
           this.strokeWidth + x + this.padding,
           this.padding,
-          this.strokeWidth+ x + this.padding,
+          this.strokeWidth + x + this.padding,
           heightPx + this.padding,
         ],
         stroke: '#dddddd',
@@ -123,7 +121,7 @@ export default class Rack {
           this.padding,
           this.strokeWidth + x + this.padding,
           widthPx + this.padding,
-          this.strokeWidth+ x + this.padding,
+          this.strokeWidth + x + this.padding,
         ],
         stroke: '#dddddd',
         strokeWidth: this.strokeWidth,
@@ -149,9 +147,9 @@ export default class Rack {
 
     const layer = new Konva.Layer();
 
-    this._drawGrid(layer, widthPx, heightPx);
+    this.drawGrid(layer, widthPx, heightPx);
 
-    this.mods.forEach((mod, index) => {
+    this.mods.forEach((mod) => {
       const group = new Konva.Group({
         draggable: true,
       });
@@ -162,13 +160,13 @@ export default class Rack {
 
       mod.events.on('dragend', () => {
         // Keep internal grid up to date
-        this._removeFromGrid(mod)._addToGrid(mod);
+        this.removeFromGrid(mod).addToGrid(mod);
 
         mod.plug([
-          this._getFromGrid(mod.x, mod.y - 1), // North
-          this._getFromGrid(mod.x+1, mod.y), // East
-          this._getFromGrid(mod.x, mod.y + 1), // South
-          this._getFromGrid(mod.x-1, mod.y), // South
+          this.getFromGrid(mod.x, mod.y - 1), // North
+          this.getFromGrid(mod.x + 1, mod.y), // East
+          this.getFromGrid(mod.x, mod.y + 1), // South
+          this.getFromGrid(mod.x - 1, mod.y), // South
         ]);
 
         // Go back following the link chain to find entries
@@ -191,7 +189,7 @@ export default class Rack {
     // Resize canvas when resizing window
     const instance = this;
     window.onresize = () => {
-      if (instance.stage){
+      if (instance.stage) {
         instance.stage.width(window.innerWidth);
         instance.stage.height(window.innerHeight);
       }
@@ -206,16 +204,16 @@ export default class Rack {
     let busy = false;
 
     // TODO refactor using this.grid
-    this.mods.forEach((mod, index) => {
+    this.mods.forEach((mod: Mod) => {
       if (
-        currentMod !== mod &&
-        (
+        currentMod !== mod
+        && (
           (
-            x >= mod.x && x < mod.x + mod.width &&
-            y >= mod.y && y < mod.y + mod.height) ||
-          (
-            mod.x >= x && mod.x < x + currentMod.width &&
-            mod.y >= y && mod.y < y + currentMod.height
+            x >= mod.x && x < mod.x + mod.width
+            && y >= mod.y && y < mod.y + mod.height)
+          || (
+            mod.x >= x && mod.x < x + currentMod.width
+            && mod.y >= y && mod.y < y + currentMod.height
           )
         )
       ) {

@@ -4,8 +4,11 @@
  */
 export default class PlugPosition {
   static NORTH:number = 0;
+
   static EAST:number = 1;
+
   static SOUTH:number = 2;
+
   static WEST:number = 3;
 
   static opposite(plugPosition:number) {

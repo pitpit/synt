@@ -1,9 +1,12 @@
+import Konva from 'konva';
+import { AudioContext, GainNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
-import Konva from 'konva';
-import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal } from './Signal';
-import { AudioContext, GainNode } from 'standardized-audio-context';
+import { Signals } from './Signal';
+import AudioSignal from './AudioSignal';
+import BrokenAudioSignal from './BrokenAudioSignal';
+
 
 export default class SwitchOn extends AudioMod {
   gain: GainNode<AudioContext>|null = null;
@@ -20,8 +23,8 @@ export default class SwitchOn extends AudioMod {
     const outsideRect = new Konva.Rect({
       x: padding,
       y: padding,
-      width:  group.width() - padding*2,
-      height: group.height() - padding*2,
+      width: group.width() - padding * 2,
+      height: group.height() - padding * 2,
       cornerRadius: 5,
       stroke: 'black',
       strokeWidth: 3,
@@ -32,8 +35,8 @@ export default class SwitchOn extends AudioMod {
     const insideRect = new Konva.Rect({
       x: padding,
       y: padding,
-      width:  group.width() - padding*2,
-      height: group.height() - padding*2,
+      width: group.width() - padding * 2,
+      height: group.height() - padding * 2,
       cornerRadius: 2.5,
       stroke: 'black',
       fill: 'black',

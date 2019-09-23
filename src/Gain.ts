@@ -1,8 +1,11 @@
+import { AudioContext, GainNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
-import { Signals, AudioSignal, BrokenAudioSignal, ControlSignal} from './Signal';
-import { AudioContext, GainNode } from 'standardized-audio-context';
+import AudioSignal from './AudioSignal';
+import BrokenAudioSignal from './BrokenAudioSignal';
+import ControlSignal from './ControlSignal';
+import { Signals } from './Signal';
 
 export default class Gain extends AudioMod {
   gain: GainNode<AudioContext>|null = null;
@@ -33,7 +36,7 @@ export default class Gain extends AudioMod {
     const controlSignal = inputSignals[PlugPosition.EAST];
     if (controlSignal instanceof ControlSignal && this.gain) {
       this.gain.gain.value = controlSignal.value;
-      //this.gain.gain.value = value * this.gain.gain.maxValue / this.gain.gain.maxValue;
+      // this.gain.gain.value = value * this.gain.gain.maxValue / this.gain.gain.maxValue;
     }
 
     return outputSignals;

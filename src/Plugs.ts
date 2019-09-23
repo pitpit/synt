@@ -1,10 +1,8 @@
-import PlugPosition from './PlugPosition';
-import PlugType from './PlugType';
 import Plug from './plug';
-import Mod from './Mod';
 
 export default class Plugs {
   items:Array<Plug> = [new Plug(), new Plug(), new Plug(), new Plug()];
+
   untriggeredInput: Array<boolean> = [true, true, true, true];
 
   /**

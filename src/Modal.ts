@@ -4,10 +4,11 @@ export default class Modal {
   modal: tingle.modal;
 
   constructor() {
+    // eslint-disable-next-line new-cap
     this.modal = new tingle.modal({
       footer: true,
       stickyFooter: false,
-      closeMethods: ['overlay', 'escape']
+      closeMethods: ['overlay', 'escape'],
     });
     this.modal.addFooterBtn('Save', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => {
       this.modal.close();

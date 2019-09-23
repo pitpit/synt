@@ -1,11 +1,12 @@
+import { AudioContext, OscillatorNode, TOscillatorType } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import { Signals, AudioSignal, ControlSignal } from './Signal';
 import PlugPosition from './PlugPosition';
-import { AudioContext, OscillatorNode, TOscillatorType } from 'standardized-audio-context';
 
 export default abstract class Oscillator extends AudioMod {
   oscillator: OscillatorNode<AudioContext>|null = null;
+
   abstract type: TOscillatorType;
 
   constructor() {

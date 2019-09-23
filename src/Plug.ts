@@ -1,11 +1,13 @@
+import Konva from 'konva';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
 import Mod from './Mod';
-import Konva from 'konva';
 
 export default class Plug {
   type: PlugType = PlugType.NULL;
+
   linkedTo: Plug|null = null;
+
   mod: Mod| null = null;
 
   isLinkable(toPlug: Plug) {
@@ -53,7 +55,7 @@ export default class Plug {
       PlugType.IN === this.type
       || PlugType.OUT === this.type
     ) {
-      const plugLine = this.drawIoPlug(
+      this.drawIoPlug(
         group,
         plugPosition,
         width,
@@ -67,7 +69,7 @@ export default class Plug {
       PlugType.CTRLIN === this.type
       || PlugType.CTRLOUT === this.type
     ) {
-      const plugLine = this.drawCtrlPlug(
+      this.drawCtrlPlug(
         group,
         plugPosition,
         width,
@@ -104,16 +106,16 @@ export default class Plug {
     let points: Array<number> = [0, 0, 0, 0];
 
     if (PlugPosition.NORTH === plugPosition) {
-      const y = strokeWidth + plugLineStrokeWidth/2;
+      const y = strokeWidth + plugLineStrokeWidth / 2;
       points = [strokeWidth, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.EAST === plugPosition) {
-      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
       points = [y, strokeWidth, y, height * slotHeight - strokeWidth];
-    } else if (PlugPosition.SOUTH === plugPosition) {  // South
-      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+    } else if (PlugPosition.SOUTH === plugPosition) { // South
+      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
       points = [strokeWidth, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.WEST === plugPosition) { // West
-      const x = strokeWidth+ plugLineStrokeWidth/2;
+      const x = strokeWidth + plugLineStrokeWidth / 2;
       points = [x, strokeWidth, x, height * slotHeight - strokeWidth];
     } else {
       throw new Error('Invalid plugPosition value');
@@ -155,21 +157,21 @@ export default class Plug {
     let bottomPoints: Array<number> = [0, 0, 0, 0];
     let topPoints: Array<number> = [0, 0, 0, 0];
     if (PlugPosition.NORTH === plugPosition) {
-      const y = strokeWidth + plugLineStrokeWidth/2;
+      const y = strokeWidth + plugLineStrokeWidth / 2;
       bottomPoints = [strokeWidth, y, slotWidth / 2, y];
       topPoints = [slotWidth / 2, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.EAST === plugPosition) {
-      const x = width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
-      bottomPoints = [x, strokeWidth, x, height * slotHeight / 2];
-      topPoints = [x, height * slotHeight / 2, x, height * slotHeight - strokeWidth];
-    } else if (PlugPosition.SOUTH === plugPosition) {  // South
-      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth/2);
+      const x = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
+      bottomPoints = [x, strokeWidth, x, height * (slotHeight / 2)];
+      topPoints = [x, height * (slotHeight / 2), x, height * slotHeight - strokeWidth];
+    } else if (PlugPosition.SOUTH === plugPosition) { // South
+      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
       bottomPoints = [strokeWidth, y, slotWidth / 2, y];
-      topPoints = [strokeWidth, y, slotWidth - strokeWidth,y];
+      topPoints = [strokeWidth, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.WEST === plugPosition) { // West
-      const x = strokeWidth+ plugLineStrokeWidth/2;
-      bottomPoints = [x, strokeWidth, x, height * slotHeight / 2];
-      topPoints = [x, height * slotHeight / 2, x, height * slotHeight - strokeWidth];
+      const x = strokeWidth + plugLineStrokeWidth / 2;
+      bottomPoints = [x, strokeWidth, x, height * (slotHeight / 2)];
+      topPoints = [x, height * (slotHeight / 2), x, height * slotHeight - strokeWidth];
     } else {
       throw new Error('Invalid plugPosition value');
     }

@@ -9,14 +9,14 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.s[ac]ss$/i,
@@ -32,33 +32,33 @@ module.exports = {
       {
         test: /\.(png|jp(e*)g|svg)$/,
         use: [{
-            loader: 'url-loader',
-            options: {
-                limit: 8000, // Convert images < 8kb to base64 strings
-                name: 'images/[hash]-[name].[ext]'
-            }
-        }]
-      }
-    ]
+          loader: 'url-loader',
+          options: {
+            limit: 8000, // Convert images < 8kb to base64 strings
+            name: 'images/[hash]-[name].[ext]',
+          },
+        }],
+      },
+    ],
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
+    extensions: ['.tsx', '.ts', '.js'],
     modules: [
       './src',
-      './node_modules'
-    ]
+      './node_modules',
+    ],
   },
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: 'Tuune',
-      template: './src/index.html'
-    })
+      template: './src/index.html',
+    }),
   ],
   devtool: 'inline-source-map',
   devServer: {
     contentBase: path.resolve(__dirname, 'dist'),
     hot: true,
-    port: 9000
+    port: 9000,
   },
 };
