@@ -1,8 +1,8 @@
 import Konva from 'konva';
 import EventEmitter from 'eventemitter3';
 import Rack from './Rack';
-import Plugs from './plugs';
-import Plug from './plug';
+import Plugs from './Plugs';
+import Plug from './Plug';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
 import { Signals, Signal } from './Signal';

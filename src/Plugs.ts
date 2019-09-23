@@ -1,4 +1,4 @@
-import Plug from './plug';
+import Plug from './Plug';
 
 export default class Plugs {
   items:Array<Plug> = [new Plug(), new Plug(), new Plug(), new Plug()];
