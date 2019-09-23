@@ -11,7 +11,7 @@ See the live demo here: https://pitpit.github.io/tuune
 
 THIS PROJECT IS UNDER DEVELOPMENT AND IS NOT YET PROPERLY DOCUMENTED.
 
-## Some documentation
+## Inspiration
 
 Here's some articles or libraries that have been useful for this project.
 I'd would like to thank the authors for their help !

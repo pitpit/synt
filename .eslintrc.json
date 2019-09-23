@@ -1,0 +1,9 @@
+{
+  "plugins": ["@typescript-eslint"],
+  "parser": "@typescript-eslint/parser",
+  "extends": ["airbnb-base"],
+  "rules": {
+    "import/no-unresolved": 0,
+    "import/no-extraneous-dependencies": 0
+  }
+}
