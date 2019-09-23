@@ -7,7 +7,6 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "webpack",
-    "build:demo": "npm run build && cp -r dist/{index.html,tuune.js} . && git add index.html tuune.js",
     "start": "webpack-dev-server --open"
   },
   "author": "",
