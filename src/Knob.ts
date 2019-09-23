@@ -38,7 +38,7 @@ export default class Knob extends Mod {
           posX = this.range;
         }
       }
-      this.value = (posX + this.range) / (this.range * 0.5);
+      this.value = ((posX + this.range) / this.range) * 0.5;
       this.updatePinCirclePosition();
 
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
@@ -78,7 +78,7 @@ export default class Knob extends Mod {
    */
   private updatePinCirclePosition() {
     if (this.pinCircle) {
-      const theta = (Math.PI * -(this.value * 270 - 135 - 90)) / 180;
+      const theta = Math.PI * -((this.value * 270 - 135 - 90) / 180);
       const radius = 10;
       const x = this.centerX + radius * Math.cos(theta);
       const y = this.centerY - radius * Math.sin(theta);
