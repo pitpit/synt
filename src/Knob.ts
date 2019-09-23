@@ -38,6 +38,7 @@ export default class Knob extends Mod {
           posX = this.range;
         }
       }
+      event.preventDefault();
       this.value = ((posX + this.range) / this.range) * 0.5;
       this.updatePinCirclePosition();
 
