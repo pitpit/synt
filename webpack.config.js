@@ -51,7 +51,8 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Tuune'
+      title: 'Tuune',
+      template: './src/index.html'
     })
   ],
   devtool: 'inline-source-map',
