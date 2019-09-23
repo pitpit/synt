@@ -1,5 +1,7 @@
 # Tuune
 
+[![Build Status](https://travis-ci.com/pitpit/tuune.svg?branch=master)](https://travis-ci.com/pitpit/tuune)
+
 Tuune is a project whose main idea is to allow the user to assemble tiny modules to build synthetic sounds.
 Each module is a square with up to 4 inputs or outputs that can be connected to other modules.
 And that's it.

@@ -4,7 +4,8 @@
   "description": "Connect simple modules to empirically build synthetic sounds",
   "private": true,
   "scripts": {
-    "test": "npm run lint && jest",
+    "pretest": "npm run lint",
+    "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "webpack",
     "start": "webpack-dev-server --open",

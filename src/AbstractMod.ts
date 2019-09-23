@@ -52,14 +52,6 @@ export default abstract class AbstractMod {
    */
   abstract getOutputs(diffInputSignals: Signals): Signals;
 
-  get rack(): Rack {
-    return this.rack;
-  }
-
-  set rack(rack: Rack) {
-    this.rack = rack;
-  }
-
   /**
    * Configure the Mod
    * @helper

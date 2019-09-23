@@ -11,7 +11,8 @@ export default class Gate extends Mod {
 
   getOutputs(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
-    outputSignals[PlugPosition.SOUTH] = inputSignals[PlugPosition.NORTH];
+    const inputSignal = inputSignals[PlugPosition.NORTH];
+    outputSignals[PlugPosition.SOUTH] = inputSignal || null;
 
     return outputSignals;
   }
