@@ -1,7 +1,7 @@
 import Konva from 'konva';
 import { AudioContext } from 'standardized-audio-context';
 import Mod from './Mod';
-import Modal from './modal';
+import Modal from './Modal';
 import AudioMod from './AudioMod';
 
 export default class Rack {

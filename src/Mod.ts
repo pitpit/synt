@@ -1,3 +1,4 @@
+import Konva from 'konva';
 import AbstractMod from './AbstractMod';
 import { Signals } from './Signal';
 

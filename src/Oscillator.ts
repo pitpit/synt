@@ -1,7 +1,9 @@
 import { AudioContext, OscillatorNode, TOscillatorType } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
-import { Signals, AudioSignal, ControlSignal } from './Signal';
+import { Signals } from './Signal';
+import AudioSignal from './AudioSignal';
+import ControlSignal from './ControlSignal';
 import PlugPosition from './PlugPosition';
 
 export default abstract class Oscillator extends AudioMod {
@@ -27,10 +29,7 @@ export default abstract class Oscillator extends AudioMod {
     }
 
     const controlSignal = inputSignals[PlugPosition.EAST];
-    if (
-      controlSignal instanceof ControlSignal
-      && this.oscillator
-    ) {
+    if (controlSignal instanceof ControlSignal && this.oscillator) {
       this.oscillator.frequency.value = controlSignal.value * 1400 + 40;
     }
     return outputSignals;

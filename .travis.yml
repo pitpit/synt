@@ -1,3 +1,17 @@
 language: node_js
 node_js:
   - "10"
+
+stages:
+  - name: test
+  - name: deploy
+    if: branch = master AND type = push
+
+jobs:
+  include:
+    - stage: test
+      script: npm test
+    - stage: test
+      script: npm run build
+    - stage: deploy
+      script: npm run deploy
