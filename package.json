@@ -1,7 +1,7 @@
 {
   "name": "tuune",
   "version": "0.0.0",
-  "description": "Connect simple modules to empirically build synthetic sounds",
+  "description": "Connect tiny modules to build synthetic sounds",
   "private": true,
   "scripts": {
     "pretest": "npm run lint",
