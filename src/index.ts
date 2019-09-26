@@ -7,7 +7,6 @@ import SawtoothOscillator from './SawtoothOscillator';
 import TriangleOscillator from './TriangleOscillator';
 import Gate from './Gate';
 import StereoPanner from './StereoPanner';
-import Gain from './Gain';
 import Knob from './Knob';
 import SwitchOn from './SwitchOn';
 import './index.scss';
@@ -21,7 +20,6 @@ rack.add(new TriangleOscillator(), 4, 0);
 
 rack.add(new Gate(), 1, 1);
 rack.add(new StereoPanner(), 2, 1);
-rack.add(new Gain(), 3, 1);
 
 rack.add(new Knob(), 1, 2);
 rack.add(new Knob(), 2, 2);

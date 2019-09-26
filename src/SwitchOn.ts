@@ -2,10 +2,10 @@ import Konva from 'konva';
 import { AudioContext, GainNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
-import PlugPosition from './PlugPosition';
+// import PlugPosition from './PlugPosition';
 import { Signals } from './Signal';
-import AudioSignal from './AudioSignal';
-import BrokenAudioSignal from './BrokenAudioSignal';
+// import AudioSignal from './AudioSignal';
+// import BrokenAudioSignal from './BrokenAudioSignal';
 
 
 export default class SwitchOn extends AudioMod {
@@ -45,15 +45,15 @@ export default class SwitchOn extends AudioMod {
     subgroup.add(insideRect);
 
     subgroup.on('mousedown', () => {
-      if (this.gain) {
-        this.pushOutput(PlugPosition.SOUTH, new AudioSignal(this.gain));
-      }
+      // if (this.gain) {
+      //   this.pushOutput(PlugPosition.SOUTH, new AudioSignal(this.gain));
+      // }
     });
 
     subgroup.on('mouseup', () => {
-      if (this.gain) {
-        this.pushOutput(PlugPosition.SOUTH, new BrokenAudioSignal(this.gain));
-      }
+      // if (this.gain) {
+      //   this.pushOutput(PlugPosition.SOUTH, new BrokenAudioSignal(this.gain));
+      // }
     });
 
     group.add(subgroup);
@@ -61,21 +61,21 @@ export default class SwitchOn extends AudioMod {
 
   getOutputs(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
-    const signal = inputSignals[PlugPosition.NORTH];
-    if (signal instanceof AudioSignal) {
-      if (this.audioContext) {
-        if (!this.gain) {
-          this.gain = this.audioContext.createGain();
-        }
-        signal.node.connect(this.gain);
-        // outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.gain);
-      }
-    } else if (signal instanceof BrokenAudioSignal) {
-      signal.node.disconnect();
-      this.gain = null;
-      // Transmit BrokenAudioSignal as it
-      outputSignals[PlugPosition.SOUTH] = signal;
-    }
+    // const signal = inputSignals[PlugPosition.NORTH];
+    // if (signal instanceof AudioSignal) {
+    //   if (this.audioContext) {
+    //     if (!this.gain) {
+    //       this.gain = this.audioContext.createGain();
+    //     }
+    //     signal.node.connect(this.gain);
+    //     // outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.gain);
+    //   }
+    // } else if (signal instanceof BrokenAudioSignal) {
+    //   signal.node.disconnect();
+    //   this.gain = null;
+    //   // Transmit BrokenAudioSignal as it
+    //   outputSignals[PlugPosition.SOUTH] = signal;
+    // }
 
     return outputSignals;
   }

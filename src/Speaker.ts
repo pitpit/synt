@@ -1,15 +1,11 @@
 import Konva from 'konva';
-import { AudioContext, GainNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import { Signals, Signal } from './Signal';
 import AudioSignal from './AudioSignal';
-import BrokenAudioSignal from './BrokenAudioSignal';
 import PlugPosition from './PlugPosition';
-import Gibberish from 'gibberish-dsp';
 
 export default class Speaker extends AudioMod {
-  gain: GainNode<AudioContext>|null = null;
 
   constructor() {
     super();
@@ -79,7 +75,7 @@ export default class Speaker extends AudioMod {
     }
   }
 
-  getOutputs(inputSignals: Signals): Signals {
+  onSignalChanged(inputSignals: Signals): Signals {
     const signal = inputSignals[PlugPosition.NORTH];
     if (signal instanceof AudioSignal) {
       signal.node.connect();

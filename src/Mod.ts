@@ -9,7 +9,7 @@ export default class Mod extends AbstractMod {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getOutputs(diffInputSignals: Signals): Signals {
+  onSignalChanged(inputSignals: Signals): Signals {
     return [null, null, null, null];
   }
 

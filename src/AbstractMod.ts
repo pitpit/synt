@@ -6,8 +6,6 @@ import Plug from './Plug';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
 import { Signals, Signal } from './Signal';
-import AudioSignal from './AudioSignal';
-import BrokenAudioSignal from './BrokenAudioSignal';
 
 export default abstract class AbstractMod {
   /**
@@ -41,17 +39,20 @@ export default abstract class AbstractMod {
   /**
    * This method is called when drawing.
    * You'll have to override it to customize your Mod appearance.
-   *
    * @override
    */
   abstract draw(group:Konva.Group): void;
 
   /**
-   *
+   * Will be triggered on first link and then if input signal changed
    * @override
    */
-  abstract getOutputs(diffInputSignals: Signals): Signals;
+  abstract onSignalChanged(inputSignals: Signals): Signals;
 
+  /**
+   * Will be triggered if signal has been broken before input
+   * @override
+   */
   abstract onSignalBroken(plugPosition: number, inputSignal: Signal): void;
 
   /**
@@ -344,7 +345,7 @@ export default abstract class AbstractMod {
   private processInputs(inputSignals: Signals): Signals {
     let outputSignals: Signals = [null, null, null, null];
 
-    outputSignals = this.getOutputs(inputSignals);
+    outputSignals = this.onSignalChanged(inputSignals);
 
     return outputSignals;
   }
@@ -380,7 +381,6 @@ export default abstract class AbstractMod {
 
   /**
    * Snatch current Mod from linked Mods.
-   * It propagates a BrokenAudioSignal through every output plugs
    * then it unlinks each plug.
    */
   snatch(): void {
@@ -434,6 +434,13 @@ export default abstract class AbstractMod {
     }
     this.lastPropagationId = givenId;
 
+    // if outputSignal did not change do not propagate it
+    const oldInputSignal = this.inputSignals[plugPosition];
+    if (signal && oldInputSignal && signal.eq(oldInputSignal)) {
+      console.log('same signal');
+      return;
+    }
+
     this.inputSignals[plugPosition] = signal;
 
     // if (this.plugs.hasUntriggeredLinkedInput()) {
@@ -465,10 +472,6 @@ export default abstract class AbstractMod {
    * @helper
    */
   pushOutput(plugPosition: number, outputSignal: Signal|null): void {
-    // if outputSignal did not change do not propagate it
-    if (outputSignal === this.outputSignals[plugPosition]) {
-      return;
-    }
 
     // TODO store outputSignal for later diff
     this.outputSignals[plugPosition] = outputSignal;
