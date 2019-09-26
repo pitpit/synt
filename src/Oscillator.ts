@@ -7,7 +7,7 @@ import PlugPosition from './PlugPosition';
 import AudioSignal from './AudioSignal';
 
 export default abstract class Oscillator extends AudioMod {
-  oscillator: any;
+  node: any;
 
   constructor() {
     super();
@@ -16,12 +16,12 @@ export default abstract class Oscillator extends AudioMod {
 
   onSignalChanged(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
-    outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
+    outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
 
 
     const controlSignal = inputSignals[PlugPosition.EAST];
-    if (controlSignal instanceof ControlSignal && this.oscillator) {
-      this.oscillator.frequency = controlSignal.value * 400;
+    if (controlSignal instanceof ControlSignal && this.node) {
+      this.node.frequency = controlSignal.value * 400;
     }
     return outputSignals;
   }

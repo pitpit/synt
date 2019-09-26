@@ -1,13 +1,9 @@
 import Konva from 'konva';
-// import { AudioContext } from 'standardized-audio-context';
 import Gibberish from 'gibberish-dsp';
 import Mod from './Mod';
 import Modal from './Modal';
-// import AudioMod from './AudioMod';
 
 export default class Rack {
-  // audioContext: AudioContext;
-
   stage: Konva.Stage;
 
   slotHeight: number = 100;
@@ -40,7 +36,6 @@ export default class Rack {
 
     // We cannot initialize the AudioContext in constructor
     // because of chrome autoplay policy.
-    // this.audioContext = new AudioContext();
     window.Gibberish = Gibberish;
     Gibberish.init();
 
@@ -62,9 +57,6 @@ export default class Rack {
     mod.rack = this;
     mod.x = x;
     mod.y = y;
-    // if (mod instanceof AudioMod) {
-    //   mod.audioContext = this.audioContext;
-    // }
     // TODO check if not already in rack
     this.mods.push(mod);
     this.addToGrid(mod);
@@ -173,13 +165,6 @@ export default class Rack {
           this.getFromGrid(mod.x, mod.y + 1), // South
           this.getFromGrid(mod.x - 1, mod.y), // South
         ]);
-
-        // Go back following the link chain to find entries
-        // look for mods with at least one linked OUT plug or one linked CTRLOUT plug
-        // and with no linked mods on IN plug or a CTRLIN plug
-        mod.findEntries().forEach((currentMod) => {
-          currentMod.start();
-        });
       });
 
       mod.events.on('dblclick', () => {

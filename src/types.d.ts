@@ -22,6 +22,8 @@ interface Window {
 declare module 'gibberish-dsp' {
 
   interface ugen {}
+  interface instrument {}
+  interface effect {}
 
   namespace oscillators {
     function Sine(inputProps: {}): ugen;

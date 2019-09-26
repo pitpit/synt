@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import Gibberish from 'gibberish-dsp';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import { Signals, Signal } from './Signal';
@@ -6,10 +7,8 @@ import AudioSignal from './AudioSignal';
 import PlugPosition from './PlugPosition';
 
 export default class Speaker extends AudioMod {
-
   constructor() {
     super();
-
     this.configure([PlugType.IN]);
   }
 
@@ -70,15 +69,17 @@ export default class Speaker extends AudioMod {
   }
 
   onSignalBroken(plugPosition: number, inputSignal: Signal): void {
-    if (plugPosition === PlugPosition.NORTH && inputSignal instanceof AudioSignal) {
+    if (plugPosition === PlugPosition.NORTH && inputSignal instanceof AudioSignal && inputSignal.node && inputSignal.node.disconnect) {
       inputSignal.node.disconnect();
     }
   }
 
   onSignalChanged(inputSignals: Signals): Signals {
-    const signal = inputSignals[PlugPosition.NORTH];
-    if (signal instanceof AudioSignal) {
-      signal.node.connect();
+    const inputSignal = inputSignals[PlugPosition.NORTH];
+
+    // I don't no how to test the node is a Giberrish object, so only test it has a connect function
+    if (inputSignal instanceof AudioSignal && inputSignal.node && inputSignal.node.connect) {
+      inputSignal.node.connect();
     }
 
     return [null, null, null, null];

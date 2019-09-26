@@ -5,6 +5,6 @@ export default class SineOscillator extends Oscillator {
   constructor() {
     super();
     this.label = 'saw';
-    this.oscillator = Gibberish.oscillators.Saw({ frequency: 220 });
+    this.node = Gibberish.oscillators.Saw({ frequency: 220 });
   }
 }
