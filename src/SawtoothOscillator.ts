@@ -1,11 +1,10 @@
-import { TOscillatorType } from 'standardized-audio-context';
+import Gibberish from 'gibberish-dsp';
 import Oscillator from './Oscillator';
 
-export default class SawtoothOscillator extends Oscillator {
-  type: TOscillatorType = 'sawtooth';
-
+export default class SineOscillator extends Oscillator {
   constructor() {
     super();
-    this.label = 'sawtooth';
+    this.label = 'saw';
+    this.function = Gibberish.oscillators.Saw;
   }
 }

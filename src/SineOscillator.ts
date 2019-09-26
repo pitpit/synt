@@ -1,11 +1,10 @@
-import { TOscillatorType } from 'standardized-audio-context';
+import Gibberish from 'gibberish-dsp';
 import Oscillator from './Oscillator';
 
 export default class SineOscillator extends Oscillator {
-  type: TOscillatorType = 'sine';
-
   constructor() {
     super();
     this.label = 'sine';
+    this.function = Gibberish.oscillators.Sine;
   }
 }

@@ -31,6 +31,7 @@ I'd would like to thank the authors for their help !
 - [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
 - [X] Specific draw for knob with animation when changing value
 - [X] Camel case filenames
+- [ ] Responsive view
 - [ ] Keyboard input
 - [ ] Protect against link loop
 - [ ] Add a file player Mod

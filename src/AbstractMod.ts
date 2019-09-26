@@ -52,6 +52,8 @@ export default abstract class AbstractMod {
    */
   abstract getOutputs(diffInputSignals: Signals): Signals;
 
+  abstract onSignalBroken(plugPosition: number, inputSignal: Signal): void;
+
   /**
    * Configure the Mod
    * @helper
@@ -382,26 +384,33 @@ export default abstract class AbstractMod {
    * then it unlinks each plug.
    */
   snatch(): void {
-    this.events.emit('snatched');
+    // this.events.emit('snatched');
 
     // this.plugs.resetUntriggeredLinkedInput();
 
-    const brokenOutputSignals: Signals = [null, null, null, null];
     this.plugs.forEach((plug: Plug, plugPosition: number) => {
-      const outputSignal = this.outputSignals[plugPosition];
-      if (outputSignal instanceof AudioSignal) {
-        brokenOutputSignals[plugPosition] = new BrokenAudioSignal(outputSignal.node);
-      }
+      this.breakSignal(plugPosition);
     });
-
-    // Reset stored outputs
-    this.outputSignals = [null, null, null, null];
-
-    this.pushOutputs(brokenOutputSignals);
 
     this.plugs.forEach((plug: Plug, plugPosition: number) => {
       this.unlink(plugPosition);
     });
+
+    // Redo propagation
+    this.start();
+  }
+
+  breakSignal(plugPosition: number) {
+    const plug = this.plugs.getPlug(plugPosition);
+    if (plug.isInput()) {
+      const previousSignal = this.inputSignals[plugPosition];
+      if (previousSignal) {
+        this.onSignalBroken(plugPosition, previousSignal);
+      }
+    } else if (plug.mod && plug.isOutput()) {
+      const oppositePlugPosition = PlugPosition.opposite(plugPosition);
+      plug.mod.breakSignal(oppositePlugPosition);
+    }
   }
 
   private static generateProcessId(): string {

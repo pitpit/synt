@@ -23,6 +23,14 @@
       "env": {
         "jest/globals": true
       }
+    },
+    {
+      "files": [
+        "*.d.ts"
+      ],
+      "rules": {
+        "max-classes-per-file": "off"
+      }
     }
   ]
 }

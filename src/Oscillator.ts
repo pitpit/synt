@@ -1,15 +1,15 @@
-import { AudioContext, OscillatorNode, TOscillatorType } from 'standardized-audio-context';
+// import { AudioContext, OscillatorNode, TOscillatorType } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
 import { Signals } from './Signal';
-import AudioSignal from './AudioSignal';
 import ControlSignal from './ControlSignal';
 import PlugPosition from './PlugPosition';
+import AudioSignal from './AudioSignal';
 
 export default abstract class Oscillator extends AudioMod {
-  oscillator: OscillatorNode<AudioContext>|null = null;
+  oscillator: any|null = null;
 
-  abstract type: TOscillatorType;
+  function: Function|null = null;
 
   constructor() {
     super();
@@ -18,20 +18,18 @@ export default abstract class Oscillator extends AudioMod {
 
   getOutputs(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];
-    if (this.audioContext) {
-      if (!this.oscillator) {
-        this.oscillator = this.audioContext.createOscillator();
-        this.oscillator.type = this.type;
-        this.oscillator.frequency.value = 440;
-        this.oscillator.start(0);
-      }
-      outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
+    if (!this.oscillator && this.function) {
+      console.log('construct')
+      this.oscillator = this.function({ frequency: 220 });
     }
+    console.log('output')
+    outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.oscillator);
 
-    const controlSignal = inputSignals[PlugPosition.EAST];
-    if (controlSignal instanceof ControlSignal && this.oscillator) {
-      this.oscillator.frequency.value = controlSignal.value * 1400 + 40;
-    }
+
+    // const controlSignal = inputSignals[PlugPosition.EAST];
+    // if (controlSignal instanceof ControlSignal && this.oscillator) {
+    //   this.oscillator.frequency = controlSignal.value * 400;
+    // }
     return outputSignals;
   }
 }

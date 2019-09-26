@@ -1,11 +1,12 @@
 import Konva from 'konva';
-import { AudioContext } from 'standardized-audio-context';
+// import { AudioContext } from 'standardized-audio-context';
+import Gibberish from 'gibberish-dsp';
 import Mod from './Mod';
 import Modal from './Modal';
-import AudioMod from './AudioMod';
+// import AudioMod from './AudioMod';
 
 export default class Rack {
-  audioContext: AudioContext;
+  // audioContext: AudioContext;
 
   stage: Konva.Stage;
 
@@ -17,9 +18,11 @@ export default class Rack {
 
   padding: number = 10;
 
-  mods:Array<Mod> = [];
+  mods: Array<Mod> = [];
 
-  grid:Array<Array<Mod|null>> = [];
+  grid: Array<Array<Mod|null>> = [];
+
+  gibberish: any;
 
   constructor() {
     // Setup container
@@ -37,14 +40,16 @@ export default class Rack {
 
     // We cannot initialize the AudioContext in constructor
     // because of chrome autoplay policy.
-    this.audioContext = new AudioContext();
+    // this.audioContext = new AudioContext();
+    window.Gibberish = Gibberish;
+    Gibberish.init();
 
-    const resumeAudioContext = () => {
-      this.audioContext.resume().then(() => {
-        document.removeEventListener('mousedown', resumeAudioContext);
-      });
-    };
-    document.addEventListener('mousedown', resumeAudioContext);
+    // const resumeAudioContext = () => {
+    //   this.audioContext.resume().then(() => {
+    //     document.removeEventListener('mousedown', resumeAudioContext);
+    //   });
+    // };
+    // document.addEventListener('mousedown', resumeAudioContext);
   }
 
   /**
@@ -57,9 +62,9 @@ export default class Rack {
     mod.rack = this;
     mod.x = x;
     mod.y = y;
-    if (mod instanceof AudioMod) {
-      mod.audioContext = this.audioContext;
-    }
+    // if (mod instanceof AudioMod) {
+    //   mod.audioContext = this.audioContext;
+    // }
     // TODO check if not already in rack
     this.mods.push(mod);
     this.addToGrid(mod);

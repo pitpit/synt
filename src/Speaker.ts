@@ -2,10 +2,11 @@ import Konva from 'konva';
 import { AudioContext, GainNode } from 'standardized-audio-context';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
-import { Signals } from './Signal';
+import { Signals, Signal } from './Signal';
 import AudioSignal from './AudioSignal';
 import BrokenAudioSignal from './BrokenAudioSignal';
 import PlugPosition from './PlugPosition';
+import Gibberish from 'gibberish-dsp';
 
 export default class Speaker extends AudioMod {
   gain: GainNode<AudioContext>|null = null;
@@ -14,17 +15,6 @@ export default class Speaker extends AudioMod {
     super();
 
     this.configure([PlugType.IN]);
-
-    // This is particular to the speaker.
-    // We need to specifically disconnect fron AudioContext when snatching the Mod
-    // because it is the last one in the chain.
-    // TODO we should get rid of that using a ending hidden mod
-    this.events.on('snatched', () => {
-      if (this.audioContext && this.gain) {
-        this.gain.disconnect(this.audioContext.destination);
-        this.gain = null;
-      }
-    });
   }
 
   draw(group: Konva.Group) {
@@ -83,35 +73,16 @@ export default class Speaker extends AudioMod {
     group.add(reflectCircle);
   }
 
+  onSignalBroken(plugPosition: number, inputSignal: Signal): void {
+    if (plugPosition === PlugPosition.NORTH && inputSignal instanceof AudioSignal) {
+      inputSignal.node.disconnect();
+    }
+  }
+
   getOutputs(inputSignals: Signals): Signals {
-    if (this.audioContext) {
-      const signal = inputSignals[PlugPosition.NORTH];
-      const duration = 0.05;
-      if (signal instanceof AudioSignal) {
-        if (!this.gain) {
-          // We create an Gain just to disconnect it properly
-          this.gain = this.audioContext.createGain();
-          this.gain.gain.value = 0.0001;
-        }
-        this.gain.gain.exponentialRampToValueAtTime(
-          1,
-          this.audioContext.currentTime + duration,
-        );
-        signal.node.connect(this.gain);
-        this.gain.connect(this.audioContext.destination);
-      } else if (signal instanceof BrokenAudioSignal && this.gain) {
-        this.gain.gain.exponentialRampToValueAtTime(
-          0.00001,
-          this.audioContext.currentTime + duration,
-        );
-        setTimeout(() => {
-          signal.node.disconnect();
-          if (this.gain && this.audioContext) {
-            this.gain.disconnect(this.audioContext.destination);
-            this.gain = null;
-          }
-        }, duration * 1000 + 1000);
-      }
+    const signal = inputSignals[PlugPosition.NORTH];
+    if (signal instanceof AudioSignal) {
+      signal.node.connect();
     }
 
     return [null, null, null, null];
