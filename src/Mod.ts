@@ -5,7 +5,10 @@ import Plugs from './Plugs';
 import Plug from './Plug';
 import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
-import { Signals, Signal } from './Signal';
+import Signals from './Signals';
+import { Signal } from './Signal';
+import BrokenAudioSignal from './BrokenAudioSignal';
+import AudioSignal from './AudioSignal';
 
 export default abstract class Mod {
   /**
@@ -53,15 +56,6 @@ export default abstract class Mod {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSignalChanged(inputSignals: Signals): Signals {
     return [null, null, null, null];
-  }
-
-  /**
-   * Will be triggered if signal has been broken on input
-   * @override
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onSignalBroken(plugPosition: number, inputSignal: Signal): void {
-    // Do nothing by default
   }
 
   /**
@@ -411,19 +405,20 @@ export default abstract class Mod {
     });
 
     // Redo propagation
-    this.start();
+    // const outputSignals: Signals = this.processInputs(this.inputSignals);
+    // this.pushOutputs(outputSignals);
   }
 
   /**
    * break the signal on a given plug
    */
-  breakSignal(plugPosition: number) {
+  private breakSignal(plugPosition: number) {
     const plug = this.plugs.getPlug(plugPosition);
     if (plug.isInput()) {
       const previousSignal = this.inputSignals[plugPosition];
-      if (previousSignal) {
-        this.onSignalBroken(plugPosition, previousSignal);
-        this.inputSignals[plugPosition] = null;
+      if (previousSignal instanceof AudioSignal) {
+        const signal = new BrokenAudioSignal(previousSignal.node);
+        this.pushInput(plugPosition, signal);
       }
     } else if (plug.mod && plug.isOutput()) {
       const oppositePlugPosition = PlugPosition.opposite(plugPosition);
@@ -439,7 +434,7 @@ export default abstract class Mod {
    * Push an input signal to a plug.
    * TODO move it to Plugs ?
    */
-  pushInput(plugPosition: number, signal: Signal|null, id: string|null = null): void {
+  pushInput(plugPosition: number, inputSignal: Signal|null, id: string|null = null): void {
     let givenId: string;
     if (!id) {
       givenId = Mod.generateProcessId();
@@ -452,22 +447,17 @@ export default abstract class Mod {
     }
     this.lastPropagationId = givenId;
 
-    // if outputSignal did not change do not propagate it
+    let outputSignals: Signals;
     const oldInputSignal = this.inputSignals[plugPosition];
-
-    if (signal && oldInputSignal && signal.eq(oldInputSignal)) {
-      return;
+    const inputSignals: Signals = [null, null, null, null];
+    inputSignals[plugPosition] = inputSignal;
+    if (inputSignal && oldInputSignal && inputSignal.eq(oldInputSignal)) {
+      // Do not recompute output but propagate it directly
+      outputSignals = this.outputSignals;
+    } else {
+      outputSignals = this.processInputs(inputSignals);
     }
-
-    this.inputSignals[plugPosition] = signal;
-
-    // if (this.plugs.hasUntriggeredLinkedInput()) {
-    //   // Some linked input plug has not been triggered yet, waiting for other signals
-    //   // to be propagated from entries
-    //   return;
-    // }
-
-    const outputSignals: Signals = this.processInputs(this.inputSignals);
+    this.inputSignals[plugPosition] = inputSignal;
 
     this.pushOutputs(outputSignals);
   }

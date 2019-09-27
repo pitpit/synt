@@ -6,8 +6,6 @@ import Mod from './Mod';
 export default class Plug {
   type: PlugType = PlugType.NULL;
 
-  linkedTo: Plug|null = null;
-
   mod: Mod| null = null;
 
   isLinkable(toPlug: Plug) {

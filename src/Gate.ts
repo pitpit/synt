@@ -1,6 +1,6 @@
 import Mod from './Mod';
 import PlugType from './PlugType';
-import { Signals, Signal } from './Signal';
+import Signals from './Signals';
 import PlugPosition from './PlugPosition';
 
 export default class Gate extends Mod {
@@ -8,12 +8,6 @@ export default class Gate extends Mod {
     super();
     this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
-
-  // onSignalBroken(plugPosition: number, inputSignal: Signal): void {
-  //   // if (plugPosition === PlugPosition.NORTH) {
-  //   //   inputSignal.node.disconnect();
-  //   // }
-  // }
 
   onSignalChanged(inputSignals: Signals): Signals {
     const outputSignals: Signals = [null, null, null, null];

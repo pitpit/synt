@@ -24,7 +24,7 @@ export default class Knob extends Mod {
     this.configure([PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT], 'knob');
   }
 
-  private addWheelListener(group:Konva.Group) {
+  private addWheelListener(group: Konva.Group) {
     let posX = 0;
     group.on('wheel', (e) => {
       const event = e.evt;
@@ -41,7 +41,6 @@ export default class Knob extends Mod {
       event.preventDefault();
       this.value = ((posX + this.range) / this.range) * 0.5;
       this.updatePinCirclePosition();
-
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
     });
   }

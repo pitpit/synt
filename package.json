@@ -4,7 +4,6 @@
   "description": "Connect tiny modules to build synthetic sounds",
   "private": true,
   "scripts": {
-    "pretest": "npm run lint",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "webpack",

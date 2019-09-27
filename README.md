@@ -25,6 +25,7 @@ I'd would like to thank the authors for their help !
 * https://github.com/wavesjs/waves-ui
 * https://people.carleton.edu/~jellinge/mysynth.html
 * https://github.com/chrisguttandin/standardized-audio-context
+* https://github.com/gibber-cc/gibberish
 
 ## TODO
 
