@@ -39,12 +39,13 @@ export default class Rack {
     window.Gibberish = Gibberish;
     Gibberish.init();
 
-    // const resumeAudioContext = () => {
-    //   this.audioContext.resume().then(() => {
-    //     document.removeEventListener('mousedown', resumeAudioContext);
-    //   });
-    // };
-    // document.addEventListener('mousedown', resumeAudioContext);
+    // This is a trick to get around https://goo.gl/7K7WLu
+    const resumeAudioContext = () => {
+      Gibberish.ctx.resume().then(() => {
+        document.removeEventListener('mousedown', resumeAudioContext);
+      });
+    };
+    document.addEventListener('mousedown', resumeAudioContext);
   }
 
   /**

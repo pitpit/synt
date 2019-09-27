@@ -38,4 +38,5 @@ declare module 'gibberish-dsp' {
   }
 
   function init(memAmount: number|void, ctx: AudioContext|void): void;
+  const ctx: AudioContext;
 }
