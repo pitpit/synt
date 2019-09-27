@@ -10,7 +10,7 @@ stages:
 jobs:
   include:
     - stage: test
-      script: npm lint
+      script: npm run lint
     - stage: test
       script: npm test
     - stage: test
