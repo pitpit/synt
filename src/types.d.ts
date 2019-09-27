@@ -32,5 +32,9 @@ declare module 'gibberish-dsp' {
     function Square(inputProps: {}): ugen;
   }
 
+  namespace fx {
+    function Vibrato(inputProps: {}): ugen;
+  }
+
   function init(memAmount: number|void, ctx: AudioContext|void): void;
 }
