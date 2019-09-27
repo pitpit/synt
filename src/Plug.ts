@@ -165,7 +165,7 @@ export default class Plug {
     } else if (PlugPosition.SOUTH === plugPosition) { // South
       const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
       bottomPoints = [strokeWidth, y, slotWidth / 2, y];
-      topPoints = [strokeWidth, y, slotWidth - strokeWidth, y];
+      topPoints = [slotWidth / 2, y, slotWidth - strokeWidth, y];
     } else if (PlugPosition.WEST === plugPosition) { // West
       const x = strokeWidth + plugLineStrokeWidth / 2;
       bottomPoints = [x, strokeWidth, x, height * (slotHeight / 2)];
