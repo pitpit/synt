@@ -9,6 +9,7 @@ import Gate from './Gate';
 import Knob from './Knob';
 import SwitchOn from './SwitchOn';
 import Vibrato from './Vibrato';
+import Tremolo from './Tremolo';
 import './index.scss';
 
 const rack = new Rack();
@@ -21,6 +22,7 @@ rack.add(new TriangleOscillator(), 4, 0);
 
 rack.add(new Gate(), 0, 1);
 rack.add(new Vibrato(), 1, 1);
+rack.add(new Tremolo(), 2, 1);
 
 rack.add(new Knob(), 0, 2);
 rack.add(new Knob(), 1, 2);

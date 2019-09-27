@@ -7,12 +7,12 @@ import AudioSignal from './AudioSignal';
 import BrokenAudioSignal from './BrokenAudioSignal';
 import ControlSignal from './ControlSignal';
 
-export default class Vibrato extends AudioMod {
+export default class Tremolo extends AudioMod {
   node: any;
 
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'vibrato');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'tremolo');
   }
 
   onSignalChanged(inputSignals: Signals): Signals {
@@ -20,10 +20,10 @@ export default class Vibrato extends AudioMod {
     const inputSignal = inputSignals[PlugPosition.NORTH];
 
     if (inputSignal instanceof AudioSignal && inputSignal.node) {
-      this.node = Gibberish.fx.Vibrato({
+      this.node = Gibberish.fx.Tremolo({
         input: inputSignal.node,
-        frequency: 5,
-        amount: 0.5,
+        frequency: 8,
+        amount: 1,
       });
 
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);

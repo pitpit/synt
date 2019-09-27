@@ -34,6 +34,7 @@ declare module 'gibberish-dsp' {
 
   namespace fx {
     function Vibrato(inputProps: {}): ugen;
+    function Tremolo(inputProps: {}): ugen;
   }
 
   function init(memAmount: number|void, ctx: AudioContext|void): void;
