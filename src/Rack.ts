@@ -43,9 +43,11 @@ export default class Rack {
     const resumeAudioContext = () => {
       Gibberish.ctx.resume().then(() => {
         document.removeEventListener('mousedown', resumeAudioContext);
+        document.removeEventListener('touchstart', resumeAudioContext);
       });
     };
     document.addEventListener('mousedown', resumeAudioContext);
+    document.addEventListener('touchstart', resumeAudioContext);
   }
 
   /**
