@@ -39,11 +39,11 @@ Run web dev server:
 
     npm start
 
-## Running linter
+Run linter:
 
     npm run lint
 
- ## Running tests
+Run tests:
 
     npm test
 
