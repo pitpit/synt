@@ -29,6 +29,24 @@ I'd would like to thank the authors for their help !
 
 With special thanks to https://github.com/charlieroberts, primary developer of Gibberish.
 
+## Developing
+
+Install dependencies:
+
+    npm install
+
+Run web dev server:
+
+    npm start
+
+## Running linter
+
+    npm run lint
+
+ ## Running tests
+
+    npm test
+
 ## TODO
 
 - [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
