@@ -1,5 +1,5 @@
 {
-  "name": "tuune",
+  "name": "@pitpit/synt",
   "version": "0.0.0",
   "description": "Connect tiny modules to build synthetic sounds",
   "private": true,
@@ -9,7 +9,7 @@
     "build": "webpack",
     "start": "webpack-dev-server --open",
     "lint": "eslint . --ext '.ts,.js'",
-    "deploy": "npm run build && gh-pages -d dist -x -r \"https://${GITHUB_TOKEN}@github.com/pitpit/tuune.git\""
+    "deploy": "npm run build && gh-pages -d dist -x -r \"https://${GITHUB_TOKEN}@github.com/pitpit/synth.git\""
   },
   "author": "",
   "license": "ISC",

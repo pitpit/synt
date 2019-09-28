@@ -5,7 +5,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   mode: 'development',
   entry: {
-    tuune: './src/index.ts',
+    synt: './src/index.ts',
   },
   output: {
     filename: '[name].js',
@@ -51,7 +51,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Tuune',
+      title: 'Synt',
       template: './src/index.html',
     }),
   ],
