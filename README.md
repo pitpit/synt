@@ -1,7 +1,5 @@
 # Synt
 
-[![Build Status](https://travis-ci.com/pitpit/synt.svg?branch=main)](https://travis-ci.com/pitpit/synt)
-
 Synt's main idea is to allow the user to assemble tiny modules to build synthetic sounds as easy as pie.
 Each module is a square with up to 4 inputs or outputs that can be connected to other modules.
 And that's it.
@@ -49,6 +47,10 @@ Run tests:
 
 ## TODO
 
+- [ ] Improve the src/ subtree structure to make it easier to understand
+- [ ] Upgrade to last node LTS version and update dependencies
+- [X] Switch from TravisCI to Github Actions
+- [ ] Switch from webpack to vite
 - [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
 - [X] Specific draw for knob with animation when changing value
 - [X] Camel case filenames
