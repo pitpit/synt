@@ -1,4 +1,5 @@
 import type { ugen } from 'gibberish-dsp';
+import Gibberish from 'gibberish-dsp';
 import Konva from 'konva';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
@@ -9,9 +10,9 @@ import BrokenAudioSignal from './BrokenAudioSignal';
 import PlugPosition from './PlugPosition';
 
 export default class Speaker extends AudioMod {
-  node: ugen | null = null;
+  private gainNode: ugen | null = null;
 
-  gain: number = 0.1;
+  gain: number = 0.5;
 
   constructor() {
     super();
@@ -76,44 +77,26 @@ export default class Speaker extends AudioMod {
 
   onSignalChanged(inputSignals: Signals): Signals {
     const inputSignal = inputSignals[PlugPosition.NORTH];
-    // I don't no how to test the node is a Giberrish object, so only test it has a connect function
-    if (inputSignal instanceof AudioSignal) {
-      this.node = inputSignal.node;
-      this.connect(inputSignal);
-      this.upgateGain();
+    if (inputSignal instanceof AudioSignal && inputSignal.node) {
+      if (this.gainNode?.disconnect) {
+        this.gainNode.disconnect();
+      }
+      this.gainNode = Gibberish.binops.Mul(inputSignal.node, this.gain);
+      this.gainNode.connect?.();
     } else if (inputSignal instanceof BrokenAudioSignal) {
-      this.disconnect(inputSignal);
-      this.node = null;
+      if (this.gainNode?.disconnect) {
+        this.gainNode.disconnect();
+      }
+      this.gainNode = null;
     }
 
     const controlSignal = inputSignals[PlugPosition.EAST];
-    if (controlSignal instanceof ControlSignal
-      && this.node) {
-      this.gain = controlSignal.value / 10;
-      this.upgateGain();
+    if (controlSignal instanceof ControlSignal && this.gainNode) {
+      this.gain = controlSignal.value;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.gainNode as any)[1] = this.gain;
     }
 
     return [null, null, null, null];
-  }
-
-  private upgateGain() {
-    if (this.node
-      && this.node.gain !== undefined) {
-      this.node.gain = this.gain;
-    }
-  }
-
-  private connect(inputSignal: AudioSignal) {
-    if (inputSignal.node
-      && inputSignal.node.connect !== undefined) {
-      inputSignal.node.connect();
-    }
-  }
-
-  private disconnect(inputSignal: BrokenAudioSignal) {
-    if (inputSignal.node
-        && inputSignal.node.disconnect !== undefined) {
-      inputSignal.node.disconnect();
-    }
   }
 }

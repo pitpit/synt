@@ -21,6 +21,10 @@ declare module 'gibberish-dsp' {
     function Tremolo(inputProps: Record<string, unknown>): ugen;
   }
 
+  namespace binops {
+    function Mul(a: ugen | number, b: ugen | number): ugen;
+  }
+
   function init(memAmount?: number, ctx?: AudioContext): void;
   const ctx: AudioContext | undefined;
   let workletPath: string;
