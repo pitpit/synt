@@ -7,9 +7,16 @@ import ControlSignal from '../core/ControlSignal';
 export default class Knob extends Mod {
   range: number = 400;
 
-  sensitivity: number = 0.1;
+  /** Value change per pixel for touch (0.05 = 20 px covers 0→1). */
+  touchSensitivity: number = 0.005;
+
+  /** Wheel scaling factor (pos units per normalised-delta pixel). */
+  wheelSensitivity: number = 0.5;
 
   value: number = 0.5;
+
+  /** Accumulated rotation position in the range [-range, +range], shared between wheel and touch handlers. */
+  pos: number = 0;
 
   group: Konva.Group|null = null;
 
@@ -27,25 +34,65 @@ export default class Knob extends Mod {
   }
 
   private addWheelListener(group: Konva.Group) {
-    let pos = 0;
-    group.on('wheel', (e) => {
+    if (!this.innerCircle) return;
+    this.innerCircle.on('wheel', (e) => {
+      // Stop the event from reaching the stage zoom handler
+      e.cancelBubble = true;
       const event = e.evt;
-      if (!event.ctrlKey) {
-        // Normalize across deltaMode: 0=pixels, 1=lines (~16px each), 2=pages
-        const normalizedDelta = event.deltaMode === 1
-          ? event.deltaY * 16
-          : event.deltaY;
-        pos -= normalizedDelta * this.sensitivity;
-        if (pos < -this.range) {
-          pos = -this.range;
-        } else if (pos > this.range) {
-          pos = this.range;
-        }
+      // Normalize across deltaMode: 0=pixels, 1=lines (~16px each), 2=pages
+      const normalizedDelta = event.deltaMode === 1
+        ? event.deltaY * 16
+        : event.deltaY;
+      this.pos -= normalizedDelta * this.wheelSensitivity;
+      if (this.pos < -this.range) {
+        this.pos = -this.range;
+      } else if (this.pos > this.range) {
+        this.pos = this.range;
       }
       event.preventDefault();
-      this.value = ((pos + this.range) / this.range) * 0.5;
+      this.value = ((this.pos + this.range) / this.range) * 0.5;
       this.updatePinCirclePosition();
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+    });
+  }
+
+  private addTouchListener(group: Konva.Group) {
+    if (!this.innerCircle) return;
+
+    this.innerCircle.on('touchstart', (e) => {
+      if (e.evt.touches.length !== 1) return;
+      // Capture touch: prevent stage pan and mod drag
+      e.cancelBubble = true;
+      group.draggable(false);
+
+      const touch = e.evt.touches[0];
+      const touchId = touch.identifier;
+      const startY = touch.clientY;
+      const startValue = this.value;
+
+      // Use native window listeners so the swipe keeps working even when
+      // the finger moves outside the innerCircle bounds.
+      const onMove = (moveEvt: TouchEvent) => {
+        const t = Array.from(moveEvt.changedTouches).find((ct) => ct.identifier === touchId);
+        if (!t) return;
+        moveEvt.preventDefault();
+        const dy = startY - t.clientY;
+        this.value = Math.max(0, Math.min(1, startValue + dy * this.touchSensitivity));
+        this.pos = this.range * (2 * this.value - 1);
+        this.updatePinCirclePosition();
+        this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      };
+
+      const onEnd = (endEvt: TouchEvent) => {
+        const t = Array.from(endEvt.changedTouches).find((ct) => ct.identifier === touchId);
+        if (!t) return;
+        group.draggable(true);
+        window.removeEventListener('touchmove', onMove);
+        window.removeEventListener('touchend', onEnd);
+      };
+
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
     });
   }
 
@@ -104,5 +151,6 @@ export default class Knob extends Mod {
 
     this.drawKnob(group);
     this.addWheelListener(group);
+    this.addTouchListener(group);
   }
 }
