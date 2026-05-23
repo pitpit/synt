@@ -15,7 +15,7 @@ export default class Plugs {
   /**
    * Set type of every plugs.
    */
-  setTypes(plugTypes: Array<Symbol>): Plugs {
+  setTypes(plugTypes: Array<symbol>): this {
     this.items.forEach((plug, plugPosition) => {
       plug.type = plugTypes[plugPosition];
     });
@@ -25,7 +25,7 @@ export default class Plugs {
   /**
    * Iterate over plugs.
    */
-  forEach(callback: Function) {
+  forEach(callback: (plug: Plug, plugPosition: number) => void) {
     this.items.forEach((plug: Plug, plugPosition: number) => {
       callback(plug, plugPosition);
     });
@@ -36,32 +36,16 @@ export default class Plugs {
    * an input signal from linked mods, it returns true.
    */
   hasUntriggeredLinkedInput(): boolean {
-    let untriggered = false;
-
-    const breakMe: object = {};
-    try {
-      this.items.forEach((plug: Plug, plugPosition: number) => {
-        if (
-          plug.isInput()
-          && plug.mod
-          && this.untriggeredInput[plugPosition]
-        ) {
-          untriggered = true;
-          throw breakMe;
-        }
-      });
-    } catch (e) {
-      if (e !== breakMe) throw e;
-    }
-
-    return untriggered;
+    return this.items.some((plug: Plug, plugPosition: number) =>
+      plug.isInput() && !!plug.mod && this.untriggeredInput[plugPosition]
+    );
   }
 
   /**
    * Reset untriggered linked inputs detection.
    * @see hasUntriggeredLinkedInput()
    */
-  resetUntriggeredLinkedInput(): Plugs {
+  resetUntriggeredLinkedInput(): this {
     this.untriggeredInput = [true, true, true, true];
 
     return this;

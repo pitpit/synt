@@ -1,30 +1,27 @@
-
 /**
  * Used to represent one of the fourth plugs of a Mod.
  */
-export default class PlugPosition {
-  static NORTH:number = 0;
-
-  static EAST:number = 1;
-
-  static SOUTH:number = 2;
-
-  static WEST:number = 3;
-
-  static opposite(plugPosition:number) {
-    if (this.NORTH === plugPosition) {
-      return this.SOUTH;
+const PlugPosition = {
+  NORTH: 0,
+  EAST: 1,
+  SOUTH: 2,
+  WEST: 3,
+  opposite(plugPosition: number): number {
+    if (PlugPosition.NORTH === plugPosition) {
+      return PlugPosition.SOUTH;
     }
-    if (this.EAST === plugPosition) {
-      return this.WEST;
+    if (PlugPosition.EAST === plugPosition) {
+      return PlugPosition.WEST;
     }
-    if (this.SOUTH === plugPosition) {
-      return this.NORTH;
+    if (PlugPosition.SOUTH === plugPosition) {
+      return PlugPosition.NORTH;
     }
-    if (this.WEST === plugPosition) {
-      return this.EAST;
+    if (PlugPosition.WEST === plugPosition) {
+      return PlugPosition.EAST;
     }
 
     throw new Error('Invalid plugPosition value');
-  }
-}
+  },
+};
+
+export default PlugPosition;

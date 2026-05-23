@@ -1,14 +1,12 @@
 /**
  * Used to represent type of a plug.
  */
-export default class PlugType {
-  static IN:symbol = Symbol('in');
+const PlugType = {
+  IN: Symbol('in'),
+  OUT: Symbol('out'),
+  NULL: Symbol('null'),
+  CTRLIN: Symbol('ctrlin'),
+  CTRLOUT: Symbol('ctrlout'),
+};
 
-  static OUT:symbol = Symbol('out');
-
-  static NULL:symbol = Symbol('null');
-
-  static CTRLIN:symbol = Symbol('ctrlin');
-
-  static CTRLOUT:symbol = Symbol('ctrlout');
-}
+export default PlugType;

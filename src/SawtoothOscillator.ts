@@ -1,10 +1,14 @@
+import type { ugen } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
 import Oscillator from './Oscillator';
 
-export default class SineOscillator extends Oscillator {
+export default class SawtoothOscillator extends Oscillator {
   constructor() {
     super();
     this.label = 'saw';
-    this.node = Gibberish.oscillators.Saw(this.getDefaultOptions());
+  }
+
+  protected createNode(): ugen {
+    return Gibberish.oscillators.Saw(this.getDefaultOptions());
   }
 }

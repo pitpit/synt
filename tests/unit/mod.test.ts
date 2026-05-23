@@ -2,7 +2,6 @@ import TestMod from './TestMod';
 import PlugType from '../../src/PlugType';
 import PlugPosition from '../../src/PlugPosition';
 
-
 test('findEntries: mod with no plugs is not an entry', () => {
   const mod = new TestMod();
 

@@ -62,10 +62,8 @@ module.exports = {
   // A set of global variables that need to be available in all test environments
   // globals: {},
 
-  globals: {
-    'ts-jest': {
-      diagnostics: false,
-    },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { diagnostics: false }],
   },
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
@@ -89,7 +87,9 @@ module.exports = {
   // moduleFileExtensions: [ "js", "ts" ],
 
   // A map from regular expressions to module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: {
+    '^konva$': '<rootDir>/node_modules/konva/lib/index.js',
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],

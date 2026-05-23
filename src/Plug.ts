@@ -4,7 +4,7 @@ import PlugPosition from './PlugPosition';
 import Mod from './Mod';
 
 export default class Plug {
-  type: PlugType = PlugType.NULL;
+  type: symbol = PlugType.NULL;
 
   mod: Mod| null = null;
 
@@ -123,12 +123,11 @@ export default class Plug {
       points,
       stroke: color,
       strokeWidth: plugLineStrokeWidth,
-      lineCap: 'sqare',
+      lineCap: 'square',
     });
 
     group.add(plugLine);
   }
-
 
   private drawCtrlPlug(
     group: Konva.Group,
@@ -177,13 +176,13 @@ export default class Plug {
       points: bottomPoints,
       stroke: color1,
       strokeWidth: plugLineStrokeWidth,
-      lineCap: 'sqare',
+      lineCap: 'square',
     });
     const plugLine2 = new Konva.Line({
       points: topPoints,
       stroke: color2,
       strokeWidth: plugLineStrokeWidth,
-      lineCap: 'sqare',
+      lineCap: 'square',
     });
     group.add(plugLine1);
     group.add(plugLine2);

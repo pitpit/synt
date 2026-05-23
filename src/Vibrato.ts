@@ -1,3 +1,4 @@
+import type { ugen } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
 import AudioMod from './AudioMod';
 import Signals from './Signals';
@@ -8,7 +9,7 @@ import BrokenAudioSignal from './BrokenAudioSignal';
 import ControlSignal from './ControlSignal';
 
 export default class Vibrato extends AudioMod {
-  node: any;
+  node: ugen | null = null;
 
   constructor() {
     super();

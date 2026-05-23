@@ -81,7 +81,6 @@ test('1 oscillator + 1 gate + 1 speaker', () => {
   spy.mockRestore();
 });
 
-
 test('1 oscillator + 1 speaker + 1 gate', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
@@ -204,7 +203,6 @@ test('1 oscillator + 1 speaker  + 1 knob - 1 oscillator', () => {
 
   spy.mockRestore();
 });
-
 
 test('1 oscillator + 1 speaker  + 1 knob - 1 speaker', () => {
   const oscillator = new TestOscillator();

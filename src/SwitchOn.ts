@@ -6,7 +6,6 @@ import Signals from './Signals';
 import AudioSignal from './AudioSignal';
 import BrokenAudioSignal from './BrokenAudioSignal';
 
-
 export default class SwitchOn extends AudioMod {
   signal: AudioSignal|null = null;
 

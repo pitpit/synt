@@ -1,21 +1,27 @@
 declare module 'gibberish-dsp' {
 
-  interface ugen {}
-  interface instrument {}
-  interface effect {}
+  interface ugen {
+    frequency?: number;
+    gain?: number;
+    connect?(): void;
+    disconnect?(): void;
+  }
+  type instrument = object;
+  type effect = object;
 
   namespace oscillators {
-    function Sine(inputProps: {}): ugen;
-    function Triangle(inputProps: {}): ugen;
-    function Saw(inputProps: {}): ugen;
-    function Square(inputProps: {}): ugen;
+    function Sine(inputProps: Record<string, unknown>): ugen;
+    function Triangle(inputProps: Record<string, unknown>): ugen;
+    function Saw(inputProps: Record<string, unknown>): ugen;
+    function Square(inputProps: Record<string, unknown>): ugen;
   }
 
   namespace fx {
-    function Vibrato(inputProps: {}): ugen;
-    function Tremolo(inputProps: {}): ugen;
+    function Vibrato(inputProps: Record<string, unknown>): ugen;
+    function Tremolo(inputProps: Record<string, unknown>): ugen;
   }
 
-  function init(memAmount: number|void, ctx: AudioContext|void): void;
-  const ctx: AudioContext;
+  function init(memAmount?: number, ctx?: AudioContext): void;
+  const ctx: AudioContext | undefined;
+  let workletPath: string;
 }
