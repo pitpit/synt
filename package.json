@@ -1,6 +1,6 @@
 {
   "name": "@pitpit/synt",
-  "version": "0.0.0",
+  "version": "2.0.0-alpha",
   "description": "Connect tiny modules to build synthetic sounds",
   "private": true,
   "scripts": {
