@@ -9,9 +9,12 @@ by third party developers.
 
 See the live demo here: https://pitpit.github.io/synt
 
-THIS PROJECT IS UNDER DEVELOPMENT AND IS NOT YET PROPERLY DOCUMENTED.
-
 ![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot1.png)
+
+## Documentation
+
+- [Architecture](docs/01-architecture.md) — core concepts, module categories, signal flow, connection rules, and design patterns
+- [Writing an AudioMod](docs/02-writing-an-audiomod.md) — step-by-step guide to implementing a new audio module
 
 ## Inspiration
 
@@ -51,7 +54,7 @@ Run tests:
 
 - [ ] Improve backward compatibility on old browsers
 - [ ] list "work well on"
-- [ ] Add a way to automaticaly test on  old browsers?
+- [ ] Add a way to automaticaly test on old browsers?
 
 ### Real world integration
 
