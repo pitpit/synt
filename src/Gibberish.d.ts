@@ -22,7 +22,10 @@ declare module 'gibberish-dsp' {
   }
 
   namespace binops {
-    function Mul(a: ugen | number, b: ugen | number): ugen;
+    interface MulNode extends ugen {
+      [index: number]: ugen | number;
+    }
+    function Mul(a: ugen | number, b: ugen | number): MulNode;
   }
 
   function init(memAmount?: number, ctx?: AudioContext): void;

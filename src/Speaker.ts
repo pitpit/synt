@@ -1,4 +1,4 @@
-import type { ugen } from 'gibberish-dsp';
+import type { binops } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
 import Konva from 'konva';
 import AudioMod from './AudioMod';
@@ -10,7 +10,7 @@ import BrokenAudioSignal from './BrokenAudioSignal';
 import PlugPosition from './PlugPosition';
 
 export default class Speaker extends AudioMod {
-  private gainNode: ugen | null = null;
+  private gainNode: binops.MulNode | null = null;
 
   gain: number = 0.5;
 
@@ -93,8 +93,7 @@ export default class Speaker extends AudioMod {
     const controlSignal = inputSignals[PlugPosition.EAST];
     if (controlSignal instanceof ControlSignal && this.gainNode) {
       this.gain = controlSignal.value;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this.gainNode as any)[1] = this.gain;
+      this.gainNode[1] = this.gain;
     }
 
     return [null, null, null, null];
