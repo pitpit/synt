@@ -11,7 +11,7 @@ See the live demo here: https://pitpit.github.io/synt
 
 THIS PROJECT IS UNDER DEVELOPMENT AND IS NOT YET PROPERLY DOCUMENTED.
 
-![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/src/images/screenshot1.png)
+![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot1.png)
 
 ## Inspiration
 
