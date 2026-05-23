@@ -1,6 +1,6 @@
 # Synt
 
-[![Build Status](https://travis-ci.com/pitpit/synt.svg?branch=master)](https://travis-ci.com/pitpit/synt)
+[![Build Status](https://travis-ci.com/pitpit/synt.svg?branch=main)](https://travis-ci.com/pitpit/synt)
 
 Synt's main idea is to allow the user to assemble tiny modules to build synthetic sounds as easy as pie.
 Each module is a square with up to 4 inputs or outputs that can be connected to other modules.
@@ -13,7 +13,7 @@ See the live demo here: https://pitpit.github.io/synt
 
 THIS PROJECT IS UNDER DEVELOPMENT AND IS NOT YET PROPERLY DOCUMENTED.
 
-![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/master/src/images/screenshot1.png)
+![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/src/images/screenshot1.png)
 
 ## Inspiration
 

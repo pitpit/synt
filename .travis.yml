@@ -5,7 +5,7 @@ node_js:
 stages:
   - name: test
   - name: deploy
-    if: branch = master AND type = push
+    if: branch = main AND type = push
 
 jobs:
   include:
