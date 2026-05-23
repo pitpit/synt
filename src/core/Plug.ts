@@ -101,32 +101,60 @@ export default class Plug {
     } else {
       throw new Error('Invalid plug type');
     }
-    let points: Array<number> = [0, 0, 0, 0];
 
     if (PlugPosition.NORTH === plugPosition) {
       const y = strokeWidth + plugLineStrokeWidth / 2;
-      points = [strokeWidth, y, slotWidth - strokeWidth, y];
+      const plugLine1 = new Konva.Line({
+        points: [strokeWidth, y, slotWidth / 2, y],
+        stroke: 'green',
+        strokeWidth: plugLineStrokeWidth,
+        lineCap: 'butt',
+      });
+      const plugLine2 = new Konva.Line({
+        points: [slotWidth / 2, y, slotWidth - strokeWidth, y],
+        stroke: 'red',
+        strokeWidth: plugLineStrokeWidth,
+        lineCap: 'butt',
+      });
+      group.add(plugLine1);
+      group.add(plugLine2);
     } else if (PlugPosition.EAST === plugPosition) {
-      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
-      points = [y, strokeWidth, y, height * slotHeight - strokeWidth];
-    } else if (PlugPosition.SOUTH === plugPosition) { // South
-      const y = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
-      points = [strokeWidth, y, slotWidth - strokeWidth, y];
-    } else if (PlugPosition.WEST === plugPosition) { // West
+      const x = width * slotWidth - (strokeWidth + plugLineStrokeWidth / 2);
+      const plugLine = new Konva.Line({
+        points: [x, strokeWidth, x, height * slotHeight - strokeWidth],
+        stroke: color,
+        strokeWidth: plugLineStrokeWidth,
+        lineCap: 'butt',
+      });
+      group.add(plugLine);
+    } else if (PlugPosition.SOUTH === plugPosition) {
+      const y = height * slotHeight - (strokeWidth + plugLineStrokeWidth / 2);
+      const plugLine1 = new Konva.Line({
+        points: [strokeWidth, y, slotWidth / 2, y],
+        stroke: 'red',
+        strokeWidth: plugLineStrokeWidth,
+        lineCap: 'butt',
+      });
+      const plugLine2 = new Konva.Line({
+        points: [slotWidth / 2, y, slotWidth - strokeWidth, y],
+        stroke: 'green',
+        strokeWidth: plugLineStrokeWidth,
+        lineCap: 'butt',
+      });
+      group.add(plugLine1);
+      group.add(plugLine2);
+    } else if (PlugPosition.WEST === plugPosition) {
       const x = strokeWidth + plugLineStrokeWidth / 2;
-      points = [x, strokeWidth, x, height * slotHeight - strokeWidth];
+      const plugLine = new Konva.Line({
+        points: [x, strokeWidth, x, height * slotHeight - strokeWidth],
+        stroke: color,
+        strokeWidth: plugLineStrokeWidth,
+        lineCap: 'butt',
+      });
+      group.add(plugLine);
     } else {
       throw new Error('Invalid plugPosition value');
     }
-
-    const plugLine = new Konva.Line({
-      points,
-      stroke: color,
-      strokeWidth: plugLineStrokeWidth,
-      lineCap: 'square',
-    });
-
-    group.add(plugLine);
   }
 
   private drawCtrlPlug(
@@ -176,13 +204,13 @@ export default class Plug {
       points: bottomPoints,
       stroke: color1,
       strokeWidth: plugLineStrokeWidth,
-      lineCap: 'square',
+      lineCap: 'butt',
     });
     const plugLine2 = new Konva.Line({
       points: topPoints,
       stroke: color2,
       strokeWidth: plugLineStrokeWidth,
-      lineCap: 'square',
+      lineCap: 'butt',
     });
     group.add(plugLine1);
     group.add(plugLine2);
