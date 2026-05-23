@@ -19,8 +19,6 @@ export default class Rack {
 
   grid: Array<Array<Mod|null>> = [];
 
-  gibberish: any;
-
   constructor() {
     // Setup container
     const container = document.createElement('div');
@@ -44,7 +42,7 @@ export default class Rack {
     // This is a trick to get around https://goo.gl/7K7WLu
     const resumeAudioContext = () => {
       if (Gibberish.ctx) {
-        Gibberish.ctx.resume().then(() => {
+        void Gibberish.ctx.resume().then(() => {
           document.removeEventListener('mousedown', resumeAudioContext);
           document.removeEventListener('touchstart', resumeAudioContext);
         });
@@ -57,7 +55,7 @@ export default class Rack {
   /**
    * Add a Mod on the rack and set its position.
    */
-  add(mod: Mod, x:number, y:number): Rack {
+  add(mod: Mod, x:number, y:number): this {
     if (this.isBusy(x, y, mod)) {
       throw new Error('A mod already stand at this position');
     }
@@ -71,10 +69,10 @@ export default class Rack {
     return this;
   }
 
-  private removeFromGrid(mod: Mod): Rack {
+  private removeFromGrid(mod: Mod): this {
     // TODO use an efficient array walk
     this.grid.forEach((row, x) => {
-      row.forEach((item, y): any => {
+      row.forEach((item, y) => {
         if (item === mod) {
           this.grid[x][y] = null;
           return this;
@@ -95,7 +93,7 @@ export default class Rack {
     return null;
   }
 
-  private addToGrid(mod:Mod): Rack {
+  private addToGrid(mod:Mod): this {
     if (!this.grid[mod.x]) {
       this.grid[mod.x] = [];
     }
@@ -184,12 +182,9 @@ export default class Rack {
     this.stage.add(layer);
 
     // Resize canvas when resizing window
-    const instance = this;
     window.onresize = () => {
-      if (instance.stage) {
-        instance.stage.width(window.innerWidth);
-        instance.stage.height(window.innerHeight);
-      }
+      this.stage.width(window.innerWidth);
+      this.stage.height(window.innerHeight);
     };
   }
 

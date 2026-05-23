@@ -1,3 +1,4 @@
+import type { ugen } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
 import Oscillator from './Oscillator';
 
@@ -7,7 +8,7 @@ export default class SquareOscillator extends Oscillator {
     this.label = 'square';
   }
 
-  protected createNode(): any {
+  protected createNode(): ugen {
     return Gibberish.oscillators.Square(this.getDefaultOptions());
   }
 }

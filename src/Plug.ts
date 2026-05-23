@@ -4,7 +4,7 @@ import PlugPosition from './PlugPosition';
 import Mod from './Mod';
 
 export default class Plug {
-  type: PlugType = PlugType.NULL;
+  type: symbol = PlugType.NULL;
 
   mod: Mod| null = null;
 

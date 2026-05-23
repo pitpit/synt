@@ -1,3 +1,4 @@
+import type { ugen } from 'gibberish-dsp';
 import Konva from 'konva';
 import AudioMod from './AudioMod';
 import PlugType from './PlugType';
@@ -8,7 +9,7 @@ import BrokenAudioSignal from './BrokenAudioSignal';
 import PlugPosition from './PlugPosition';
 
 export default class Speaker extends AudioMod {
-  node: any;
+  node: ugen | null = null;
 
   gain: number = 0.1;
 

@@ -63,7 +63,7 @@ export default abstract class Mod {
    * @helper
    */
   configure(
-    plugTypes:Array<Symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
+    plugTypes:Array<symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
     label: string = '',
     width:number = 1,
     height:number = 1,
@@ -265,25 +265,9 @@ export default abstract class Mod {
    * A mod is an entry if it has at least one linked OUT plug and no IN plug (linked or not)
    */
   isEntry(): boolean {
-    let haveIn = false;
-    let haveLinkedOut = false;
-
-    const breakMe: object = {};
-    try {
-      this.plugs.forEach((plug: Plug) => {
-        if (plug.type === PlugType.IN) {
-          haveIn = true;
-          throw breakMe;
-        }
-        if (plug.isOutput()) {
-          haveLinkedOut = true;
-        }
-      });
-    } catch (e) {
-      if (e !== breakMe) throw e;
-    }
-
-    return (haveLinkedOut && !haveIn);
+    const haveIn = this.plugs.items.some((plug: Plug) => plug.type === PlugType.IN);
+    const haveLinkedOut = this.plugs.items.some((plug: Plug) => plug.isOutput());
+    return haveLinkedOut && !haveIn;
   }
 
   /**
@@ -427,7 +411,7 @@ export default abstract class Mod {
   }
 
   private static generateProcessId(): string {
-    return Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).substring(2, 11);
   }
 
   /**
