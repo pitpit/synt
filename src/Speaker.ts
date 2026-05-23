@@ -77,17 +77,10 @@ export default class Speaker extends AudioMod {
 
   onSignalChanged(inputSignals: Signals): Signals {
     const inputSignal = inputSignals[PlugPosition.NORTH];
-    if (inputSignal instanceof AudioSignal && inputSignal.node) {
-      if (this.gainNode?.disconnect) {
-        this.gainNode.disconnect();
-      }
-      this.gainNode = Gibberish.binops.Mul(inputSignal.node, this.gain);
-      this.gainNode.connect?.();
+    if (inputSignal instanceof AudioSignal) {
+      this.connect(inputSignal);
     } else if (inputSignal instanceof BrokenAudioSignal) {
-      if (this.gainNode?.disconnect) {
-        this.gainNode.disconnect();
-      }
-      this.gainNode = null;
+      this.disconnect(inputSignal);
     }
 
     const controlSignal = inputSignals[PlugPosition.EAST];
@@ -97,5 +90,22 @@ export default class Speaker extends AudioMod {
     }
 
     return [null, null, null, null];
+  }
+
+  private connect(inputSignal: AudioSignal) {
+    if (this.gainNode?.disconnect) {
+      this.gainNode.disconnect();
+    }
+    if (inputSignal.node) {
+      this.gainNode = Gibberish.binops.Mul(inputSignal.node, this.gain);
+      this.gainNode.connect?.();
+    }
+  }
+
+  private disconnect(_inputSignal: BrokenAudioSignal) {
+    if (this.gainNode?.disconnect) {
+      this.gainNode.disconnect();
+    }
+    this.gainNode = null;
   }
 }
