@@ -47,28 +47,52 @@ Run tests:
 
 ## TODO
 
-- [ ] edit and play modes
-- [ ] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
+### Wild-range support
+
+- [ ] Improve backward compatibility on old browsers
+- [ ] list "work well on"
+- [ ] Add a way to automaticaly test on  old browsers?
+
+### Real world integration
+
+- [ ] add midi
+- [ ] Keyboard input (assign a key to a switch)
+- [ ] set a direct value for a Mod
+- [ ] import / export in yaml
+
+### Modules
+
+- [ ] create duplicable/instanciable modules (to build more complex instruments)
+- [ ] Add a file player Mod?
+- [ ] implement Flanger & Reverb effects
+- [ ] Protect against link loop?
+- [ ] Add a display module (for instance, to see an oscillator wave)
+- [ ] transition sound when linking a Control Mod to avoic clicks
+- [ ] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
+
+### UX
+
+- [ ] drag'n drop new Mod in the interface
+- [ ] add a sticky note mode to write info / doc / quick tour to explain how to use the interface
+- [ ] edit and play modes?
+- [X] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
+- [ ] Responsive view on small screens
+- [ ] Add several layers to put more Mods?
+- [ ] Ability to rotate Mod on Rack
+
+### Codebase
+
 - [ ] Add a public licence
 - [ ] Switch from Gibberish to Tone.js?
-- [ ] Improve support on mobile phone
-- [ ] Improve backward compatibility on old browser
-- [ ] Add a way test on very old browser?
 - [ ] Improve the src/ subtree structure to make it easier to understand
-- [ ] Upgrade to last node LTS version and update dependencies
-- [X] Switch from TravisCI to Github Actions
 - [ ] Switch from webpack to vite
+- [X] Upgrade to last node LTS version and update dependencies
+- [X] Switch from TravisCI to Github Actions
 - [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN
 - [X] Specific draw for knob with animation when changing value
 - [X] Camel case filenames
 - [X] Gain value on Speaker should be controllable by Knob Mod
-- [ ] Responsive view
-- [ ] Keyboard input
-- [ ] Protect against link loop
-- [ ] Add a file player Mod
-- [ ] Ability to rotate Mod on Rack
-- [ ] Add a top layer to put more Mods?
-- [ ] Specific draw for oscillator
-- [ ] implement Flanger & Reverb
-- [ ] transition sound when linking a Control Mod to avoic clicks
-- [ ] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
+
+### Documentation
+
+- [ ] How to serve it from various devices (smartphone, esp32...)

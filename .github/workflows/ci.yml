@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
 
+# Cancel any in-progress run for the same workflow and branch when a new one is triggered.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
