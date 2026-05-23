@@ -1,7 +1,10 @@
 import tingle from 'tingle.js';
+import EventEmitter from 'eventemitter3';
 
 export default class Modal {
   modal: tingle.modal;
+
+  readonly events: EventEmitter = new EventEmitter();
 
   constructor() {
     this.modal = new tingle.modal({
@@ -10,12 +13,16 @@ export default class Modal {
       closeMethods: ['overlay', 'escape'],
     });
     this.modal.addFooterBtn('Save', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => {
+      this.events.emit('save');
       this.modal.close();
     });
     this.modal.addFooterBtn('Cancel', 'tingle-btn tingle-btn--pull-right', () => {
       this.modal.close();
     });
-    this.modal.setContent('<h1>Title</h1><p>ok</p>');
+  }
+
+  setContent(html: string): void {
+    this.modal.setContent(html);
   }
 
   open(): void {

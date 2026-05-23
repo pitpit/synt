@@ -102,7 +102,7 @@ export default class Speaker extends AudioMod {
     }
   }
 
-  private disconnect(_inputSignal: BrokenAudioSignal) {
+  private disconnect(_: BrokenAudioSignal) {
     if (this.gainNode?.disconnect) {
       this.gainNode.disconnect();
     }
