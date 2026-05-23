@@ -1,5 +1,5 @@
 import type { ugen } from 'gibberish-dsp';
-import Oscillator from '../../src/Oscillator';
+import Oscillator from '../../../src/oscillator/Oscillator';
 
 export default class TestOscillator extends Oscillator {
   constructor() {

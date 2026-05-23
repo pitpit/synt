@@ -1,4 +1,4 @@
-import Mod from '../../src/Mod';
+import Mod from '../../../src/core/Mod';
 
 export default class TestMod extends Mod {
 }

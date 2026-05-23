@@ -1,11 +1,11 @@
-import Speaker from '../../src/Speaker';
-import AudioSignal from '../../src/AudioSignal';
-import BrokenAudioSignal from '../../src/BrokenAudioSignal';
-import TestOscillator from './TestOscillator';
-import Gate from '../../src/Gate';
-import Knob from '../../src/Knob';
-import ControlSignal from '../../src/ControlSignal';
-import PlugPosition from '../../src/PlugPosition';
+import Speaker from '../../../src/output/Speaker';
+import AudioSignal from '../../../src/core/AudioSignal';
+import BrokenAudioSignal from '../../../src/core/BrokenAudioSignal';
+import TestOscillator from '../oscillator/TestOscillator';
+import Gate from '../../../src/control/Gate';
+import Knob from '../../../src/control/Knob';
+import ControlSignal from '../../../src/core/ControlSignal';
+import PlugPosition from '../../../src/core/PlugPosition';
 
 test('1 oscillator + 1 speaker', () => {
   const oscillator = new TestOscillator();

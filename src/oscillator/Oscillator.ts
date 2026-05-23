@@ -1,10 +1,10 @@
 import type { ugen } from 'gibberish-dsp';
-import AudioMod from './AudioMod';
-import PlugType from './PlugType';
-import Signals from './Signals';
-import ControlSignal from './ControlSignal';
-import PlugPosition from './PlugPosition';
-import AudioSignal from './AudioSignal';
+import AudioMod from '../core/AudioMod';
+import PlugType from '../core/PlugType';
+import Signals from '../core/Signals';
+import ControlSignal from '../core/ControlSignal';
+import PlugPosition from '../core/PlugPosition';
+import AudioSignal from '../core/AudioSignal';
 
 export default abstract class Oscillator extends AudioMod {
   node: ugen | null = null;

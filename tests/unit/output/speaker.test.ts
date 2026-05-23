@@ -1,7 +1,7 @@
-import Speaker from '../../src/Speaker';
-import { Signals } from '../../src/Signal';
-import ControlSignal from '../../src/ControlSignal';
-import AudioSignal from '../../src/AudioSignal';
+import Speaker from '../../../src/output/Speaker';
+import Signals from '../../../src/core/Signals';
+import ControlSignal from '../../../src/core/ControlSignal';
+import AudioSignal from '../../../src/core/AudioSignal';
 import type { ugen } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
 

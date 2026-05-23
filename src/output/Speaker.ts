@@ -1,13 +1,13 @@
 import type { binops } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
 import Konva from 'konva';
-import AudioMod from './AudioMod';
-import PlugType from './PlugType';
-import Signals from './Signals';
-import AudioSignal from './AudioSignal';
-import ControlSignal from './ControlSignal';
-import BrokenAudioSignal from './BrokenAudioSignal';
-import PlugPosition from './PlugPosition';
+import AudioMod from '../core/AudioMod';
+import PlugType from '../core/PlugType';
+import Signals from '../core/Signals';
+import AudioSignal from '../core/AudioSignal';
+import ControlSignal from '../core/ControlSignal';
+import BrokenAudioSignal from '../core/BrokenAudioSignal';
+import PlugPosition from '../core/PlugPosition';
 
 export default class Speaker extends AudioMod {
   private gainNode: binops.MulNode | null = null;
