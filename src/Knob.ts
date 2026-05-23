@@ -7,6 +7,8 @@ import ControlSignal from './ControlSignal';
 export default class Knob extends Mod {
   range: number = 400;
 
+  sensitivity: number = 0.1;
+
   value: number = 0.5;
 
   group: Konva.Group|null = null;
@@ -25,21 +27,23 @@ export default class Knob extends Mod {
   }
 
   private addWheelListener(group: Konva.Group) {
-    let posX = 0;
+    let pos = 0;
     group.on('wheel', (e) => {
       const event = e.evt;
-      // https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
       if (!event.ctrlKey) {
-        // Your trackpad X and Y positions
-        posX -= event.deltaX * 2;
-        if (posX < -this.range) {
-          posX = -this.range;
-        } else if (posX > this.range) {
-          posX = this.range;
+        // Normalize across deltaMode: 0=pixels, 1=lines (~16px each), 2=pages
+        const normalizedDelta = event.deltaMode === 1
+          ? event.deltaY * 16
+          : event.deltaY;
+        pos -= normalizedDelta * this.sensitivity;
+        if (pos < -this.range) {
+          pos = -this.range;
+        } else if (pos > this.range) {
+          pos = this.range;
         }
       }
       event.preventDefault();
-      this.value = ((posX + this.range) / this.range) * 0.5;
+      this.value = ((pos + this.range) / this.range) * 0.5;
       this.updatePinCirclePosition();
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
     });
@@ -96,6 +100,7 @@ export default class Knob extends Mod {
   draw(group:Konva.Group) {
     this.centerX = group.width() / 2;
     this.centerY = group.height() / 2;
+    this.group = group;
 
     this.drawKnob(group);
     this.addWheelListener(group);
