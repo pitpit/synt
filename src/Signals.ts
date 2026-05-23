@@ -7,8 +7,8 @@ export default class Signals {
   /**
    * Iterate over signals.
    */
-  forEach(callback: Function) {
-    this.forEach((signal: Signal, plugPosition: number) => {
+  forEach(callback: (signal: Signal|null, plugPosition: number) => void) {
+    this.forEach((signal: Signal|null, plugPosition: number) => {
       callback(signal, plugPosition);
     });
   }

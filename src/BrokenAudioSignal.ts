@@ -1,9 +1,10 @@
+import type { ugen } from 'gibberish-dsp';
 import { Signal } from './Signal';
 
 export default class BrokenAudioSignal implements Signal {
-  node: any;
+  node: ugen | null;
 
-  constructor(node: any) {
+  constructor(node: ugen | null) {
     this.node = node;
   }
 
