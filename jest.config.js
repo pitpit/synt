@@ -89,7 +89,7 @@ module.exports = {
   // A map from regular expressions to module names that allow to stub out resources with a single module
   moduleNameMapper: {
     '^konva$': '<rootDir>/node_modules/konva/lib/index.js',
-    '^gibberish-dsp$': '<rootDir>/tests/__mocks__/gibberish-dsp.ts',
+    '^tone$': '<rootDir>/tests/__mocks__/tone.ts',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

@@ -1,5 +1,4 @@
-import type { ugen } from 'gibberish-dsp';
-import Gibberish from 'gibberish-dsp';
+import { Oscillator as ToneOscillator } from 'tone';
 import Oscillator from './Oscillator';
 
 export default class TriangleOscillator extends Oscillator {
@@ -8,7 +7,7 @@ export default class TriangleOscillator extends Oscillator {
     this.label = 'triangle';
   }
 
-  protected createNode(): ugen {
-    return Gibberish.oscillators.Triangle(this.getDefaultOptions());
+  protected createNode(): ToneOscillator {
+    return new ToneOscillator({ frequency: 220, type: 'triangle' }).start();
   }
 }

@@ -1,6 +1,5 @@
 import Konva from 'konva';
-import Gibberish from 'gibberish-dsp';
-import gibberishWorkletUrl from 'gibberish-dsp/dist/gibberish_worklet.js';
+import * as Tone from 'tone';
 import Mod from './Mod';
 
 export default class Rack {
@@ -35,20 +34,13 @@ export default class Rack {
       container: container.id,
     });
 
-    // We cannot initialize the AudioContext in constructor
+    // Tone.js requires a user gesture to resume the AudioContext
     // because of chrome autoplay policy.
-    window.Gibberish = Gibberish;
-    Gibberish.workletPath = gibberishWorkletUrl;
-    Gibberish.init();
-
-    // This is a trick to get around https://goo.gl/7K7WLu
     const resumeAudioContext = () => {
-      if (Gibberish.ctx) {
-        void Gibberish.ctx.resume().then(() => {
-          document.removeEventListener('mousedown', resumeAudioContext);
-          document.removeEventListener('touchstart', resumeAudioContext);
-        });
-      }
+      void Tone.start().then(() => {
+        document.removeEventListener('mousedown', resumeAudioContext);
+        document.removeEventListener('touchstart', resumeAudioContext);
+      });
     };
     document.addEventListener('mousedown', resumeAudioContext);
     document.addEventListener('touchstart', resumeAudioContext);

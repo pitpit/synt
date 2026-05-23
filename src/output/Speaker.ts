@@ -1,5 +1,5 @@
-import type { binops } from 'gibberish-dsp';
-import Gibberish from 'gibberish-dsp';
+import { Gain as ToneGain, getDestination } from 'tone';
+import type { ToneAudioNode } from 'tone';
 import Konva from 'konva';
 import AudioMod from '../core/AudioMod';
 import PlugType from '../core/PlugType';
@@ -10,7 +10,9 @@ import BrokenAudioSignal from '../core/BrokenAudioSignal';
 import PlugPosition from '../core/PlugPosition';
 
 export default class Speaker extends AudioMod {
-  private gainNode: binops.MulNode | null = null;
+  private gainNode: ToneGain | null = null;
+
+  private inputNode: ToneAudioNode | null = null;
 
   gain: number = 0.5;
 
@@ -86,26 +88,33 @@ export default class Speaker extends AudioMod {
     const controlSignal = inputSignals[PlugPosition.EAST];
     if (controlSignal instanceof ControlSignal && this.gainNode) {
       this.gain = controlSignal.value;
-      this.gainNode[1] = this.gain;
+      this.gainNode.gain.value = this.gain;
     }
 
     return [null, null, null, null];
   }
 
   private connect(inputSignal: AudioSignal) {
-    if (this.gainNode?.disconnect) {
+    if (this.gainNode) {
+      this.inputNode?.disconnect(this.gainNode);
       this.gainNode.disconnect();
+      this.gainNode.dispose();
     }
     if (inputSignal.node) {
-      this.gainNode = Gibberish.binops.Mul(inputSignal.node, this.gain);
-      this.gainNode.connect?.();
+      this.inputNode = inputSignal.node;
+      this.gainNode = new ToneGain(this.gain);
+      inputSignal.node.connect(this.gainNode);
+      this.gainNode.connect(getDestination());
     }
   }
 
   private disconnect(_: BrokenAudioSignal) {
-    if (this.gainNode?.disconnect) {
+    if (this.gainNode) {
+      this.inputNode?.disconnect(this.gainNode);
       this.gainNode.disconnect();
+      this.gainNode.dispose();
+      this.gainNode = null;
+      this.inputNode = null;
     }
-    this.gainNode = null;
   }
 }

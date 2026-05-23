@@ -31,9 +31,9 @@ Every value flowing between modules is a `Signal`. There are three concrete type
 
 | Type | Description |
 |------|-------------|
-| `AudioSignal` | Wraps a Gibberish DSP unit generator (`ugen`). Represents an audio stream. |
+| `AudioSignal` | Wraps a Tone.js `ToneAudioNode`. Represents an audio stream. |
 | `ControlSignal` | Carries a single numeric value (typically 0–1). Used to modulate parameters such as frequency or gain. |
-| `BrokenAudioSignal` | Wraps the last valid `ugen` but marks it as disconnected. Propagated downstream when a module is removed or a plug is unlinked, so that downstream nodes can call `disconnect()` and clean up the audio graph. |
+| `BrokenAudioSignal` | Wraps the last valid `ToneAudioNode` but marks it as disconnected. Propagated downstream when a module is removed or a plug is unlinked, so that downstream nodes can call `disconnect()` and clean up the audio graph. |
 
 Signals implement `eq(other: Signal): boolean` for change detection — `onSignalChanged` is only called when the incoming signal actually differs from the previous one.
 
@@ -71,7 +71,7 @@ Each of the four sides of a module has a `Plug` with one of these types (defined
 - Manages the Konva.js `Stage` and renders the grid
 - Maintains a 2D grid (`grid[x][y]`) to track occupied slots and prevent overlaps
 - Handles drag-and-drop: shows a ghost shadow at the target slot; snaps the module back if the slot is occupied
-- Initialises the Gibberish audio context on the first user interaction (required by browser autoplay policy)
+- Initialises the Tone.js audio context on the first user interaction (required by browser autoplay policy)
 - Supports zoom (scroll wheel) and pan (drag on empty space)
 
 ---
@@ -87,7 +87,7 @@ Each of the four sides of a module has a `Plug` with one of these types (defined
 
 ### Oscillators (`oscillator/`)
 
-`Oscillator` is the abstract base. Concrete variants — `SineOscillator`, `SquareOscillator`, `SawtoothOscillator`, `TriangleOscillator` — each wrap the corresponding Gibberish generator.
+`Oscillator` is the abstract base. Concrete variants — `SineOscillator`, `SquareOscillator`, `SawtoothOscillator`, `TriangleOscillator` — each wrap the corresponding Tone.js oscillator type.
 
 Default plug layout:
 - NORTH: `NULL`
@@ -95,7 +95,7 @@ Default plug layout:
 - SOUTH: `OUT` (audio output)
 - WEST: `NULL`
 
-The Gibberish node is created lazily on the first `onSignalChanged` call. If a `ControlSignal` is present on EAST, its value is mapped to frequency: `frequency = controlValue × 400`.
+The Tone.js oscillator node is created lazily on the first `onSignalChanged` call and started immediately. If a `ControlSignal` is present on EAST, its value is mapped to frequency: `frequency = controlValue × 400`.
 
 ### Effects (`effect/`)
 
@@ -105,7 +105,7 @@ The Gibberish node is created lazily on the first `onSignalChanged` call. If a `
 - EAST: `CTRLIN` (effect rate control)
 - SOUTH: `OUT` (audio output)
 
-They create a Gibberish FX node on-demand, connect it to the incoming audio node, and wire up the rate from the control signal. When a `BrokenAudioSignal` arrives they call `disconnect()` to release the audio node.
+They create a Tone.js effect node on-demand, connect the incoming audio node to it, and wire up the rate from the control signal. When a `BrokenAudioSignal` arrives they call `dispose()` to release the audio node.
 
 ### Controls (`control/`)
 
@@ -123,7 +123,7 @@ They create a Gibberish FX node on-demand, connect it to the incoming audio node
 - NORTH: `IN` (audio input)
 - EAST: `CTRLIN` (optional gain, 0–1)
 
-On receiving an `AudioSignal` it creates `Mul(inputNode, gain)` and calls `connect()` to route audio to the system output. On `BrokenAudioSignal` it calls `disconnect()`.
+On receiving an `AudioSignal` it creates a `Tone.Gain` node, connects the incoming audio node to it, and connects the gain node to the Tone.js destination (system output). On `BrokenAudioSignal` it calls `dispose()` to release the nodes.
 
 ---
 
@@ -220,16 +220,16 @@ Connections are validated by `Plug.isLinkable()` before any link is established.
 
 ## Key Design Patterns
 
-### Lazy Gibberish node creation
+### Lazy Tone.js node creation
 
-Modules don't allocate a Gibberish unit generator in their constructor. The node is created the first time `onSignalChanged` is called with a valid input, deferring resource allocation until the module is actually wired into a live signal chain.
+Modules don't allocate a Tone.js audio node in their constructor. The node is created the first time `onSignalChanged` is called with a valid input, deferring resource allocation until the module is actually wired into a live signal chain.
 
 ### Graceful disconnection via `BrokenAudioSignal`
 
-When a plug is unlinked or a module is moved, the upstream plug emits a `BrokenAudioSignal` (wrapping the last known `ugen`). Each downstream module that receives it:
+When a plug is unlinked or a module is moved, the upstream plug emits a `BrokenAudioSignal` (wrapping the last known `ToneAudioNode`). Each downstream module that receives it:
 
 1. Detects `instanceof BrokenAudioSignal`
-2. Calls `disconnect()` on its Gibberish node
+2. Calls `dispose()` on its Tone.js node (which disconnects all connections)
 3. Forwards the `BrokenAudioSignal` further downstream
 
 This prevents orphaned audio nodes and avoids audible glitches from dangling connections.

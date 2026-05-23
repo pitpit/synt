@@ -11,8 +11,7 @@ Extend `AudioMod` (rather than `Mod` directly) when your module processes or pro
 Every `AudioMod` needs five things:
 
 ```ts
-import type { ugen } from 'gibberish-dsp';
-import Gibberish from 'gibberish-dsp';
+import type { ToneAudioNode } from 'tone';
 import AudioMod from '../core/AudioMod';
 import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
@@ -22,7 +21,7 @@ import BrokenAudioSignal from '../core/BrokenAudioSignal';
 import ControlSignal from '../core/ControlSignal';
 
 export default class MyEffect extends AudioMod {
-  node: ugen | null = null;           // (1) Gibberish unit generator — created lazily
+  node: ToneAudioNode | null = null;  // (1) Tone.js audio node — created lazily
 
   constructor() {
     super();
@@ -72,16 +71,16 @@ this.configure([PlugType.IN, PlugType.CTRLIN], 'speaker', 2);
 
 ---
 
-## Two Gibberish init patterns
+## Two Tone.js node init patterns
 
 ### 1. Lazy-once (source modules)
 
-Create the Gibberish node the first time `onSignalChanged` is called and reuse it for the lifetime of the module. No upstream audio input is needed.
+Create the Tone.js node the first time `onSignalChanged` is called and reuse it for the lifetime of the module. No upstream audio input is needed.
 
 ```ts
 onSignalChanged(inputSignals: Signals): Signals {
   if (!this.node) {
-    this.node = Gibberish.oscillators.Sine({ frequency: 220, antialias: true });
+    this.node = new ToneOscillator({ frequency: 220, type: 'sine' }).start();
   }
 
   const outputSignals: Signals = [null, null, null, null];
@@ -89,7 +88,7 @@ onSignalChanged(inputSignals: Signals): Signals {
 
   const controlSignal = inputSignals[PlugPosition.EAST];
   if (controlSignal instanceof ControlSignal) {
-    this.node.frequency = controlSignal.value * 400;
+    this.node.frequency.value = controlSignal.value * 400;
   }
 
   return outputSignals;
@@ -98,7 +97,7 @@ onSignalChanged(inputSignals: Signals): Signals {
 
 ### 2. Recreate on input (processor / effect modules)
 
-Create (or replace) the Gibberish node each time a new upstream `AudioSignal` arrives. The node wraps the upstream `ugen`, so it must be recreated whenever the upstream changes.
+Dispose any existing node and create a fresh one each time a new upstream `AudioSignal` arrives. Explicitly connect the upstream node to the new effect node.
 
 ```ts
 onSignalChanged(inputSignals: Signals): Signals {
@@ -106,10 +105,13 @@ onSignalChanged(inputSignals: Signals): Signals {
   const inputSignal = inputSignals[PlugPosition.NORTH];
 
   if (inputSignal instanceof AudioSignal && inputSignal.node) {
-    this.node = Gibberish.fx.Tremolo({ input: inputSignal.node, frequency: 8, amount: 1 });
+    this.node?.dispose();
+    this.node = new ToneTremolo(8, 1).start() as ToneTremolo;
+    inputSignal.node.connect(this.node);
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
   } else if (inputSignal instanceof BrokenAudioSignal) {
     outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
+    this.node?.dispose();
     this.node = null;
   }
 
@@ -131,13 +133,16 @@ onSignalChanged(inputSignals: Signals): Signals {
   const inputSignal = inputSignals[PlugPosition.NORTH];
 
   if (inputSignal instanceof AudioSignal && inputSignal.node) {
-    // Valid audio arriving — create or update the Gibberish node
-    this.node = Gibberish.fx.Tremolo({ input: inputSignal.node, frequency: 8, amount: 1 });
+    // Valid audio arriving — dispose old node, create and connect a fresh one
+    this.node?.dispose();
+    this.node = new ToneTremolo(8, 1).start() as ToneTremolo;
+    inputSignal.node.connect(this.node);
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
 
   } else if (inputSignal instanceof BrokenAudioSignal) {
     // Upstream disconnected — propagate the break and release the node
     outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
+    this.node?.dispose();
     this.node = null;
   }
   // null → nothing received yet; leave outputSignals[SOUTH] as null
@@ -145,7 +150,7 @@ onSignalChanged(inputSignals: Signals): Signals {
   // --- Control input (EAST) ---
   const controlSignal = inputSignals[PlugPosition.EAST];
   if (controlSignal instanceof ControlSignal && this.node) {
-    this.node.frequency = controlSignal.value * 10;   // map [0, 1] → [0, 10]
+    this.node.frequency.value = controlSignal.value * 10;   // map [0, 1] → [0, 10]
   }
 
   return outputSignals;
@@ -160,8 +165,8 @@ When a module is removed or a plug is unlinked, a `BrokenAudioSignal` propagates
 
 | Module role | What to do |
 |-------------|------------|
-| **Effect** (IN → OUT) | Emit `new BrokenAudioSignal(this.node)` on the output plug; set `this.node = null` |
-| **Sink** (IN, no OUT) | Disconnect the Gibberish node; return `[null, null, null, null]` |
+| **Effect** (IN → OUT) | Dispose the Tone.js node (`this.node?.dispose()`); emit `new BrokenAudioSignal(this.node)` on the output plug; set `this.node = null` |
+| **Sink** (IN, no OUT) | Disconnect and dispose the Tone.js node; return `[null, null, null, null]` |
 | **Pass-through** (IN → OUT, no processing) | Forward the `BrokenAudioSignal` unchanged to the output plug |
 
 ---
@@ -213,34 +218,36 @@ draw(group: Konva.Group) {
 
 ## Testing
 
-Integration tests live in `tests/integration/` and mirror the `src/` directory structure. The Gibberish mock at `tests/__mocks__/gibberish-dsp.ts` is wired automatically by Jest via `moduleNameMapper` and keeps tests free of Web Audio API dependencies.
+Integration tests live in `tests/integration/` and mirror the `src/` directory structure. The Tone.js mock at `tests/__mocks__/tone.ts` is wired automatically by Jest via `moduleNameMapper` and keeps tests free of Web Audio API dependencies.
 
 ### Test helper
 
-For modules that wrap a Gibberish node it is easiest to pre-seed `this.node` with a plain object stub. For source modules (lazy-once pattern) this prevents `createNode()` from being called:
+For modules that wrap a Tone.js node it is easiest to pre-seed `this.node` with a plain object stub cast to the appropriate type. For source modules (lazy-once pattern) this prevents `createNode()` from being called:
 
 ```ts
 // tests/integration/effect/TestMyEffect.ts
-import type { ugen } from 'gibberish-dsp';
+import type { ToneAudioNode } from 'tone';
 import MyEffect from '../../../src/effect/MyEffect';
 
 export default class TestMyEffect extends MyEffect {
   constructor() {
     super();
-    this.node = { frequency: 0 } as ugen;
+    this.node = { frequency: { value: 0 } } as unknown as ToneAudioNode;
   }
 }
 ```
 
-For effect modules that recreate the node inside `onSignalChanged` (recreate-on-input pattern), add the relevant Gibberish factory to `tests/__mocks__/gibberish-dsp.ts`:
+For effect modules that recreate the node inside `onSignalChanged` (recreate-on-input pattern), add the relevant Tone.js class to `tests/__mocks__/tone.ts`:
 
 ```ts
-const Gibberish = {
-  fx: {
-    MyEffect: jest.fn((props) => ({ ...props, frequency: 0, disconnect: jest.fn() })),
-  },
-  binops: {
-    Mul: jest.fn(() => createMulNode()),
-  },
-};
+const MyEffect = jest.fn((freq, depth) => ({
+  frequency: { value: freq },
+  depth: { value: depth },
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+  dispose: jest.fn(),
+  start: jest.fn().mockReturnThis(),
+}));
+
+export { MyEffect, Gain, getDestination };
 ```
