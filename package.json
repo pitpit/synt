@@ -11,7 +11,8 @@
     "test:coverage": "jest --coverage",
     "build": "webpack",
     "start": "webpack-dev-server --open",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "author": "",
   "license": "ISC",
