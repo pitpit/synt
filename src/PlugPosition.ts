@@ -1,4 +1,3 @@
-
 /**
  * Used to represent one of the fourth plugs of a Mod.
  */

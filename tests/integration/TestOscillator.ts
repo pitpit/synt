@@ -5,4 +5,8 @@ export default class TestOscillator extends Oscillator {
     super();
     this.node = { sound: 666 };
   }
+
+  protected createNode(): any {
+    return { sound: 666 };
+  }
 }

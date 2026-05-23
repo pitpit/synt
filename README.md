@@ -47,6 +47,13 @@ Run tests:
 
 ## TODO
 
+- [ ] edit and play modes
+- [ ] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
+- [ ] Add a public licence
+- [ ] Switch from Gibberish to Tone.js?
+- [ ] Improve support on mobile phone
+- [ ] Improve backward compatibility on old browser
+- [ ] Add a way test on very old browser?
 - [ ] Improve the src/ subtree structure to make it easier to understand
 - [ ] Upgrade to last node LTS version and update dependencies
 - [X] Switch from TravisCI to Github Actions
@@ -64,4 +71,4 @@ Run tests:
 - [ ] Specific draw for oscillator
 - [ ] implement Flanger & Reverb
 - [ ] transition sound when linking a Control Mod to avoic clicks
-- [ ] when connecting a know on a Mod, it should set its value to the linked Mod value (and animate)
+- [ ] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)

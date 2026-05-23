@@ -20,7 +20,12 @@ export default abstract class Oscillator extends AudioMod {
     };
   }
 
+  protected abstract createNode(): any;
+
   onSignalChanged(inputSignals: Signals): Signals {
+    if (!this.node) {
+      this.node = this.createNode();
+    }
     const outputSignals: Signals = [null, null, null, null];
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
 

@@ -14,6 +14,11 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /gibberish_worklet\.js$/,
+        type: 'asset/resource',
+        generator: { filename: 'gibberish_worklet.js' },
+      },
+      {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
@@ -31,13 +36,15 @@ module.exports = {
       },
       {
         test: /\.(png|jp(e*)g|svg)$/,
-        use: [{
-          loader: 'url-loader',
-          options: {
-            limit: 8000, // Convert images < 8kb to base64 strings
-            name: 'images/[hash]-[name].[ext]',
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 8000, // Convert images < 8kb to base64 strings
           },
-        }],
+        },
+        generator: {
+          filename: 'images/[hash]-[name][ext]',
+        },
       },
     ],
   },
@@ -57,7 +64,9 @@ module.exports = {
   ],
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
+    static: {
+      directory: path.resolve(__dirname, 'dist'),
+    },
     hot: true,
     port: 9000,
   },

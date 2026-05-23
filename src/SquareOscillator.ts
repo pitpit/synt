@@ -1,10 +1,13 @@
 import Gibberish from 'gibberish-dsp';
 import Oscillator from './Oscillator';
 
-export default class SineOscillator extends Oscillator {
+export default class SquareOscillator extends Oscillator {
   constructor() {
     super();
     this.label = 'square';
-    this.node = Gibberish.oscillators.Square(this.getDefaultOptions());
+  }
+
+  protected createNode(): any {
+    return Gibberish.oscillators.Square(this.getDefaultOptions());
   }
 }
