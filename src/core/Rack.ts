@@ -12,7 +12,7 @@ export default class Rack {
 
   strokeWidth: number = 1;
 
-  padding: number = 10;
+  padding: number = 4;
 
   /** Stage width and height expressed in number of slots. */
   stageSize: number = 10;
@@ -149,6 +149,14 @@ export default class Rack {
     });
 
     const layer = new Konva.Layer();
+
+    layer.add(new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: stagePx,
+      height: stagePx,
+      fill: 'white',
+    }));
 
     // Draw grid over the full stage area
     this.drawGrid(
