@@ -112,7 +112,71 @@ export default class StickyNote extends Mod {
 
     group.on('wheel', (e) => {
       e.evt.preventDefault();
+      e.cancelBubble = true;
       this.scroll(e.evt.deltaY * 0.5, textClipGroup);
+    });
+
+    let lastTouchY: number | null = null;
+    let touchStartLocalY: number | null = null;
+    let isDragging = false;
+    let nativeListenersAttached = false;
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (lastTouchY === null) return;
+      isDragging = true;
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) {
+        const delta = touch.clientY - lastTouchY;
+        lastTouchY = touch.clientY;
+        this.scroll(delta, textClipGroup);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!isDragging && touchStartLocalY !== null && this.thumbRect) {
+        const thumbTop = this.thumbRect.y();
+        const thumbBottom = thumbTop + this.thumbRect.height();
+        const scrollAmount = this.textViewportHeight * 0.5;
+        if (touchStartLocalY < thumbTop) {
+          this.scroll(-scrollAmount, textClipGroup);
+        } else if (touchStartLocalY > thumbBottom) {
+          this.scroll(scrollAmount, textClipGroup);
+        }
+      }
+      lastTouchY = null;
+      touchStartLocalY = null;
+      isDragging = false;
+    };
+
+    const attachNativeListeners = (stage: Konva.Stage) => {
+      if (nativeListenersAttached) return;
+      stage.container().addEventListener('touchmove', handleTouchMove, { passive: false });
+      stage.container().addEventListener('touchend', handleTouchEnd);
+      nativeListenersAttached = true;
+    };
+
+    trackRect.on('touchstart', (e) => {
+      e.cancelBubble = true;
+      const stage = group.getStage();
+      if (!stage) return;
+      const stagePos = stage.getPointerPosition();
+      if (stagePos) {
+        const localPos = group.getAbsoluteTransform().copy().invert().point(stagePos);
+        touchStartLocalY = localPos.y;
+      }
+      const touch = e.evt.touches[0];
+      if (touch) lastTouchY = touch.clientY;
+      attachNativeListeners(stage);
+    });
+
+    this.thumbRect.on('touchstart', (e) => {
+      e.cancelBubble = true;
+      const stage = group.getStage();
+      if (!stage) return;
+      const touch = e.evt.touches[0];
+      if (touch) lastTouchY = touch.clientY;
+      attachNativeListeners(stage);
     });
   }
 
