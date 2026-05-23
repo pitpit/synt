@@ -11,6 +11,8 @@ export default class SwitchOn extends AudioMod {
 
   private subgroup: Konva.Group|null = null;
 
+  private insideRect: Konva.Rect|null = null;
+
   constructor() {
     super();
     this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
@@ -42,13 +44,14 @@ export default class SwitchOn extends AudioMod {
       fill: 'black',
       strokeWidth: 1,
     });
+    this.insideRect = insideRect;
     this.subgroup.add(insideRect);
 
     group.add(this.subgroup);
   }
 
   private addTouchListener(group: Konva.Group) {
-    if (!this.subgroup) return;
+    if (!this.insideRect) return;
 
     const pressOn = () => {
       if (this.signal) {
@@ -62,17 +65,17 @@ export default class SwitchOn extends AudioMod {
       }
     };
 
-    this.subgroup.on('mousedown', pressOn);
-    this.subgroup.on('mouseup', pressOff);
+    this.insideRect.on('mousedown', pressOn);
+    this.insideRect.on('mouseup', pressOff);
 
-    this.subgroup.on('touchstart', (e) => {
+    this.insideRect.on('touchstart', (e) => {
       // Prevent stage pan and mod drag on tap
       e.cancelBubble = true;
       group.draggable(false);
       pressOn();
     });
 
-    this.subgroup.on('touchend', (e) => {
+    this.insideRect.on('touchend', (e) => {
       e.cancelBubble = true;
       group.draggable(true);
       pressOff();
