@@ -59,6 +59,7 @@ Run tests:
 - [ ] Keyboard input (assign a key to a switch)
 - [ ] set a direct value for a Mod
 - [ ] import / export in yaml
+- [ ] have a smaller js bundle for smaller or older device acting as a client. Ability to push a synt setup to it?
 
 ### Modules
 
@@ -74,9 +75,9 @@ Run tests:
 
 - [ ] drag'n drop new Mod in the interface
 - [ ] add a sticky note mode to write info / doc / quick tour to explain how to use the interface
-- [ ] edit and play modes?
+- [ ] how can we adjut a know on mobile?  edit and play modes?
 - [X] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
-- [ ] Responsive view on small screens
+- [X] Responsive view on small screens
 - [ ] Add several layers to put more Mods?
 - [ ] Ability to rotate Mod on Rack
 
@@ -84,7 +85,7 @@ Run tests:
 
 - [ ] Add a public licence
 - [ ] Switch from Gibberish to Tone.js?
-- [ ] Improve the src/ subtree structure to make it easier to understand
+- [X] Improve the src/ subtree structure to make it easier to understand
 - [ ] Switch from webpack to vite
 - [X] Upgrade to last node LTS version and update dependencies
 - [X] Switch from TravisCI to Github Actions

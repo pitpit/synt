@@ -9,15 +9,17 @@ import BrokenAudioSignal from '../core/BrokenAudioSignal';
 export default class SwitchOn extends AudioMod {
   signal: AudioSignal|null = null;
 
+  private subgroup: Konva.Group|null = null;
+
   constructor() {
     super();
     this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
-  draw(group:Konva.Group) {
+  private drawSwitchOn(group: Konva.Group) {
     let padding: number = 30;
 
-    const subgroup = new Konva.Group();
+    this.subgroup = new Konva.Group();
     const outsideRect = new Konva.Rect({
       x: padding,
       y: padding,
@@ -27,7 +29,7 @@ export default class SwitchOn extends AudioMod {
       stroke: 'black',
       strokeWidth: 3,
     });
-    subgroup.add(outsideRect);
+    this.subgroup.add(outsideRect);
 
     padding += 5;
     const insideRect = new Konva.Rect({
@@ -40,21 +42,46 @@ export default class SwitchOn extends AudioMod {
       fill: 'black',
       strokeWidth: 1,
     });
-    subgroup.add(insideRect);
+    this.subgroup.add(insideRect);
 
-    subgroup.on('mousedown', () => {
+    group.add(this.subgroup);
+  }
+
+  private addTouchListener(group: Konva.Group) {
+    if (!this.subgroup) return;
+
+    const pressOn = () => {
       if (this.signal) {
         this.pushOutput(PlugPosition.SOUTH, this.signal);
       }
-    });
+    };
 
-    subgroup.on('mouseup', () => {
+    const pressOff = () => {
       if (this.signal instanceof AudioSignal) {
         this.pushOutput(PlugPosition.SOUTH, new BrokenAudioSignal(this.signal.node));
       }
+    };
+
+    this.subgroup.on('mousedown', pressOn);
+    this.subgroup.on('mouseup', pressOff);
+
+    this.subgroup.on('touchstart', (e) => {
+      // Prevent stage pan and mod drag on tap
+      e.cancelBubble = true;
+      group.draggable(false);
+      pressOn();
     });
 
-    group.add(subgroup);
+    this.subgroup.on('touchend', (e) => {
+      e.cancelBubble = true;
+      group.draggable(true);
+      pressOff();
+    });
+  }
+
+  draw(group: Konva.Group) {
+    this.drawSwitchOn(group);
+    this.addTouchListener(group);
   }
 
   onSignalChanged(inputSignals: Signals): Signals {

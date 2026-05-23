@@ -14,6 +14,9 @@ export default class Rack {
 
   padding: number = 10;
 
+  /** Stage width and height expressed in number of slots. */
+  stageSize: number = 10;
+
   mods: Array<Mod> = [];
 
   grid: Array<Array<Mod|null>> = [];
@@ -105,9 +108,9 @@ export default class Rack {
     for (let x = 0; x <= widthPx; x += this.slotWidth) {
       const line = new Konva.Line({
         points: [
-          this.strokeWidth + x + this.padding,
+          x + this.padding,
           this.padding,
-          this.strokeWidth + x + this.padding,
+          x + this.padding,
           heightPx + this.padding,
         ],
         stroke: '#dddddd',
@@ -120,9 +123,9 @@ export default class Rack {
       const line = new Konva.Line({
         points: [
           this.padding,
-          this.strokeWidth + x + this.padding,
+          x + this.padding,
           widthPx + this.padding,
-          this.strokeWidth + x + this.padding,
+          x + this.padding,
         ],
         stroke: '#dddddd',
         strokeWidth: this.strokeWidth,
@@ -137,18 +140,22 @@ export default class Rack {
    * Attach events.
    */
   draw() {
-    // Set canvas to screen size
-    const widthPx = window.innerWidth;
-    const heightPx = window.innerHeight;
+    const innerPx = this.stageSize * this.slotWidth;
+    const stagePx = innerPx + 2 * this.padding;
 
     this.stage.size({
-      width: widthPx,
-      height: heightPx,
+      width: stagePx,
+      height: stagePx,
     });
 
     const layer = new Konva.Layer();
 
-    this.drawGrid(layer, widthPx, heightPx);
+    // Draw grid over the full stage area
+    this.drawGrid(
+      layer,
+      innerPx,
+      innerPx,
+    );
 
     this.mods.forEach((mod) => {
       const group = new Konva.Group({
@@ -167,7 +174,7 @@ export default class Rack {
           this.getFromGrid(mod.x, mod.y - 1), // North
           this.getFromGrid(mod.x + 1, mod.y), // East
           this.getFromGrid(mod.x, mod.y + 1), // South
-          this.getFromGrid(mod.x - 1, mod.y), // South
+          this.getFromGrid(mod.x - 1, mod.y), // West
         ]);
       });
 
@@ -176,11 +183,70 @@ export default class Rack {
     });
     this.stage.add(layer);
 
-    // Resize canvas when resizing window
-    window.onresize = () => {
-      this.stage.width(window.innerWidth);
-      this.stage.height(window.innerHeight);
-    };
+    // Enable single-finger pan on empty canvas areas
+    this.stage.draggable(true);
+
+    // Wheel zoom centered on pointer
+    this.stage.on('wheel', (e) => {
+      e.evt.preventDefault();
+      const scaleBy = 1.05;
+      const oldScale = this.stage.scaleX();
+      const pointer = this.stage.getPointerPosition();
+      if (!pointer) return;
+
+      // Point under the cursor in stage-local coordinates
+      const stageX = (pointer.x - this.stage.x()) / oldScale;
+      const stageY = (pointer.y - this.stage.y()) / oldScale;
+
+      const direction = e.evt.deltaY < 0 ? 1 : -1;
+      const newScale = Math.max(0.3, Math.min(3, oldScale * (direction > 0 ? scaleBy : 1 / scaleBy)));
+      this.stage.scale({ x: newScale, y: newScale });
+
+      // Reposition so the hovered point stays stationary
+      this.stage.position({
+        x: pointer.x - stageX * newScale,
+        y: pointer.y - stageY * newScale,
+      });
+    });
+
+    // Two-finger pinch-to-zoom (centered on pinch midpoint)
+    let lastDist = 0;
+    this.stage.on('touchmove', (e) => {
+      const { touches } = e.evt;
+      if (touches.length >= 2) {
+        e.evt.preventDefault();
+        // Disable drag during pinch to avoid conflation
+        this.stage.draggable(false);
+
+        const t0 = touches[0];
+        const t1 = touches[1];
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+
+        if (lastDist > 0) {
+          const oldScale = this.stage.scaleX();
+          const newScale = Math.max(0.3, Math.min(3, oldScale * (dist / lastDist)));
+
+          // Zoom centered on the midpoint between the two fingers
+          const stageX = (midX - this.stage.x()) / oldScale;
+          const stageY = (midY - this.stage.y()) / oldScale;
+          this.stage.scale({ x: newScale, y: newScale });
+
+          this.stage.position({
+            x: midX - stageX * newScale,
+            y: midY - stageY * newScale,
+          });
+        }
+        lastDist = dist;
+      }
+    });
+    this.stage.on('touchend', (e) => {
+      if (e.evt.touches.length < 2) {
+        lastDist = 0;
+        this.stage.draggable(true);
+      }
+    });
   }
 
   /**

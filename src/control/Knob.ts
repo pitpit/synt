@@ -11,6 +11,9 @@ export default class Knob extends Mod {
 
   value: number = 0.5;
 
+  /** Accumulated rotation position in the range [-range, +range], shared between wheel and touch handlers. */
+  pos: number = 0;
+
   group: Konva.Group|null = null;
 
   centerX: number = 0;
@@ -27,25 +30,53 @@ export default class Knob extends Mod {
   }
 
   private addWheelListener(group: Konva.Group) {
-    let pos = 0;
     group.on('wheel', (e) => {
+      // Stop the event from reaching the stage zoom handler
+      e.cancelBubble = true;
       const event = e.evt;
-      if (!event.ctrlKey) {
-        // Normalize across deltaMode: 0=pixels, 1=lines (~16px each), 2=pages
-        const normalizedDelta = event.deltaMode === 1
-          ? event.deltaY * 16
-          : event.deltaY;
-        pos -= normalizedDelta * this.sensitivity;
-        if (pos < -this.range) {
-          pos = -this.range;
-        } else if (pos > this.range) {
-          pos = this.range;
-        }
+      // Normalize across deltaMode: 0=pixels, 1=lines (~16px each), 2=pages
+      const normalizedDelta = event.deltaMode === 1
+        ? event.deltaY * 16
+        : event.deltaY;
+      this.pos -= normalizedDelta * this.sensitivity;
+      if (this.pos < -this.range) {
+        this.pos = -this.range;
+      } else if (this.pos > this.range) {
+        this.pos = this.range;
       }
       event.preventDefault();
-      this.value = ((pos + this.range) / this.range) * 0.5;
+      this.value = ((this.pos + this.range) / this.range) * 0.5;
       this.updatePinCirclePosition();
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+    });
+  }
+
+  private addTouchListener(group: Konva.Group) {
+    let startY = 0;
+    let startPos = 0;
+
+    group.on('touchstart', (e) => {
+      if (e.evt.touches.length !== 1) return;
+      // Capture touch: prevent stage pan and mod drag
+      e.cancelBubble = true;
+      startY = e.evt.touches[0].clientY;
+      startPos = this.pos;
+      group.draggable(false);
+    });
+
+    group.on('touchmove', (e) => {
+      if (e.evt.touches.length !== 1) return;
+      e.cancelBubble = true;
+      e.evt.preventDefault();
+      const dy = startY - e.evt.touches[0].clientY;
+      this.pos = Math.max(-this.range, Math.min(this.range, startPos + dy));
+      this.value = ((this.pos + this.range) / this.range) * 0.5;
+      this.updatePinCirclePosition();
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+    });
+
+    group.on('touchend', () => {
+      group.draggable(true);
     });
   }
 
@@ -104,5 +135,6 @@ export default class Knob extends Mod {
 
     this.drawKnob(group);
     this.addWheelListener(group);
+    this.addTouchListener(group);
   }
 }
