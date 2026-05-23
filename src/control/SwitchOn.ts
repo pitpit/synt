@@ -1,10 +1,10 @@
 import Konva from 'konva';
-import AudioMod from './AudioMod';
-import PlugType from './PlugType';
-import PlugPosition from './PlugPosition';
-import Signals from './Signals';
-import AudioSignal from './AudioSignal';
-import BrokenAudioSignal from './BrokenAudioSignal';
+import AudioMod from '../core/AudioMod';
+import PlugType from '../core/PlugType';
+import PlugPosition from '../core/PlugPosition';
+import Signals from '../core/Signals';
+import AudioSignal from '../core/AudioSignal';
+import BrokenAudioSignal from '../core/BrokenAudioSignal';
 
 export default class SwitchOn extends AudioMod {
   signal: AudioSignal|null = null;

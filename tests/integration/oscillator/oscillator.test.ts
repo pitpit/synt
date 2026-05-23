@@ -1,7 +1,7 @@
-import Knob from '../../src/Knob';
-import AudioSignal from '../../src/AudioSignal';
-import ControlSignal from '../../src/ControlSignal';
-import PlugPosition from '../../src/PlugPosition';
+import Knob from '../../../src/control/Knob';
+import AudioSignal from '../../../src/core/AudioSignal';
+import ControlSignal from '../../../src/core/ControlSignal';
+import PlugPosition from '../../../src/core/PlugPosition';
 import TestOscillator from './TestOscillator';
 
 test('1 oscillator + 1 knob', () => {

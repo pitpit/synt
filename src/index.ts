@@ -1,15 +1,15 @@
-import Rack from './Rack';
-import Speaker from './Speaker';
-import Keyboard from './Keyboard';
-import SineOscillator from './SineOscillator';
-import SquareOscillator from './SquareOscillator';
-import SawtoothOscillator from './SawtoothOscillator';
-import TriangleOscillator from './TriangleOscillator';
-import Gate from './Gate';
-import Knob from './Knob';
-import SwitchOn from './SwitchOn';
-import Vibrato from './Vibrato';
-import Tremolo from './Tremolo';
+import Rack from './core/Rack';
+import Speaker from './output/Speaker';
+import Keyboard from './control/Keyboard';
+import SineOscillator from './oscillator/SineOscillator';
+import SquareOscillator from './oscillator/SquareOscillator';
+import SawtoothOscillator from './oscillator/SawtoothOscillator';
+import TriangleOscillator from './oscillator/TriangleOscillator';
+import Gate from './control/Gate';
+import Knob from './control/Knob';
+import SwitchOn from './control/SwitchOn';
+import Vibrato from './effect/Vibrato';
+import Tremolo from './effect/Tremolo';
 import './index.scss';
 
 const rack = new Rack();

@@ -1,19 +1,19 @@
 import type { ugen } from 'gibberish-dsp';
 import Gibberish from 'gibberish-dsp';
-import AudioMod from './AudioMod';
-import Signals from './Signals';
-import PlugType from './PlugType';
-import PlugPosition from './PlugPosition';
-import AudioSignal from './AudioSignal';
-import BrokenAudioSignal from './BrokenAudioSignal';
-import ControlSignal from './ControlSignal';
+import AudioMod from '../core/AudioMod';
+import Signals from '../core/Signals';
+import PlugType from '../core/PlugType';
+import PlugPosition from '../core/PlugPosition';
+import AudioSignal from '../core/AudioSignal';
+import BrokenAudioSignal from '../core/BrokenAudioSignal';
+import ControlSignal from '../core/ControlSignal';
 
-export default class Tremolo extends AudioMod {
+export default class Vibrato extends AudioMod {
   node: ugen | null = null;
 
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'tremolo');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'vibrato');
   }
 
   onSignalChanged(inputSignals: Signals): Signals {
@@ -21,10 +21,10 @@ export default class Tremolo extends AudioMod {
     const inputSignal = inputSignals[PlugPosition.NORTH];
 
     if (inputSignal instanceof AudioSignal && inputSignal.node) {
-      this.node = Gibberish.fx.Tremolo({
+      this.node = Gibberish.fx.Vibrato({
         input: inputSignal.node,
-        frequency: 8,
-        amount: 1,
+        frequency: 5,
+        amount: 0.5,
       });
 
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);

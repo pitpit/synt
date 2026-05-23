@@ -1,7 +1,7 @@
 import Konva from 'konva';
-import Mod from './Mod';
-import PlugType from './PlugType';
-import keyboardSvg from './images/keyboard.svg';
+import Mod from '../core/Mod';
+import PlugType from '../core/PlugType';
+import keyboardSvg from '../images/keyboard.svg';
 
 export default class Knob extends Mod {
   range: number = 400;

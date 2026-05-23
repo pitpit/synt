@@ -1,7 +1,7 @@
-import Gate from '../../src/Gate';
-import AudioSignal from '../../src/AudioSignal';
-import BrokenAudioSignal from '../../src/BrokenAudioSignal';
-import TestOscillator from './TestOscillator';
+import Gate from '../../../src/control/Gate';
+import AudioSignal from '../../../src/core/AudioSignal';
+import BrokenAudioSignal from '../../../src/core/BrokenAudioSignal';
+import TestOscillator from '../oscillator/TestOscillator';
 
 test('1 oscillator + 1 gate', () => {
   const oscillator = new TestOscillator();

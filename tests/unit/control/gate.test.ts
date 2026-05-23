@@ -1,6 +1,6 @@
-import Gate from '../../src/Gate';
-import { Signals } from '../../src/Signal';
-import ControlSignal from '../../src/ControlSignal';
+import Gate from '../../../src/control/Gate';
+import Signals from '../../../src/core/Signals';
+import ControlSignal from '../../../src/core/ControlSignal';
 
 test('test process with null Signals', () => {
   const gate = new Gate();

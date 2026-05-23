@@ -1,8 +1,8 @@
 import Konva from 'konva';
-import Mod from './Mod';
-import PlugType from './PlugType';
-import PlugPosition from './PlugPosition';
-import ControlSignal from './ControlSignal';
+import Mod from '../core/Mod';
+import PlugType from '../core/PlugType';
+import PlugPosition from '../core/PlugPosition';
+import ControlSignal from '../core/ControlSignal';
 
 export default class Knob extends Mod {
   range: number = 400;
