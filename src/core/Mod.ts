@@ -85,6 +85,7 @@ export default abstract class Mod {
     slotHeight: number,
     padding: number,
     group:Konva.Group,
+    stageSize: number,
   ): void {
     const strokeWidth = 5;
 
@@ -186,8 +187,8 @@ export default abstract class Mod {
       // Compute new Mod position
       let x = Math.round(group.x() / slotWidth);
       let y = Math.round(group.y() / slotHeight);
-      x = x > 0 ? x : 0;
-      y = y > 0 ? y : 0;
+      x = Math.max(0, Math.min(x, stageSize - this.width));
+      y = Math.max(0, Math.min(y, stageSize - this.height));
 
       if (this.rack.isBusy(x, y, this)) {
         // Move the Mod back to its prior slot
@@ -228,8 +229,8 @@ export default abstract class Mod {
       // Compute new position
       let x = Math.round(group.x() / slotWidth);
       let y = Math.round(group.y() / slotHeight);
-      x = x > 0 ? x : 0;
-      y = y > 0 ? y : 0;
+      x = Math.max(0, Math.min(x, stageSize - this.width));
+      y = Math.max(0, Math.min(y, stageSize - this.height));
 
       if (!this.rack.isBusy(x, y, this)) {
         // Move the shadow to the current slot

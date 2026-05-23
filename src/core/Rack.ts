@@ -187,7 +187,7 @@ export default class Rack {
       });
 
       layer.add(group);
-      mod.init(this.slotWidth, this.slotHeight, this.padding, group);
+      mod.init(this.slotWidth, this.slotHeight, this.padding, group, this.stageSize);
     });
     this.stage.add(layer);
 
