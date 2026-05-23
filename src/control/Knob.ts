@@ -33,7 +33,7 @@ export default class Knob extends Mod {
     this.configure([PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT], 'knob');
   }
 
-  private addWheelListener(group: Konva.Group) {
+  private addWheelListener(_: Konva.Group) {
     if (!this.innerCircle) return;
     this.innerCircle.on('wheel', (e) => {
       // Stop the event from reaching the stage zoom handler

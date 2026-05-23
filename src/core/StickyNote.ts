@@ -126,11 +126,9 @@ export default class StickyNote extends Mod {
       isDragging = true;
       e.preventDefault();
       const touch = e.touches[0];
-      if (touch) {
-        const delta = touch.clientY - lastTouchY;
-        lastTouchY = touch.clientY;
-        this.scroll(delta, textClipGroup);
-      }
+      const delta = touch.clientY - lastTouchY;
+      lastTouchY = touch.clientY;
+      this.scroll(delta, textClipGroup);
     };
 
     const handleTouchEnd = () => {
@@ -165,8 +163,7 @@ export default class StickyNote extends Mod {
         const localPos = group.getAbsoluteTransform().copy().invert().point(stagePos);
         touchStartLocalY = localPos.y;
       }
-      const touch = e.evt.touches[0];
-      if (touch) lastTouchY = touch.clientY;
+      lastTouchY = e.evt.touches[0].clientY;
       attachNativeListeners(stage);
     });
 
@@ -174,8 +171,7 @@ export default class StickyNote extends Mod {
       e.cancelBubble = true;
       const stage = group.getStage();
       if (!stage) return;
-      const touch = e.evt.touches[0];
-      if (touch) lastTouchY = touch.clientY;
+      lastTouchY = e.evt.touches[0].clientY;
       attachNativeListeners(stage);
     });
   }
