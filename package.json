@@ -8,8 +8,7 @@
     "test:coverage": "jest --coverage",
     "build": "webpack",
     "start": "webpack-dev-server --open",
-    "lint": "eslint . --ext '.ts,.js'",
-    "deploy": "npm run build && gh-pages -d dist -x -r \"https://${GITHUB_TOKEN}@github.com/pitpit/synt.git\""
+    "lint": "eslint . --ext '.ts,.js'"
   },
   "author": "",
   "license": "ISC",
