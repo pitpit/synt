@@ -2,7 +2,6 @@ import Konva from 'konva';
 import Gibberish from 'gibberish-dsp';
 import gibberishWorkletUrl from 'gibberish-dsp/dist/gibberish_worklet.js';
 import Mod from './Mod';
-import Modal from './Modal';
 
 export default class Rack {
   stage: Konva.Stage;
@@ -170,10 +169,6 @@ export default class Rack {
           this.getFromGrid(mod.x, mod.y + 1), // South
           this.getFromGrid(mod.x - 1, mod.y), // South
         ]);
-      });
-
-      mod.events.on('dblclick', () => {
-        new Modal().open();
       });
 
       layer.add(group);
