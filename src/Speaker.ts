@@ -40,7 +40,7 @@ export default class Speaker extends AudioMod {
       outerRadius: outterCircleRadius - outterCircleStrokeWidth / 2,
       fill: 'lightgray',
       angle: 180,
-      rotationDeg: 135,
+      rotation: 135,
     });
     // const bottomRightArc = new Konva.Arc({
     //   x: group.width() / 2,
