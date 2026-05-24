@@ -29,6 +29,9 @@ I'd would like to thank the authors for their help !
 * https://github.com/wavesjs/waves-ui
 * https://people.carleton.edu/~jellinge/mysynth.html
 * https://github.com/chrisguttandin/standardized-audio-context
+* [Clara Rigaud](https://clararigaud.com/fr/)
+    * https://gitlab.com/obsokit/obsokit
+    * https://github.com/zombitron/zombitron
 
 ## Developing
 
