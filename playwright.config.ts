@@ -11,14 +11,14 @@ interface ChromeVersionEntry {
 // Load chrome-versions.json and the binary manifest (if present)
 // ---------------------------------------------------------------------------
 
-const chromeVersions: ChromeVersionEntry[] = JSON.parse(
+const chromeVersions = JSON.parse(
   readFileSync(join(__dirname, 'chrome-versions.json'), 'utf-8'),
-);
+) as ChromeVersionEntry[];
 
 const manifestPath = join(__dirname, '.chrome-bins', 'manifest.json');
-const manifest: Record<string, string> = existsSync(manifestPath)
+const manifest = (existsSync(manifestPath)
   ? JSON.parse(readFileSync(manifestPath, 'utf-8'))
-  : {};
+  : {}) as Record<string, string>;
 
 // ---------------------------------------------------------------------------
 // Build a Playwright device descriptor for a given device name.
@@ -27,7 +27,7 @@ const manifest: Record<string, string> = existsSync(manifestPath)
 // ---------------------------------------------------------------------------
 
 function getDevice(deviceName: string): (typeof devices)[string] {
-  if (devices[deviceName]) return devices[deviceName];
+  if (deviceName in devices) return devices[deviceName];
 
   // Warn once and provide a generic Android profile so the project still runs.
   console.warn(

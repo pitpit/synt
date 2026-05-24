@@ -28,8 +28,9 @@ test.describe('App bootstrap', () => {
     const canvas = page.locator('canvas').first();
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
-    expect(box!.width).toBeGreaterThan(0);
-    expect(box!.height).toBeGreaterThan(0);
+    if (!box) return;
+    expect(box.width).toBeGreaterThan(0);
+    expect(box.height).toBeGreaterThan(0);
   });
 
   test('rack container div is present in the DOM', async ({ page }) => {
