@@ -15,7 +15,6 @@
 
 import {
   chmodSync,
-  createReadStream,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -23,7 +22,6 @@ import {
   writeFileSync,
 } from 'fs';
 import { dirname, join } from 'path';
-import { pipeline } from 'stream/promises';
 import { fileURLToPath } from 'url';
 import unzipper from 'unzipper';
 
@@ -58,7 +56,8 @@ async function downloadFile(url, destPath) {
 }
 
 async function extractZip(zipPath, destDir) {
-  await pipeline(createReadStream(zipPath), unzipper.Extract({ path: destDir }));
+  const zip = await unzipper.Open.file(zipPath);
+  await zip.extract({ path: destDir });
 }
 
 function findChromeExecutable(dir) {
