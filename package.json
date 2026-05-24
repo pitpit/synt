@@ -12,7 +12,9 @@
     "build": "webpack",
     "start": "webpack-dev-server --open",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "setup:chrome": "node scripts/setup-chrome.mjs",
+    "test:e2e": "npm run build && playwright test"
   },
   "author": "",
   "license": "ISC",
@@ -43,7 +45,10 @@
     "typescript": "^5.0.0",
     "webpack": "^5.0.0",
     "webpack-cli": "^5.0.0",
-    "webpack-dev-server": "^5.0.0"
+    "webpack-dev-server": "^5.0.0",
+    "@playwright/test": "^1.49.0",
+    "http-server": "^14.1.0",
+    "unzipper": "^0.12.3"
   },
   "overrides": {
     "serialize-javascript": ">=7.0.3",

@@ -15,6 +15,7 @@ See the live demo here: https://pitpit.github.io/synt
 
 - [Architecture](docs/01-architecture.md) — core concepts, module categories, signal flow, connection rules, and design patterns
 - [Writing an AudioMod](docs/02-writing-an-audiomod.md) — step-by-step guide to implementing a new audio module
+- [Testing](docs/03-testing.md) — unit, integration, and end-to-end browser testing strategy
 
 ## Inspiration
 
@@ -45,13 +46,29 @@ Run tests:
 
     npm test
 
+## Run end-to-end tests
+
+The e2e tests use [Playwright](https://playwright.dev/) and run against a production build served locally. Firefox and WebKit browsers are bundled with Playwright; install them once with:
+
+    npx playwright install chromium firefox webkit
+
+The tests also include a suite of historical Chrome versions (55 through latest) paired with Android device emulation. Download those binaries once with:
+
+    npm run setup:chrome
+
+Then run the full e2e suite:
+
+    npm run test:e2e
+
+An HTML report is generated in `playwright-report/` after each run.
+
 ## TODO
 
 ### Wild-range support
 
 - [ ] Improve backward compatibility on old browsers
 - [ ] list "work well on"
-- [ ] Add a way to automaticaly test on old browsers?
+- [X] Add a way to automaticaly test on old browsers?
 
 ### Real world integration
 

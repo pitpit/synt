@@ -1,0 +1,12 @@
+[
+  { "version": "55",     "device": "Moto G4"       },
+  { "version": "63",     "device": "Galaxy S8"     },
+  { "version": "70",     "device": "Nexus 6P"      },
+  { "version": "79",     "device": "Pixel 4"       },
+  { "version": "86",     "device": "Galaxy Tab S4" },
+  { "version": "96",     "device": "Pixel 5"       },
+  { "version": "107",    "device": "Galaxy S9+"    },
+  { "version": "116",    "device": "Galaxy Tab S9" },
+  { "version": "124",    "device": "Galaxy A55"    },
+  { "version": "latest", "device": "Pixel 7"       }
+]
