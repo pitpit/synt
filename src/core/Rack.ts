@@ -25,6 +25,9 @@ export default class Rack {
     // Setup container
     const container = document.createElement('div');
     container.id = 'container';
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
     const body = document.getElementsByTagName('body')[0];
     body.style.margin = '0';
     body.style.overflow = 'hidden';
@@ -141,11 +144,18 @@ export default class Rack {
    */
   draw() {
     const innerPx = this.stageSize * this.slotWidth;
-    const stagePx = innerPx + 2 * this.padding;
+    const contentPx = innerPx + 2 * this.padding;
 
     this.stage.size({
-      width: stagePx,
-      height: stagePx,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+
+    window.addEventListener('resize', () => {
+      this.stage.size({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     });
 
     const layer = new Konva.Layer();
@@ -153,12 +163,12 @@ export default class Rack {
     layer.add(new Konva.Rect({
       x: 0,
       y: 0,
-      width: stagePx,
-      height: stagePx,
+      width: contentPx,
+      height: contentPx,
       fill: 'white',
     }));
 
-    // Draw grid over the full stage area
+    // Draw grid over the content area
     this.drawGrid(
       layer,
       innerPx,
