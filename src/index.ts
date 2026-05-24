@@ -48,7 +48,7 @@ const note = `Welcome to the modular synthesizer!
 
 Connect modules by dragging from an output plug to an input plug. The top row contains oscillators (Sine, Square, Sawtooth, Triangle) that generate audio signals. Use the Gate to control when sound plays, and Vibrato/Tremolo for pitch and volume modulation.
 
-Arpeggiator (arp) cycles through notes automatically — connect an Oscillator to arpeggiate chords. Panner pans the audio left/right — connect a Knob to its EAST plug and turn it to sweep the stereo field.
+Arpeggiator (arp) cycles through notes automatically — connect an Oscillator to arpeggiate chords. Panner (pan) pans the audio left/right — connect a Knob to its EAST plug and turn it to sweep the stereo field.
 
 Knobs adjust parameters — drag up/down to change values. SwitchOn modules toggle signals on or off. Speakers output the final audio signal.
 
