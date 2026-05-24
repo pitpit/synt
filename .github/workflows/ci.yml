@@ -20,6 +20,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
       - run: npm ci
       - run: npm run lint
 
@@ -30,6 +31,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
       - run: npm ci
       - run: npm test
 
@@ -40,6 +42,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
       - run: npm ci
       - run: npm run build
 
@@ -51,7 +54,17 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
       - run: npm ci
+      - name: Cache Chrome binaries
+        id: cache-chrome
+        uses: actions/cache@v4
+        with:
+          path: .chrome-bins
+          key: chrome-bins-${{ hashFiles('chrome-versions.json') }}
+      - name: Download Chrome binaries
+        if: steps.cache-chrome.outputs.cache-hit != 'true'
+        run: npm run setup:chrome
       - run: npx playwright install --with-deps
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
@@ -72,6 +85,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
       - run: npm ci
       - run: npm run build
       - uses: peaceiris/actions-gh-pages@v4
