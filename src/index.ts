@@ -8,6 +8,7 @@ import TriangleOscillator from './oscillator/TriangleOscillator';
 import Gate from './control/Gate';
 import Knob from './control/Knob';
 import SwitchOn from './control/SwitchOn';
+import Arpeggiator from './control/Arpeggiator';
 import Vibrato from './effect/Vibrato';
 import Tremolo from './effect/Tremolo';
 import StickyNote from './core/StickyNote';
@@ -24,6 +25,7 @@ rack.add(new TriangleOscillator(), 4, 0);
 rack.add(new Gate(), 0, 1);
 rack.add(new Vibrato(), 1, 1);
 rack.add(new Tremolo(), 2, 1);
+rack.add(new Arpeggiator(), 3, 1);
 
 rack.add(new Knob(), 0, 2);
 rack.add(new Knob(), 1, 2);

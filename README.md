@@ -11,6 +11,8 @@ See the live demo here: https://pitpit.github.io/synt
 
 ![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot1.png)
 
+![Arpeggiator example](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot-arpegiator.png)
+
 ## Documentation
 
 - [Architecture](docs/01-architecture.md) — core concepts, module categories, signal flow, connection rules, and design patterns
