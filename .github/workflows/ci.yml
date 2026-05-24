@@ -63,7 +63,6 @@ jobs:
           path: .chrome-bins
           key: chrome-bins-${{ hashFiles('chrome-versions.json') }}
       - name: Download Chrome binaries
-        if: steps.cache-chrome.outputs.cache-hit != 'true'
         run: npm run setup:chrome
       - run: npx playwright install --with-deps
       - run: npm run test:e2e
