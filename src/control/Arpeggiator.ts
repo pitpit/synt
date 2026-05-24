@@ -5,15 +5,15 @@ import ControlSignal from '../core/ControlSignal';
 import Signals from '../core/Signals';
 
 const NUM_STEPS = 4;
-const MIN_CLOCK_INTERVAL_MS = 10;
-const MAX_CLOCK_INTERVAL_MS = 500;
+const MIN_CLOCK_INTERVAL_MS = 150;
+const MAX_CLOCK_INTERVAL_MS = 1500;
 
 export default class Arpeggiator extends Mod {
   stepValues: number[] = [0.3, 0.45, 0.55, 0.45];
 
   stepIndex: number = 0;
 
-  clockInterval: number = 100;
+  clock: number = 500;
 
   timerId: ReturnType<typeof setInterval> | null = null;
 
@@ -34,15 +34,14 @@ export default class Arpeggiator extends Mod {
     if (fireImmediately) {
       tick();
     }
-    this.timerId = setInterval(tick, this.clockInterval);
+    this.timerId = setInterval(tick, this.clock);
   }
 
   onSignalChanged(inputSignals: Signals): Signals {
     const ctrlSignal = inputSignals[PlugPosition.EAST];
     if (ctrlSignal instanceof ControlSignal) {
-      this.clockInterval = Math.round(MAX_CLOCK_INTERVAL_MS - ctrlSignal.value * (MAX_CLOCK_INTERVAL_MS - MIN_CLOCK_INTERVAL_MS));
-      console.log('ctrlSignal.value:', ctrlSignal.value, 'clock:', this.clockInterval);
-      this.startTimer(true);
+      this.clock = Math.round(MAX_CLOCK_INTERVAL_MS - ctrlSignal.value * (MAX_CLOCK_INTERVAL_MS - MIN_CLOCK_INTERVAL_MS));
+      this.startTimer();
     }
     return [null, null, null, null];
   }
