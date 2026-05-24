@@ -5,7 +5,7 @@ const globals = require('globals');
 
 module.exports = [
   {
-    ignores: ['node_modules/**', 'dist/**', '.vscode/**', 'jest.config.js', 'eslint.config.js', 'webpack.config.js'],
+    ignores: ['node_modules/**', 'dist/**', '.vscode/**', 'scripts/**', '.chrome-bins/**', 'jest.config.js', 'eslint.config.js', 'webpack.config.js'],
   },
   js.configs.recommended,
   ...typescriptEslint.configs['flat/strict-type-checked'],
@@ -42,6 +42,10 @@ module.exports = [
       'class-methods-use-this': 'off',
       'no-param-reassign': 'off',
     },
+  },
+  {
+    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
+    ...typescriptEslint.configs['flat/disable-type-checked'],
   },
   {
     files: ['tests/**/*.ts'],
