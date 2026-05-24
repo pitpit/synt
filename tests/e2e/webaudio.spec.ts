@@ -52,7 +52,7 @@ test.describe('Web Audio API', () => {
       const OrigCtor: typeof AudioContext =
         window.AudioContext ??
         (window as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext!;
+          .webkitAudioContext;
       if (!OrigCtor) return;
 
       window.AudioContext = new Proxy(OrigCtor, {
