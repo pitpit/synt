@@ -11,6 +11,7 @@ import SwitchOn from './control/SwitchOn';
 import Arpeggiator from './control/Arpeggiator';
 import Vibrato from './effect/Vibrato';
 import Tremolo from './effect/Tremolo';
+import Panner from './effect/Panner';
 import StickyNote from './core/StickyNote';
 import './index.scss';
 
@@ -26,6 +27,7 @@ rack.add(new Gate(), 0, 1);
 rack.add(new Vibrato(), 1, 1);
 rack.add(new Tremolo(), 2, 1);
 rack.add(new Arpeggiator(), 3, 1);
+rack.add(new Panner(), 4, 1);
 
 rack.add(new Knob(), 0, 2);
 rack.add(new Knob(), 1, 2);
