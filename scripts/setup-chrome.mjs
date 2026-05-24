@@ -88,8 +88,8 @@ function pickBestVersion(entries) {
 }
 
 async function resolveBugazelleUrl(major, bugazelleData) {
-  const section = bugazelleData.linux_x64;
-  if (!section) throw new Error('No linux_x64 section in Bugazelle data');
+  const section = bugazelleData.linux64;
+  if (!section) throw new Error('No linux64 section in Bugazelle data');
 
   const candidates = Object.entries(section).filter(
     ([ver, info]) =>
