@@ -11,11 +11,11 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test('emits first step value on first tick at 120 BPM', () => {
+test('emits first step value on first tick at clock 500ms', () => {
   const arp = new Arpeggiator();
   const spy = jest.spyOn(arp, 'pushOutput');
 
-  jest.advanceTimersByTime(500); // 120 BPM = 500 ms per beat
+  jest.advanceTimersByTime(500); // default clock = 500 ms
 
   expect(spy).toHaveBeenCalledTimes(1);
   expect(spy).toHaveBeenCalledWith(
@@ -28,7 +28,7 @@ test('advances step on each tick', () => {
   const arp = new Arpeggiator();
   const spy = jest.spyOn(arp, 'pushOutput');
 
-  jest.advanceTimersByTime(1000); // 2 ticks at 120 BPM
+  jest.advanceTimersByTime(1000); // 2 ticks at 500 ms
 
   expect(spy).toHaveBeenCalledTimes(2);
   expect(spy).toHaveBeenNthCalledWith(
@@ -46,42 +46,42 @@ test('advances step on each tick', () => {
 test('step index wraps back to 0 after 4 steps', () => {
   const arp = new Arpeggiator();
 
-  jest.advanceTimersByTime(500 * 4); // 4 ticks at 120 BPM
+  jest.advanceTimersByTime(500 * 4); // 4 ticks at 500 ms
 
   expect(arp.stepIndex).toBe(0);
 });
 
-test('onSignalChanged maps value 0 to bpm 40', () => {
+test('onSignalChanged maps value 0 to clock 1500ms', () => {
   const arp = new Arpeggiator();
   const input: Signals = [null, new ControlSignal(0), null, null];
 
   arp.onSignalChanged(input);
 
-  expect(arp.bpm).toBe(40);
+  expect(arp.clock).toBe(1500);
 });
 
-test('onSignalChanged maps value 1 to bpm 200', () => {
+test('onSignalChanged maps value 1 to clock 150ms', () => {
   const arp = new Arpeggiator();
   const input: Signals = [null, new ControlSignal(1), null, null];
 
   arp.onSignalChanged(input);
 
-  expect(arp.bpm).toBe(200);
+  expect(arp.clock).toBe(150);
 });
 
-test('onSignalChanged maps value 0.5 to bpm 120', () => {
+test('onSignalChanged maps value 0.5 to clock 825ms', () => {
   const arp = new Arpeggiator();
   const input: Signals = [null, new ControlSignal(0.5), null, null];
 
   arp.onSignalChanged(input);
 
-  expect(arp.bpm).toBe(120);
+  expect(arp.clock).toBe(825);
 });
 
 test('onSignalChanged restarts timer with new interval', () => {
   const arp = new Arpeggiator();
 
-  // Slow down to 40 BPM (1500 ms per beat)
+  // Set clock to max (1500 ms)
   const input: Signals = [null, new ControlSignal(0), null, null];
   arp.onSignalChanged(input);
 
@@ -105,10 +105,10 @@ test('onSignalChanged returns null for all outputs', () => {
 
 test('non-ControlSignal on EAST is ignored', () => {
   const arp = new Arpeggiator();
-  const initialBpm = arp.bpm;
+  const initialClock = arp.clock;
   const input: Signals = [null, null, null, null];
 
   arp.onSignalChanged(input);
 
-  expect(arp.bpm).toBe(initialBpm);
+  expect(arp.clock).toBe(initialClock);
 });
