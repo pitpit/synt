@@ -15,11 +15,6 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /gibberish_worklet\.js$/,
-        type: 'asset/resource',
-        generator: { filename: 'gibberish_worklet.js' },
-      },
-      {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,

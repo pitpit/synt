@@ -1,5 +1,4 @@
-import type { ugen } from 'gibberish-dsp';
-import Gibberish from 'gibberish-dsp';
+import { Oscillator as ToneOscillator } from 'tone';
 import Oscillator from './Oscillator';
 
 export default class SineOscillator extends Oscillator {
@@ -8,7 +7,7 @@ export default class SineOscillator extends Oscillator {
     this.label = 'sine';
   }
 
-  protected createNode(): ugen {
-    return Gibberish.oscillators.Sine(this.getDefaultOptions());
+  protected createNode(): ToneOscillator {
+    return new ToneOscillator({ frequency: 220, type: 'sine' }).start();
   }
 }

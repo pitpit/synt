@@ -26,9 +26,6 @@ I'd would like to thank the authors for their help !
 * https://github.com/wavesjs/waves-ui
 * https://people.carleton.edu/~jellinge/mysynth.html
 * https://github.com/chrisguttandin/standardized-audio-context
-* https://github.com/gibber-cc/gibberish
-
-With special thanks to https://github.com/charlieroberts, primary developer of Gibberish.
 
 ## Developing
 
@@ -87,7 +84,7 @@ Run tests:
 ### Codebase
 
 - [ ] Add a public licence
-- [ ] Switch from Gibberish to Tone.js?
+- [X] Switch from Gibberish to Tone.js?
 - [X] Improve the src/ subtree structure to make it easier to understand
 - [ ] Switch from webpack to vite
 - [X] Upgrade to last node LTS version and update dependencies

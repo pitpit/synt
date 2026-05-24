@@ -1,4 +1,4 @@
-import type { ugen } from 'gibberish-dsp';
+import { Oscillator as ToneOscillator } from 'tone';
 import AudioMod from '../core/AudioMod';
 import PlugType from '../core/PlugType';
 import Signals from '../core/Signals';
@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 import AudioSignal from '../core/AudioSignal';
 
 export default abstract class Oscillator extends AudioMod {
-  node: ugen | null = null;
+  node: ToneOscillator | null = null;
 
   constructor() {
     super();
@@ -17,11 +17,10 @@ export default abstract class Oscillator extends AudioMod {
   protected getDefaultOptions(): Record<string, unknown> {
     return {
       frequency: 220,
-      antialias: true,
     };
   }
 
-  protected abstract createNode(): ugen;
+  protected abstract createNode(): ToneOscillator;
 
   onSignalChanged(inputSignals: Signals): Signals {
     if (!this.node) {
@@ -32,7 +31,7 @@ export default abstract class Oscillator extends AudioMod {
 
     const controlSignal = inputSignals[PlugPosition.EAST];
     if (controlSignal instanceof ControlSignal) {
-      this.node.frequency = controlSignal.value * 400;
+      this.node.frequency.value = controlSignal.value * 400;
     }
     return outputSignals;
   }

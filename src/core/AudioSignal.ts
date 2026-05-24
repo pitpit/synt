@@ -1,10 +1,10 @@
-import type { ugen } from 'gibberish-dsp';
+import type { ToneAudioNode } from 'tone';
 import { Signal } from './Signal';
 
 export default class AudioSignal implements Signal {
-  node: ugen | null;
+  node: ToneAudioNode | null;
 
-  constructor(node: ugen | null) {
+  constructor(node: ToneAudioNode | null) {
     this.node = node;
   }
 
