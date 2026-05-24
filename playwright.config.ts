@@ -96,6 +96,20 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
 
+    // ----- iOS mobile Safari projects -------------------------------------
+    {
+      name: 'iPhone SE',
+      use: { ...devices['iPhone SE'] },
+    },
+    {
+      name: 'iPhone 12',
+      use: { ...devices['iPhone 12'] },
+    },
+    {
+      name: 'iPad (gen 7)',
+      use: { ...devices['iPad (gen 7)'] },
+    },
+
     // ----- Dynamic Chrome projects (require `npm run setup:chrome` first) --
     ...chromeProjects,
   ],
