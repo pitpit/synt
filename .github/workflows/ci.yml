@@ -64,7 +64,13 @@ jobs:
           key: chrome-bins-${{ hashFiles('chrome-versions.json') }}
       - name: Download Chrome binaries
         run: npm run setup:chrome
-      - run: npx playwright install --with-deps
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright browsers and deps
+        run: npx playwright install --with-deps
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
