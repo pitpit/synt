@@ -13,6 +13,12 @@ See the live demo here: https://pitpit.github.io/synt
 
 ![Arpeggiator example](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot-arpegiator.png)
 
+## License
+
+Copyright (C) 2026 Damien Pitard
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
 ## Documentation
 
 - [Architecture](docs/01-architecture.md) — core concepts, module categories, signal flow, connection rules, and design patterns
@@ -105,7 +111,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 ### Codebase
 
-- [ ] Add a public licence
+- [X] Add a public licence
 - [X] Switch from Gibberish to Tone.js?
 - [X] Improve the src/ subtree structure to make it easier to understand
 - [ ] Switch from webpack to vite
