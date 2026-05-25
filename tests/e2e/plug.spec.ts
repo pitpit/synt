@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { gotoTestRack } from './helpers/fixtures';
+import { dragDrop } from './helpers/drag';
 
 // Rack layout constants — must stay in sync with src/core/Rack.ts
 const SLOT = 100; // slotWidth = slotHeight (px)
@@ -22,30 +23,28 @@ function modCenter(x: number, y: number): { x: number; y: number } {
   };
 }
 
-test.describe('Plug connections', () => {
-  test('dragging a Speaker adjacent to a TriangleOscillator wires the audio graph', async ({
-    page,
-  }) => {
-    // -------------------------------------------------------------------
-    // 1. Inject a spy on AudioNode.prototype.connect BEFORE any page script
-    //    runs so every native Web Audio connection is counted, including
-    //    the ones Tone.js makes internally on boot.
-    // -------------------------------------------------------------------
-    await page.addInitScript(() => {
-      (window as { __audioConnectCalls?: number }).__audioConnectCalls = 0;
-      const origConnect = AudioNode.prototype.connect;
-      // The native connect() has two overloads; forward all arguments as-is.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (AudioNode.prototype.connect as (...args: any[]) => any) = function (
-        ...args: unknown[]
-      ) {
-        (window as { __audioConnectCalls?: number }).__audioConnectCalls =
-          ((window as { __audioConnectCalls?: number }).__audioConnectCalls ??
-            0) + 1;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (origConnect as (...args: any[]) => any).apply(this, args);
-      };
+/**
+ * Injects a counter for 'test:mod:link' CustomEvents dispatched by Mod.ts.
+ * Must be called before page.goto() so the listener is in place from the
+ * very first script execution.
+ */
+async function setupModLinkSpy(page: import('@playwright/test').Page): Promise<void> {
+  await page.addInitScript(() => {
+    (window as { __modLinkCount?: number }).__modLinkCount = 0;
+    window.addEventListener('test:mod:link', () => {
+      (window as { __modLinkCount?: number }).__modLinkCount =
+        ((window as { __modLinkCount?: number }).__modLinkCount ?? 0) + 1;
     });
+  });
+}
+
+test.describe('Plug connections', () => {
+  test('dragging a Speaker wires the audio graph', async ({ page, isMobile }) => {
+    // -------------------------------------------------------------------
+    // 1. Count Mod.link() calls via 'test:mod:link' CustomEvent dispatched
+    //    by Mod.ts — no browser-API prototype patching required.
+    // -------------------------------------------------------------------
+    await setupModLinkSpy(page);
 
     const errors: string[] = [];
     page.on('console', (msg) => {
@@ -55,55 +54,43 @@ test.describe('Plug connections', () => {
     await gotoTestRack(page);
 
     // -------------------------------------------------------------------
-    // 2. Capture baseline: Tone.js wires its own internal graph on boot
-    //    (master compressor → destination, etc.) before any user action.
-    // -------------------------------------------------------------------
-    const connectsAtInit = await page.evaluate(
-      () =>
-        (window as { __audioConnectCalls?: number }).__audioConnectCalls ?? 0,
-    );
-
-    // -------------------------------------------------------------------
-    // 3. Perform the drag.
+    // 2. Perform the drag.
     //
     // Default rack layout (src/index.ts):
     //
-    //   (4, 0)  TriangleOscillator   — SOUTH plug = audio OUT
-    //   (3, 4)  Speaker              — NORTH plug = audio IN
-    //   (4, 1)  <empty>              — the drag target
+    //   (0, 3)  SwitchOn  — SOUTH plug = audio OUT
+    //   (0, 4)  Speaker   — NORTH plug = audio IN
     //
-    // Dragging the Speaker from (3, 4) to the empty slot (4, 1) places it
-    // directly south of the TriangleOscillator.  The rack's dragend handler
-    // detects the northern neighbour and calls speaker.plug([triOsc, …]),
-    // which triggers onSignalChanged and builds the Tone.js audio chain:
-    //   ToneOscillator → ToneGain (Speaker) → Tone destination → AudioContext.destination
+    // Dragging the Speaker from (0, 4) toward the occupied slot (0, 3)
+    // causes it to snap back to (0, 4) on dragend.  plug() fires and
+    // connects Speaker.NORTH (IN) to SwitchOn.SOUTH (OUT), wiring the
+    // audio graph.
+    //
+    // Coordinates stay within the smallest test viewport (320 × 568 px on
+    // Galaxy S9+ / iPhone SE).  dragDrop() uses page.mouse on desktop and
+    // dispatches TouchEvents (with a MouseEvent fallback for WebKit) on
+    // mobile — no test.skip needed.
     // -------------------------------------------------------------------
-    const from = modCenter(3, 4); // { x: 354, y: 454 }
-    const to = modCenter(4, 1); // { x: 454, y: 154 }
+    const from = modCenter(0, 4); // Speaker   — { x: 54, y: 454 }
+    const to   = modCenter(0, 3); // SwitchOn  — { x: 54, y: 354 }
 
-    await page.mouse.move(from.x, from.y);
-    await page.mouse.down();
-    // Move in many small steps so Konva fires dragmove events throughout
-    // and the internal shadow / grid tracking stays accurate.
-    await page.mouse.move(to.x, to.y, { steps: 20 });
-    await page.mouse.up();
+    await dragDrop(page, from, to, { isMobile });
 
     // Give Konva's dragend handler and Tone.js audio-graph wiring time to settle.
     await page.waitForTimeout(300);
 
     // -------------------------------------------------------------------
-    // 4. Assertions
+    // 3. Assertions
     // -------------------------------------------------------------------
 
     // No JavaScript errors must occur during or after the drag.
     expect(errors).toHaveLength(0);
 
-    // At least one new AudioNode.connect() call must have been made after
-    // the drag, confirming that the plug system wired up the audio graph.
-    const connectsAfterDrag = await page.evaluate(
-      () =>
-        (window as { __audioConnectCalls?: number }).__audioConnectCalls ?? 0,
+    // At least one Mod.link() call must have fired after the drag,
+    // confirming that the plug system connected the modules.
+    const linkCount = await page.evaluate(
+      () => (window as { __modLinkCount?: number }).__modLinkCount ?? 0,
     );
-    expect(connectsAfterDrag).toBeGreaterThan(connectsAtInit);
+    expect(linkCount).toBeGreaterThan(0);
   });
 });
