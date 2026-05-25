@@ -17,7 +17,7 @@
     "test:e2e": "npm run build && playwright test"
   },
   "author": "",
-  "license": "ISC",
+  "license": "AGPL-3.0-only",
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.49.0",
