@@ -4,7 +4,7 @@ import BurgerMenu from './ui/BurgerMenu';
 import './index.scss';
 
 const rack = new Rack();
- 
+
 new BurgerMenu(rack);
 // Expose programmatic API (used by e2e tests)
 (window as Window & { synt: { importRack: (yaml: string) => void } }).synt = { importRack: (yaml: string) => { importRack(yaml, rack, { silent: true }); } };
