@@ -9,7 +9,7 @@ new BurgerMenu(rack);
 // Expose programmatic API (used by e2e tests)
 (window as unknown as { synt: { importRack: (yaml: string) => void } }).synt = { importRack: (yaml: string) => { importRack(yaml, rack, { silent: true }); } };
 
-fetch('/demo.synt.yaml')
+fetch('./demo.synt.yaml')
   .then((res) => {
     if (!res.ok) throw new Error(`Failed to load demo.synt.yaml (${String(res.status)})`);
 
