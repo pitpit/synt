@@ -224,3 +224,18 @@ test('1 oscillator + 1 speaker  + 1 knob - 1 speaker', () => {
 
   spy.mockRestore();
 });
+
+test('new knob recalls previous control signal value on speaker connect', () => {
+  const speaker = new Speaker();
+  const firstKnob = new Knob();
+  const secondKnob = new Knob();
+
+  speaker.plug([null, null, null, null]);
+  firstKnob.plug([null, null, null, speaker]);
+  firstKnob.pushOutput(PlugPosition.WEST, new ControlSignal(0.7));
+
+  secondKnob.plug([null, null, null, speaker]);
+
+  expect(secondKnob.value).toBeCloseTo(0.7);
+  expect(secondKnob.pos).toBeCloseTo(secondKnob.range * (2 * 0.7 - 1));
+});

@@ -28,6 +28,10 @@ export default class Knob extends Mod {
 
   pinCircle: Konva.Circle|null = null;
 
+  private animationFrameId: number|null = null;
+
+  private readonly animationDurationMs: number = 180;
+
   constructor() {
     super();
     this.configure([PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT], 'knob');
@@ -50,8 +54,7 @@ export default class Knob extends Mod {
         this.pos = this.range;
       }
       event.preventDefault();
-      this.value = ((this.pos + this.range) / this.range) * 0.5;
-      this.updatePinCirclePosition();
+      this.setValue(((this.pos + this.range) / this.range) * 0.5);
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
     });
   }
@@ -77,9 +80,7 @@ export default class Knob extends Mod {
         if (!t) return;
         moveEvt.preventDefault();
         const dy = startY - t.clientY;
-        this.value = Math.max(0, Math.min(1, startValue + dy * this.touchSensitivity));
-        this.pos = this.range * (2 * this.value - 1);
-        this.updatePinCirclePosition();
+        this.setValue(startValue + dy * this.touchSensitivity);
         this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
       };
 
@@ -141,6 +142,72 @@ export default class Knob extends Mod {
         this.innerCircle.draw();
       }
       this.pinCircle.draw();
+    }
+  }
+
+  private stopAnimation() {
+    if (this.animationFrameId !== null && typeof window !== 'undefined') {
+      window.cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
+  private setValue(value: number) {
+    const clampedValue = Math.max(0, Math.min(1, value));
+    this.value = clampedValue;
+    this.pos = this.range * (2 * clampedValue - 1);
+    this.updatePinCirclePosition();
+  }
+
+  private animateToValue(value: number) {
+    this.stopAnimation();
+
+    const targetValue = Math.max(0, Math.min(1, value));
+    const startValue = this.value;
+    if (Math.abs(targetValue - startValue) < 1e-6) {
+      return;
+    }
+
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+      this.setValue(targetValue);
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      return;
+    }
+
+    let startTime: number|null = null;
+    const step = (timestamp: number) => {
+      if (startTime === null) {
+        startTime = timestamp;
+      }
+
+      const elapsed = timestamp - startTime;
+      const progress = Math.max(0, Math.min(1, elapsed / this.animationDurationMs));
+      const easedProgress = 1 - ((1 - progress) ** 3);
+      const currentValue = startValue + (targetValue - startValue) * easedProgress;
+
+      this.setValue(currentValue);
+
+      if (progress < 1) {
+        this.animationFrameId = window.requestAnimationFrame(step);
+      } else {
+        this.animationFrameId = null;
+        this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      }
+    };
+
+    this.animationFrameId = window.requestAnimationFrame(step);
+  }
+
+  protected onLinked(plugPosition: number, target: Mod): void {
+    if (plugPosition !== PlugPosition.WEST) {
+      return;
+    }
+
+    const targetControlSignal = target.getInputSignal(PlugPosition.EAST);
+    if (targetControlSignal instanceof ControlSignal) {
+      this.animateToValue(targetControlSignal.value);
+    } else {
+      this.animateToValue(0.5);
     }
   }
 
