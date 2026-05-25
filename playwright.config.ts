@@ -72,7 +72,7 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:8080',
-    //screenshot: 'only-on-failure',
+    screenshot: 'only-on-failure',
     //video: 'retain-on-failure',
   },
 
