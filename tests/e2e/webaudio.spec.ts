@@ -46,7 +46,12 @@ test.describe('Web Audio API', () => {
   test('AudioContext reaches running state after user gesture and Tone.start() does not reject', async ({
     page,
     isMobile,
+    browserName,
   }) => {
+    test.skip(
+      browserName === 'firefox',
+      'Firefox headless does not reliably grant user activation to Web Audio API in CI',
+    );
     // Intercept AudioContext construction (before app code runs) to capture the
     // instance that Tone.js will create internally — it is not accessible from
     // page.evaluate() in a bundled app.
