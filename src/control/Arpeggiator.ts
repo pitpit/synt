@@ -5,7 +5,7 @@ import ControlSignal from '../core/ControlSignal';
 import Signals from '../core/Signals';
 
 const NUM_STEPS = 4;
-const MIN_CLOCK_INTERVAL_MS = 150;
+const MIN_CLOCK_INTERVAL_MS = 0;
 const MAX_CLOCK_INTERVAL_MS = 1500;
 
 export default class Arpeggiator extends Mod {
@@ -13,7 +13,7 @@ export default class Arpeggiator extends Mod {
 
   stepIndex: number = 0;
 
-  clock: number = 500;
+  clock: number = 750;
 
   timerId: ReturnType<typeof setInterval> | null = null;
 
