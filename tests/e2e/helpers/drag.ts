@@ -34,7 +34,8 @@ export async function dragDrop(
         to: { x: number; y: number };
         steps: number;
       }) => {
-        const canvas = document.querySelector('canvas')!;
+        const canvas = document.querySelector('canvas');
+        if (!canvas) return;
 
         function makeTouch(x: number, y: number): Touch | null {
           try {
@@ -75,7 +76,8 @@ export async function dragDrop(
           for (let i = 1; i <= steps; i++) {
             const x = from.x + ((to.x - from.x) * i) / steps;
             const y = from.y + ((to.y - from.y) * i) / steps;
-            const t = makeTouch(x, y)!;
+            const t = makeTouch(x, y);
+            if (!t) continue;
             window.dispatchEvent(
               new TouchEvent('touchmove', {
                 touches: [t],
@@ -86,7 +88,8 @@ export async function dragDrop(
             );
           }
 
-          const tEnd = makeTouch(to.x, to.y)!;
+          const tEnd = makeTouch(to.x, to.y);
+          if (!tEnd) return;
           window.dispatchEvent(
             new TouchEvent('touchend', {
               touches: [],
