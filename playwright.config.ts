@@ -72,6 +72,8 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:8080',
+    screenshot: 'only-on-failure',
+    //video: 'retain-on-failure',
   },
 
   /**
@@ -89,7 +91,19 @@ export default defineConfig({
     // ----- Static browser projects ----------------------------------------
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        launchOptions: {
+          // Firefox does not grant user activation for Web Audio to Playwright's
+          // synthetic click events in CI/headless mode, causing AudioContext.resume()
+          // to hang indefinitely.  Disabling the autoplay blocking policy here
+          // keeps the test environment consistent with Chromium/WebKit.
+          firefoxUserPrefs: {
+            'media.autoplay.default': 0,
+            'media.autoplay.blocking_policy': 0,
+          },
+        },
+      },
     },
     {
       name: 'webkit',

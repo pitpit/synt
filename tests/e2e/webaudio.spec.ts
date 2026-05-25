@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { gotoTestRack } from './helpers/fixtures';
+import { clickOrTap } from './helpers/click';
 
 test.describe('Web Audio API', () => {
   test('AudioContext constructor is available', async ({ page }) => {
@@ -44,6 +45,7 @@ test.describe('Web Audio API', () => {
 
   test('AudioContext reaches running state after user gesture and Tone.start() does not reject', async ({
     page,
+    isMobile,
   }) => {
     // Intercept AudioContext construction (before app code runs) to capture the
     // instance that Tone.js will create internally — it is not accessible from
@@ -74,9 +76,8 @@ test.describe('Web Audio API', () => {
 
     await gotoTestRack(page);
 
-    // A click counts as a user gesture for the Web Audio API on all platforms
-    // (desktop and mobile). Touch tap is covered separately in interactions.spec.ts.
-    await page.locator('canvas').first().click();
+    // A click or tap counts as a user gesture for the Web Audio API on all platforms.
+    await clickOrTap(page.locator('canvas').first(), { isMobile });
 
     // resume() is called within the user-activation window opened by the click
     // above. This is the exact mechanism Tone.start() relies on internally.

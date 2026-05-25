@@ -19,6 +19,9 @@ module.exports = {
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
 
+  // Automatically restore mock state between every test (undoes jest.spyOn)
+  restoreMocks: true,
+
   // Indicates whether the coverage information should be collected while executing the test
   // collectCoverage: false,
 
@@ -143,7 +146,7 @@ module.exports = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  // testEnvironment: "jest-environment-jsdom",
+  testEnvironment: 'jest-environment-jsdom',
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},

@@ -56,16 +56,35 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
-      - name: Cache Chrome binaries
+      - name: Restore Chrome binaries cache
         id: cache-chrome
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .chrome-bins
           key: chrome-bins-${{ hashFiles('chrome-versions.json') }}
       - name: Download Chrome binaries
         run: npm run setup:chrome
-      - run: npx playwright install --with-deps
+      - name: Restore Playwright browsers cache
+        id: cache-playwright
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright browsers and deps
+        run: npx playwright install --with-deps
       - run: npm run test:e2e
+      - name: Save Chrome binaries cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .chrome-bins
+          key: ${{ steps.cache-chrome.outputs.cache-primary-key }}
+      - name: Save Playwright browsers cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.cache-playwright.outputs.cache-primary-key }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

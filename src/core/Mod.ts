@@ -333,6 +333,8 @@ export default abstract class Mod {
     }
 
     plug.mod = target;
+    // Notify e2e tests that a plug connection was established.
+    window.dispatchEvent(new CustomEvent('test:mod:link'));
 
     this.onLinked(plugPosition, target);
 
@@ -357,6 +359,8 @@ export default abstract class Mod {
     if (plug.mod) {
       const { mod } = plug;
       plug.mod = null;
+      // Notify e2e tests that a plug connection was removed.
+      window.dispatchEvent(new CustomEvent('test:mod:unlink'));
 
       // Reverse unlink target Mod
       mod.unlink(PlugPosition.opposite(plugPosition));

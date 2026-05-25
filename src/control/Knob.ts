@@ -168,7 +168,7 @@ export default class Knob extends Mod {
       return;
     }
 
-    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+    if (this.group === null) {
       this.setValue(targetValue);
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
       return;
