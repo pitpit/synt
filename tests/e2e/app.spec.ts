@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { gotoTestRack } from './helpers/fixtures';
 
 test.describe('App bootstrap', () => {
   test('loads without JavaScript console errors', async ({ page }) => {
@@ -7,23 +8,20 @@ test.describe('App bootstrap', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     expect(errors).toHaveLength(0);
   });
 
   test('canvas element is visible', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible();
   });
 
   test('canvas has non-zero dimensions', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     const canvas = page.locator('canvas').first();
     const box = await canvas.boundingBox();
@@ -34,8 +32,7 @@ test.describe('App bootstrap', () => {
   });
 
   test('rack container div is present in the DOM', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     await expect(page.locator('#container')).toBeAttached();
   });

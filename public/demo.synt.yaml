@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/pitpit/synt/main/synt.schema.json
+synt:
+  rack:
+    width: 10
+    height: 10
+  mods:
+    - type: SineOscillator
+      x: 0
+      y: 0
+    - type: SquareOscillator
+      x: 1
+      y: 0
+    - type: SawtoothOscillator
+      x: 2
+      y: 0
+    - type: TriangleOscillator
+      x: 3
+      y: 0
+    - type: TriangleOscillator
+      x: 4
+      y: 0
+    - type: Gate
+      x: 0
+      y: 1
+    - type: Vibrato
+      x: 1
+      y: 1
+    - type: Tremolo
+      x: 2
+      y: 1
+    - type: Arpeggiator
+      x: 3
+      y: 1
+    - type: Panner
+      x: 4
+      y: 1
+    - type: Knob
+      x: 0
+      y: 2
+    - type: Knob
+      x: 1
+      y: 2
+    - type: Knob
+      x: 2
+      y: 2
+    - type: Knob
+      x: 3
+      y: 2
+    - type: SwitchOn
+      x: 0
+      y: 3
+    - type: SwitchOn
+      x: 1
+      y: 3
+    - type: SwitchOn
+      x: 2
+      y: 3
+    - type: SwitchOn
+      x: 3
+      y: 3
+    - type: Speaker
+      x: 0
+      y: 4
+    - type: Speaker
+      x: 1
+      y: 4
+    - type: Speaker
+      x: 2
+      y: 4
+    - type: Speaker
+      x: 3
+      y: 4
+    - type: Keyboard
+      x: 0
+      y: 5
+    - type: StickyNote
+      x: 5
+      y: 0
+      text: |
+        Welcome to the modular synthesizer!
+
+        Connect modules by dragging from an output plug to an input plug. The top row contains oscillators (Sine, Square, Sawtooth, Triangle) that generate audio signals. Use the Gate to control when sound plays, and Vibrato/Tremolo for pitch and volume modulation.
+
+        Arpeggiator (arp) cycles through notes automatically — connect an Oscillator to arpeggiate chords. Panner (pan) pans the audio left/right — connect a Knob to its EAST plug and turn it to sweep the stereo field.
+
+        Knobs adjust parameters — drag up/down to change values. SwitchOn modules toggle signals on or off. Speakers output the final audio signal.
+
+        Double-click any module to open its settings. Double-click this note to edit it.

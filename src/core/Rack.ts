@@ -13,8 +13,13 @@ export default class Rack {
 
   padding: number = 4;
 
-  /** Stage width and height expressed in number of slots. */
-  stageSize: number = 10;
+  /** Stage width expressed in number of slots. */
+  stageWidth: number = 10;
+
+  /** Stage height expressed in number of slots. */
+  stageHeight: number = 10;
+
+  private _resizeListenerAdded = false;
 
   mods: Array<Mod> = [];
 
@@ -135,36 +140,44 @@ export default class Rack {
    * Attach events.
    */
   draw() {
-    const innerPx = this.stageSize * this.slotWidth;
-    const contentPx = innerPx + 2 * this.padding;
+    // Clear stage event handlers to prevent accumulation on re-draw
+    this.stage.off('wheel').off('touchmove').off('touchend');
+
+    const widthPx = this.stageWidth * this.slotWidth;
+    const heightPx = this.stageHeight * this.slotHeight;
+    const contentWidthPx = widthPx + 2 * this.padding;
+    const contentHeightPx = heightPx + 2 * this.padding;
 
     this.stage.size({
       width: window.innerWidth,
       height: window.innerHeight,
     });
 
-    window.addEventListener('resize', () => {
-      this.stage.size({
-        width: window.innerWidth,
-        height: window.innerHeight,
+    if (!this._resizeListenerAdded) {
+      this._resizeListenerAdded = true;
+      window.addEventListener('resize', () => {
+        this.stage.size({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
       });
-    });
+    }
 
     const layer = new Konva.Layer();
 
     layer.add(new Konva.Rect({
       x: 0,
       y: 0,
-      width: contentPx,
-      height: contentPx,
+      width: contentWidthPx,
+      height: contentHeightPx,
       fill: 'white',
     }));
 
     // Draw grid over the content area
     this.drawGrid(
       layer,
-      innerPx,
-      innerPx,
+      widthPx,
+      heightPx,
     );
 
     this.mods.forEach((mod) => {
@@ -189,7 +202,7 @@ export default class Rack {
       });
 
       layer.add(group);
-      mod.init(this.slotWidth, this.slotHeight, this.padding, group, this.stageSize);
+      mod.init(this.slotWidth, this.slotHeight, this.padding, group, this.stageWidth, this.stageHeight);
     });
     this.stage.add(layer);
 
@@ -285,5 +298,17 @@ export default class Rack {
     });
 
     return busy;
+  }
+
+  /**
+   * Remove all mods from the rack and reset the canvas layers.
+   * Call draw() afterwards to re-render.
+   */
+  clear(): this {
+    [...this.mods].forEach((mod) => { mod.snatch(); });
+    this.mods = [];
+    this.grid = [];
+    this.stage.destroyChildren();
+    return this;
   }
 }

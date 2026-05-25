@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { gotoTestRack } from './helpers/fixtures';
 
 test.describe('Canvas interactions', () => {
   test('clicking the canvas does not produce JavaScript errors', async ({
@@ -9,8 +10,7 @@ test.describe('Canvas interactions', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     // Click at the position of the first synthesizer module (top-left slot)
     const canvas = page.locator('canvas').first();
@@ -20,8 +20,7 @@ test.describe('Canvas interactions', () => {
   });
 
   test('canvas remains visible after a click', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     const canvas = page.locator('canvas').first();
     await canvas.click({ position: { x: 50, y: 50 } });
@@ -37,8 +36,7 @@ test.describe('Canvas interactions', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     const canvas = page.locator('canvas').first();
     await canvas.tap({ position: { x: 50, y: 50 } });

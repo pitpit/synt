@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/pitpit/synt/main/synt.schema.json",
+  "title": "Synt Rack",
+  "description": "Schema for a Synt modular synthesizer rack YAML file.",
+  "type": "object",
+  "required": ["synt"],
+  "additionalProperties": false,
+  "properties": {
+    "synt": {
+      "type": "object",
+      "required": ["mods"],
+      "additionalProperties": false,
+      "properties": {
+        "rack": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10,
+              "description": "Number of slot columns."
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10,
+              "description": "Number of slot rows."
+            }
+          }
+        },
+        "mods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "x", "y"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "Arpeggiator",
+                  "Gate",
+                  "Keyboard",
+                  "Knob",
+                  "Panner",
+                  "SawtoothOscillator",
+                  "SineOscillator",
+                  "Speaker",
+                  "StickyNote",
+                  "SquareOscillator",
+                  "SwitchOn",
+                  "Tremolo",
+                  "TriangleOscillator",
+                  "Vibrato"
+                ],
+                "description": "Mod type identifier."
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Horizontal slot position (0-based, left to right)."
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Vertical slot position (0-based, top to bottom)."
+              },
+              "text": {
+                "type": "string",
+                "description": "Text content for StickyNote mods."
+              }
+            },
+            "if": {
+              "properties": { "type": { "const": "StickyNote" } },
+              "required": ["type"]
+            },
+            "then": {
+              "required": ["text"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

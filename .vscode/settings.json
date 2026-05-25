@@ -1,20 +1,10 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib",
+    "js/ts.tsdk.path": "node_modules/typescript/lib",
     "eslint.validate": [
         "javascript",
         "typescript",
     ],
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#0F3328",
-        "titleBar.activeBackground": "#164838",
-        "titleBar.activeForeground": "#F5FCFA",
-        "titleBar.inactiveBackground": "#0F3328",
-        "titleBar.inactiveForeground": "#F5FCFA",
-        "statusBar.background": "#0F3328",
-        "statusBar.foreground": "#F5FCFA",
-        "statusBar.debuggingBackground": "#0F3328",
-        "statusBar.debuggingForeground": "#F5FCFA",
-        "statusBar.noFolderBackground": "#0F3328",
-        "statusBar.noFolderForeground": "#F5FCFA"
+    "yaml.schemas": {
+        "./synt.schema.json": ["**/*.synt.yaml"]
     }
 }
