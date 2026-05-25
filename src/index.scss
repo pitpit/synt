@@ -82,6 +82,56 @@ h1, h2, h3, h4, h5, h6 {
       background: none;
     }
   }
+
+  @media (pointer: coarse) {
+    // tingle's own max-width:540px rule sets display:block + padding-top:60px,
+    // which causes the box to overflow. Reset that here.
+    & {
+      display: flex !important;
+      padding: 0 !important;
+      align-items: stretch !important;
+    }
+
+    .tingle-modal-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      // use 100% of the stretched flex parent instead of 100vh/dvh
+      height: 100% !important;
+      border: none !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column;
+
+      .tingle-modal-box__content {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+
+        #sticky-textarea {
+          flex: 1 1 auto;
+          height: 100% !important;
+          resize: none;
+        }
+      }
+
+      .tingle-modal-box__footer {
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+#sticky-textarea {
+  width: 100%;
+  height: 300px;
+  resize: vertical;
+  overflow-y: auto;
+  box-sizing: border-box;
+  font-size: 14px;
+  padding: 8px;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 // BURGER MENU

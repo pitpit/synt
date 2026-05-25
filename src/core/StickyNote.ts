@@ -38,7 +38,7 @@ export default class StickyNote extends Mod {
     });
 
     this.events.on('dblclick', () => {
-      this.modal.setContent('<textarea id="sticky-textarea" style="width:100%;height:300px;resize:vertical;overflow-y:auto;box-sizing:border-box;font-size:14px;padding:8px;font-family:\'Courier New\',Courier,monospace;"></textarea>');
+      this.modal.setContent('<textarea id="sticky-textarea"></textarea>');
       this.modal.open();
       const textarea = document.getElementById('sticky-textarea') as HTMLTextAreaElement | null;
       if (textarea) {
