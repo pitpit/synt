@@ -333,8 +333,19 @@ export default abstract class Mod {
 
     plug.mod = target;
 
+    this.onLinked(plugPosition, target);
+
     // Reserse link
     target.link(oppositePlugPosition, this);
+  }
+
+  /**
+   * Hook called when a link is established from this mod to a target.
+   * Subclasses can override it for connection side effects.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onLinked(plugPosition: number, target: Mod): void {
+    // Do nothing by default
   }
 
   /**
@@ -473,5 +484,12 @@ export default abstract class Mod {
       const oppositePlugPosition = PlugPosition.opposite(plugPosition);
       plug.mod.pushInput(oppositePlugPosition, outputSignal);
     }
+  }
+
+  /**
+   * Return the latest input signal received on a given plug.
+   */
+  getInputSignal(plugPosition: number): Signal|null {
+    return this.inputSignals[plugPosition];
   }
 }
