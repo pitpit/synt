@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { gotoTestRack } from './helpers/fixtures';
 
 // Rack layout constants — must stay in sync with src/core/Rack.ts
 const SLOT = 100; // slotWidth = slotHeight (px)
@@ -51,8 +52,7 @@ test.describe('Plug connections', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     // -------------------------------------------------------------------
     // 2. Capture baseline: Tone.js wires its own internal graph on boot

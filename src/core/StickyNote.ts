@@ -1,6 +1,6 @@
 import Konva from 'konva';
 import Mod from './Mod';
-import Modal from './Modal';
+import Modal from '../ui/Modal';
 import PlugType from './PlugType';
 
 export default class StickyNote extends Mod {
@@ -45,6 +45,10 @@ export default class StickyNote extends Mod {
         textarea.value = this.content;
       }
     });
+  }
+
+  get text(): string {
+    return this.content;
   }
 
   draw(group: Konva.Group): void {

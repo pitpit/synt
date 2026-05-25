@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { gotoTestRack } from './helpers/fixtures';
 
 test.describe('Web Audio API', () => {
   test('AudioContext constructor is available', async ({ page }) => {
-    await page.goto('/');
+    await gotoTestRack(page);
 
     const hasAudioContext = await page.evaluate(
       () =>
@@ -17,7 +18,7 @@ test.describe('Web Audio API', () => {
   test('AudioContext can be instantiated and is in a valid state', async ({
     page,
   }) => {
-    await page.goto('/');
+    await gotoTestRack(page);
 
     const result = await page.evaluate(() => {
       try {
@@ -71,8 +72,7 @@ test.describe('Web Audio API', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await gotoTestRack(page);
 
     // A click counts as a user gesture for the Web Audio API on all platforms
     // (desktop and mobile). Touch tap is covered separately in interactions.spec.ts.
