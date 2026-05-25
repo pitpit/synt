@@ -76,53 +76,25 @@ test.describe('Web Audio API', () => {
 
     await gotoTestRack(page);
 
-    // Register a one-shot mousedown/touchstart listener BEFORE the click so that
-    // resume() is invoked from within the user-activation window — the same
-    // mechanism Tone.start() relies on internally.  Calling resume() from a
-    // separate page.evaluate() would be outside that window and would cause
-    // Firefox (which enforces the autoplay policy strictly in CI/headless) to
-    // queue the promise indefinitely, timing out the test.
-    await page.evaluate(() => {
-      const W = window as Window & {
-        __capturedAudioCtx?: AudioContext;
-        __resumeSettled?: { error: string | null };
-      };
-      const handler = () => {
-        document.removeEventListener('mousedown', handler);
-        document.removeEventListener('touchstart', handler);
-        if (!W.__capturedAudioCtx) {
-          W.__resumeSettled = { error: null };
-          return;
-        }
-        W.__capturedAudioCtx
-          .resume()
-          .then(() => {
-            W.__resumeSettled = { error: null };
-          })
-          .catch((e: unknown) => {
-            W.__resumeSettled = { error: String(e) };
-          });
-      };
-      document.addEventListener('mousedown', handler);
-      document.addEventListener('touchstart', handler);
-    });
-
     // A click or tap counts as a user gesture for the Web Audio API on all platforms.
     await clickOrTap(page.locator('canvas').first(), { isMobile });
 
-    // Wait for the resume() triggered inside the event handler above to settle.
-    const resultHandle = await page.waitForFunction(() => {
-      const W = window as Window & {
-        __capturedAudioCtx?: AudioContext;
-        __resumeSettled?: { error: string | null };
-      };
-      if (!W.__resumeSettled) return null; // resume() promise still pending
-      return {
-        state: (W.__capturedAudioCtx?.state ?? 'no-context') as string,
-        error: W.__resumeSettled.error,
-      };
+    // resume() is called within the user-activation window opened by the click
+    // above. This is the exact mechanism Tone.start() relies on internally.
+    const result = await page.evaluate(async () => {
+      const W = window as Window & { __capturedAudioCtx?: AudioContext };
+      if (!W.__capturedAudioCtx)
+        return { state: 'no-context' as string, error: null as string | null };
+      try {
+        await W.__capturedAudioCtx.resume();
+        return { state: W.__capturedAudioCtx.state as string, error: null };
+      } catch (e) {
+        return {
+          state: W.__capturedAudioCtx.state as string,
+          error: String(e),
+        };
+      }
     });
-    const result = await resultHandle.jsonValue();
 
     expect(
       result.state,
