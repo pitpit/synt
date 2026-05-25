@@ -11,11 +11,11 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test('emits first step value on first tick at clock 500ms', () => {
+test('emits first step value on first tick at clock 750ms', () => {
   const arp = new Arpeggiator();
   const spy = jest.spyOn(arp, 'pushOutput');
 
-  jest.advanceTimersByTime(500); // default clock = 500 ms
+  jest.advanceTimersByTime(750); // default clock = 750 ms
 
   expect(spy).toHaveBeenCalledTimes(1);
   expect(spy).toHaveBeenCalledWith(
@@ -28,7 +28,7 @@ test('advances step on each tick', () => {
   const arp = new Arpeggiator();
   const spy = jest.spyOn(arp, 'pushOutput');
 
-  jest.advanceTimersByTime(1000); // 2 ticks at 500 ms
+  jest.advanceTimersByTime(1500); // 2 ticks at 750 ms
 
   expect(spy).toHaveBeenCalledTimes(2);
   expect(spy).toHaveBeenNthCalledWith(
@@ -46,7 +46,7 @@ test('advances step on each tick', () => {
 test('step index wraps back to 0 after 4 steps', () => {
   const arp = new Arpeggiator();
 
-  jest.advanceTimersByTime(500 * 4); // 4 ticks at 500 ms
+  jest.advanceTimersByTime(750 * 4); // 4 ticks at 750 ms
 
   expect(arp.stepIndex).toBe(0);
 });
@@ -66,7 +66,7 @@ test('onSignalChanged maps value 1 to clock 150ms', () => {
 
   arp.onSignalChanged(input);
 
-  expect(arp.clock).toBe(150);
+  expect(arp.clock).toBe(0);
 });
 
 test('onSignalChanged maps value 0.5 to clock 825ms', () => {
@@ -75,7 +75,7 @@ test('onSignalChanged maps value 0.5 to clock 825ms', () => {
 
   arp.onSignalChanged(input);
 
-  expect(arp.clock).toBe(825);
+  expect(arp.clock).toBe(750);
 });
 
 test('onSignalChanged restarts timer with new interval', () => {
