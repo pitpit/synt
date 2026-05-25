@@ -255,7 +255,7 @@ export default abstract class Mod {
       }
     });
 
-    group.on('dblclick', () => {
+    group.on('dblclick dbltap', () => {
       this.events.emit('dblclick');
     });
 
