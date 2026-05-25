@@ -305,7 +305,7 @@ export default class Rack {
    * Call draw() afterwards to re-render.
    */
   clear(): this {
-    [...this.mods].forEach((mod) => mod.snatch());
+    [...this.mods].forEach((mod) => { mod.snatch(); });
     this.mods = [];
     this.grid = [];
     this.stage.destroyChildren();

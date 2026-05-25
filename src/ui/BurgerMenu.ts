@@ -63,19 +63,19 @@ export default class BurgerMenu {
     });
 
     // Import
-    importItem.addEventListener('click', () => this.triggerImport());
+    importItem.addEventListener('click', () => { this.triggerImport(); });
     importItem.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') this.triggerImport();
     });
 
     // Export
-    exportItem.addEventListener('click', () => this.triggerExport());
+    exportItem.addEventListener('click', () => { this.triggerExport(); });
     exportItem.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') this.triggerExport();
     });
 
     // File selected
-    this.fileInput.addEventListener('change', () => this.handleFileSelected());
+    this.fileInput.addEventListener('change', () => { this.handleFileSelected(); });
 
     // Close on outside click
     document.addEventListener('click', () => {
@@ -123,7 +123,7 @@ export default class BurgerMenu {
         footer: true,
         closeMethods: ['overlay', 'escape'],
       });
-      modal.addFooterBtn('Close', 'tingle-btn tingle-btn--pull-right', () => modal.close());
+      modal.addFooterBtn('Close', 'tingle-btn tingle-btn--pull-right', () => { modal.close(); });
       modal.setContent(
         '<p style="padding:16px">Invalid file type. Please select a <code>.yaml</code> or <code>.yml</code> file.</p>',
       );

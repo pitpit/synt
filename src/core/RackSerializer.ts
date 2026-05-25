@@ -32,7 +32,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   SawtoothOscillator,
   SineOscillator,
   Speaker,
-  StickyNote: StickyNote as unknown as AnyModConstructor,
+  StickyNote,
   SquareOscillator,
   SwitchOn,
   Tremolo,
@@ -40,7 +40,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Vibrato,
 };
 
-const REVERSE_REGISTRY = new Map<Function, string>(
+const REVERSE_REGISTRY = new Map<AnyModConstructor, string>(
   Object.entries(MOD_REGISTRY).map(([name, ctor]) => [ctor, name]),
 );
 
@@ -93,27 +93,27 @@ function showError(message: string): void {
 function validateDoc(doc: unknown): string[] {
   const errors: string[] = [];
 
-  if (typeof doc !== 'object' || doc === null || !('synt' in (doc as object))) {
+  if (typeof doc !== 'object' || doc === null || !('synt' in (doc))) {
     return ['Invalid format: missing top-level <code>synt</code> key.'];
   }
 
   const { synt } = doc as SyntDoc;
 
-  if (!synt.mods || !Array.isArray(synt.mods)) {
+  if (!Array.isArray(synt.mods)) {
     return ['Invalid format: <code>synt.mods</code> must be an array.'];
   }
 
   synt.mods.forEach((mod, i) => {
     if (!mod.type) {
-      errors.push(`mods[${i}]: missing <code>type</code>`);
+      errors.push(`mods[${String(i)}]: missing <code>type</code>`);
     } else if (!(mod.type in MOD_REGISTRY)) {
-      errors.push(`mods[${i}]: unknown type <code>${mod.type}</code>`);
+      errors.push(`mods[${String(i)}]: unknown type <code>${mod.type}</code>`);
     }
     if (typeof mod.x !== 'number' || mod.x < 0 || !Number.isInteger(mod.x)) {
-      errors.push(`mods[${i}]: <code>x</code> must be a non-negative integer`);
+      errors.push(`mods[${String(i)}]: <code>x</code> must be a non-negative integer`);
     }
     if (typeof mod.y !== 'number' || mod.y < 0 || !Number.isInteger(mod.y)) {
-      errors.push(`mods[${i}]: <code>y</code> must be a non-negative integer`);
+      errors.push(`mods[${String(i)}]: <code>y</code> must be a non-negative integer`);
     }
   });
 
@@ -144,7 +144,7 @@ function detectOverlaps(
 
     if (ax + a.width > rackWidth || ay + a.height > rackHeight) {
       errors.push(
-        `mods[${i}] (${specs[i].type} at ${ax},${ay}) extends beyond rack bounds (${rackWidth}×${rackHeight})`,
+        `mods[${String(i)}] (${specs[i].type} at ${String(ax)},${String(ay)}) extends beyond rack bounds (${String(rackWidth)}×${String(rackHeight)})`,
       );
       continue;
     }
@@ -157,7 +157,7 @@ function detectOverlaps(
         ay < by + b.height &&
         ay + a.height > by;
       if (overlaps) {
-        errors.push(`mods[${i}] (${specs[i].type}) overlaps with mods[${j}] (${specs[j].type})`);
+        errors.push(`mods[${String(i)}] (${specs[i].type}) overlaps with mods[${String(j)}] (${specs[j].type})`);
       }
     }
   }
@@ -177,7 +177,7 @@ export function exportRack(rack: Rack): string {
     if (seen.has(mod)) return;
     seen.add(mod);
 
-    const typeName = REVERSE_REGISTRY.get(mod.constructor as Function);
+    const typeName = REVERSE_REGISTRY.get(mod.constructor as AnyModConstructor);
     if (!typeName) return;
 
     const spec: ModSpec = { type: typeName, x: mod.x, y: mod.y };
