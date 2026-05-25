@@ -5,6 +5,7 @@ import { resolve } from 'path';
 export default defineConfig(async () => {
   const { default: cssInjectedByJsPlugin } = await import('vite-plugin-css-injected-by-js');
   return {
+    base: '/synt/',
     root: 'src',
     publicDir: '../public',
     build: {
@@ -17,6 +18,7 @@ export default defineConfig(async () => {
           entryFileNames: '[name].js',
         },
       },
+      chunkSizeWarningLimit: 1000,
     },
     plugins: [
       cssInjectedByJsPlugin(),
