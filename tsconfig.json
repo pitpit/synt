@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",
-        "target": "es5",
+        "target": "ES2017",
         // make Konva et EventEmiiter imports works the es6 way. See https://github.com/konvajs/konva/issues/598
         "esModuleInterop": true,
         "allowJs": true,
@@ -10,7 +9,7 @@
         "strict": true,
         "sourceMap": true,
         "removeComments": false,
-        "moduleResolution": "node"
+        "moduleResolution": "bundler"
     },
     "exclude": [
       "node_modules",
