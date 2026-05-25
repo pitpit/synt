@@ -7,7 +7,7 @@ const rack = new Rack();
 
 new BurgerMenu(rack);
 // Expose programmatic API (used by e2e tests)
-(window as Window & { synt: { importRack: (yaml: string) => void } }).synt = { importRack: (yaml: string) => { importRack(yaml, rack, { silent: true }); } };
+(window as unknown as { synt: { importRack: (yaml: string) => void } }).synt = { importRack: (yaml: string) => { importRack(yaml, rack, { silent: true }); } };
 
 fetch('/demo.synt.yaml')
   .then((res) => {
