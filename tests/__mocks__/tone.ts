@@ -22,6 +22,7 @@ const createEffectNode = () => {
       }
     }),
     dispose: jest.fn().mockImplementation(() => { disposed = true; }),
+    feedback: { value: 0 },
     frequency: { value: 0 },
     depth: { value: 0 },
     pan: { value: 0 },
@@ -29,6 +30,7 @@ const createEffectNode = () => {
   };
 };
 
+const Chorus = jest.fn(() => createEffectNode());
 const Vibrato = jest.fn(() => createEffectNode());
 const Tremolo = jest.fn(() => createEffectNode());
 const Panner = jest.fn(() => createEffectNode());
@@ -36,6 +38,7 @@ const Panner = jest.fn(() => createEffectNode());
 export {
   Gain,
   getDestination,
+  Chorus,
   Vibrato,
   Tremolo,
   Panner,

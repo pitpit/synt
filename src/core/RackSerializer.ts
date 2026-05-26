@@ -13,6 +13,7 @@ import Gate from '../control/Gate';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import Arpeggiator from '../control/Arpeggiator';
+import Flanger from '../effect/Flanger';
 import Vibrato from '../effect/Vibrato';
 import Tremolo from '../effect/Tremolo';
 import Panner from '../effect/Panner';
@@ -25,6 +26,7 @@ type AnyModConstructor = new (...args: never[]) => Mod;
 
 const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Arpeggiator,
+  Flanger,
   Gate,
   Keyboard,
   Knob,
