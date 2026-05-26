@@ -131,7 +131,7 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] Delay — echo with time, feedback, and wet/dry
 - [ ] Reverb — convolution or algorithmic reverb
 - [ ] Chorus — multi-voice pitch detune effect
-- [ ] Flanger — short delay with LFO modulation
+- [X] Flanger — short delay with LFO modulation
 - [ ] Phaser — all-pass chain swept by LFO
 - [ ] Ring modulator — amplitude modulation producing sum/difference frequencies
 - [ ] Waveshaper / Distortion — soft-clip, hard-clip, fold-back

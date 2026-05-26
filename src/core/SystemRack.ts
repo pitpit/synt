@@ -6,6 +6,7 @@ import SquareOscillator from '../oscillator/SquareOscillator';
 import SawtoothOscillator from '../oscillator/SawtoothOscillator';
 import TriangleOscillator from '../oscillator/TriangleOscillator';
 import Gate from '../control/Gate';
+import Flanger from '../effect/Flanger';
 import Vibrato from '../effect/Vibrato';
 import Tremolo from '../effect/Tremolo';
 import Panner from '../effect/Panner';
@@ -33,6 +34,7 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Gate,               label: 'gate',    x: 1, y: 1 },
   { Ctor: Tremolo,            label: 'tremolo', x: 2, y: 1 },
   { Ctor: Panner,             label: 'pan',     x: 3, y: 1 },
+  { Ctor: Flanger,            label: 'flanger', x: 4, y: 1 },
   { Ctor: Arpeggiator,        label: 'arp',     x: 0, y: 2 },
   { Ctor: Knob,               label: 'knob',    x: 1, y: 2 },
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },
