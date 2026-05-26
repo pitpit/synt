@@ -34,6 +34,7 @@ const Chorus = jest.fn(() => createEffectNode());
 const Vibrato = jest.fn(() => createEffectNode());
 const Tremolo = jest.fn(() => createEffectNode());
 const Panner = jest.fn(() => createEffectNode());
+const Phaser = jest.fn(() => createEffectNode());
 
 export {
   Gain,
@@ -42,4 +43,5 @@ export {
   Vibrato,
   Tremolo,
   Panner,
+  Phaser,
 };

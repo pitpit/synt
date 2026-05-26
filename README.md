@@ -132,7 +132,7 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] Reverb — convolution or algorithmic reverb
 - [ ] Chorus — multi-voice pitch detune effect
 - [X] Flanger — short delay with LFO modulation
-- [ ] Phaser — all-pass chain swept by LFO
+- [X] Phaser — all-pass chain swept by LFO
 - [ ] Ring modulator — amplitude modulation producing sum/difference frequencies
 - [ ] Waveshaper / Distortion — soft-clip, hard-clip, fold-back
 - [ ] Bit crusher — sample-rate and bit-depth reduction
