@@ -98,7 +98,7 @@ onSignalChanged(inputSignals: Signals): Signals {
   }
 
   const ctrl = inputSignals[PlugPosition.EAST];
-  if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
+  if (ctrl instanceof ControlSignal && this.node && !this.node.disposed) {
     this.node.frequency.value = ctrl.value * 4000; // map 0–1 to 0–4000 Hz
   }
 
