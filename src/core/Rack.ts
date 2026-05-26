@@ -395,7 +395,7 @@ export default class Rack {
         duration: 0.08,
         scaleX: 1.3,
         scaleY: 0.5,
-        easing: Konva.Easings.EaseIn,
+        easing: (t, b, c, d) => Konva.Easings.EaseIn(t, b, c, d) as number,
         onFinish: () => {
           squish.destroy();
           // Phase 2: crunch to nothing
@@ -404,7 +404,7 @@ export default class Rack {
             duration: 0.14,
             scaleX: 0,
             scaleY: 0,
-            easing: Konva.Easings.EaseIn,
+            easing: (t, b, c, d) => Konva.Easings.EaseIn(t, b, c, d) as number,
             onFinish: () => {
               crunch.destroy();
               this.remove(mod);
@@ -426,10 +426,10 @@ export default class Rack {
       this.stageHeight,
     );
 
-    mod.events.on('checkDeleteZone', (x, y, w, h, result) => {
+    mod.events.on('checkDeleteZone', (x: number, y: number, w: number, h: number, result: { inDeleteZone: boolean }) => {
       result.inDeleteZone = this.systemRack?.isInDeleteZone(x, y, w, h) ?? false;
     });
-    mod.events.on('deleteZoneChange', (isIn) => {
+    mod.events.on('deleteZoneChange', (isIn: boolean) => {
       this.systemRack?.setDeleteHighlight(isIn);
     });
   }

@@ -223,7 +223,7 @@ export default class SystemRack {
       // Prevent stage from starting a pan gesture
       e.cancelBubble = true;
       // Prevent browser scroll / default touch behaviour
-      e.evt.preventDefault();
+      (e.evt as Event).preventDefault();
       rack.stage.draggable(false);
 
       const layerPos = layer.getRelativePointerPosition();
@@ -262,8 +262,9 @@ export default class SystemRack {
       // Follow the pointer
       rack.stage.on('mousemove.sysghost touchmove.sysghost', (moveEvt) => {
         // Two-finger gesture: let pinch-zoom handler take over
-        if (moveEvt.evt.touches && moveEvt.evt.touches.length >= 2) return;
-        moveEvt.evt.preventDefault();
+        const moveTouch = moveEvt.evt as { touches?: TouchList };
+        if (moveTouch.touches && moveTouch.touches.length >= 2) return;
+        (moveEvt.evt as Event).preventDefault();
         if (!ghost) return;
         const p = layer.getRelativePointerPosition();
         if (!p) return;
@@ -298,7 +299,8 @@ export default class SystemRack {
       // Drop
       rack.stage.on('mouseup.sysghost touchend.sysghost', (upEvt) => {
         // Wait until all fingers are lifted
-        if (upEvt.evt.touches && upEvt.evt.touches.length > 0) return;
+        const upTouch = upEvt.evt as { touches?: TouchList };
+        if (upTouch.touches && upTouch.touches.length > 0) return;
 
         rack.stage.off('.sysghost');
         rack.stage.draggable(true);
