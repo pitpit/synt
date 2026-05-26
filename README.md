@@ -111,10 +111,11 @@ An HTML report is generated in `playwright-report/` after each run.
 
 ### Codebase
 
+- [ ] Enable again e2e test for firefox "AudioContext reaches running state after user gesture and Tone.start() does not reject"
 - [X] Add a public licence
 - [X] Switch from Gibberish to Tone.js?
 - [X] Improve the src/ subtree structure to make it easier to understand
-- [ ] Switch from webpack to vite
+- [X] Switch from webpack to vite
 - [X] Upgrade to last node LTS version and update dependencies
 - [X] Switch from TravisCI to Github Actions
 - [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN

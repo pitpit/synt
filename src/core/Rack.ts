@@ -1,6 +1,7 @@
 import Konva from 'konva';
 import * as Tone from 'tone';
 import Mod from './Mod';
+import SystemRack from './SystemRack';
 
 export default class Rack {
   stage: Konva.Stage;
@@ -20,6 +21,10 @@ export default class Rack {
   stageHeight: number = 10;
 
   private _resizeListenerAdded = false;
+
+  layer: Konva.Layer | null = null;
+
+  systemRack: SystemRack | null = null;
 
   mods: Array<Mod> = [];
 
@@ -164,6 +169,10 @@ export default class Rack {
     }
 
     const layer = new Konva.Layer();
+    this.layer = layer;
+
+    // Draw the system rack (above the main rack) if configured
+    this.systemRack?.draw(layer);
 
     layer.add(new Konva.Rect({
       x: 0,
@@ -181,28 +190,7 @@ export default class Rack {
     );
 
     this.mods.forEach((mod) => {
-      const group = new Konva.Group({
-        draggable: true,
-      });
-
-      mod.events.on('dragstart', () => {
-        mod.snatch();
-      });
-
-      mod.events.on('dragend', () => {
-        // Keep internal grid up to date
-        this.removeFromGrid(mod).addToGrid(mod);
-
-        mod.plug([
-          this.getFromGrid(mod.x, mod.y - 1), // North
-          this.getFromGrid(mod.x + 1, mod.y), // East
-          this.getFromGrid(mod.x, mod.y + 1), // South
-          this.getFromGrid(mod.x - 1, mod.y), // West
-        ]);
-      });
-
-      layer.add(group);
-      mod.init(this.slotWidth, this.slotHeight, this.padding, group, this.stageWidth, this.stageHeight);
+      this.initModInLayer(mod, layer);
     });
     this.stage.add(layer);
 
@@ -308,7 +296,72 @@ export default class Rack {
     [...this.mods].forEach((mod) => { mod.snatch(); });
     this.mods = [];
     this.grid = [];
+    this.layer = null;
     this.stage.destroyChildren();
     return this;
+  }
+
+  /**
+   * Remove a single mod from the rack, disconnecting its audio graph
+   * and destroying its Konva group.
+   */
+  remove(mod: Mod): void {
+    mod.snatch();
+    const idx = this.mods.indexOf(mod);
+    if (idx !== -1) {
+      this.mods.splice(idx, 1);
+    }
+    this.removeFromGrid(mod);
+    mod.group?.destroy();
+    this.layer?.batchDraw();
+  }
+
+  /**
+   * Add a mod to the rack dynamically (without a full redraw),
+   * preserving existing mod connections.
+   */
+  addMod(mod: Mod, x: number, y: number): void {
+    if (!this.layer) return;
+    this.add(mod, x, y);
+    this.initModInLayer(mod, this.layer);
+    this.layer.batchDraw();
+  }
+
+  private initModInLayer(mod: Mod, layer: Konva.Layer): void {
+    const group = new Konva.Group({
+      draggable: true,
+    });
+
+    mod.events.on('dragstart', () => {
+      mod.snatch();
+    });
+
+    mod.events.on('dragend', () => {
+      // Keep internal grid up to date
+      this.removeFromGrid(mod).addToGrid(mod);
+
+      mod.plug([
+        this.getFromGrid(mod.x, mod.y - 1), // North
+        this.getFromGrid(mod.x + 1, mod.y), // East
+        this.getFromGrid(mod.x, mod.y + 1), // South
+        this.getFromGrid(mod.x - 1, mod.y), // West
+      ]);
+    });
+
+    mod.events.on('delete', () => {
+      this.remove(mod);
+    });
+
+    layer.add(group);
+    mod.init(
+      this.slotWidth,
+      this.slotHeight,
+      this.padding,
+      group,
+      this.stageWidth,
+      this.stageHeight,
+      (x, y, w, h) => this.systemRack?.isInDeleteZone(x, y, w, h) ?? false,
+      (isIn) => this.systemRack?.setDeleteHighlight(isIn),
+    );
   }
 }
