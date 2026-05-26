@@ -89,8 +89,6 @@ export default abstract class Mod {
     group:Konva.Group,
     stageWidth: number,
     stageHeight: number,
-    isDeleteZone?: (x: number, y: number, widthPx: number, heightPx: number) => boolean,
-    onDeleteZoneChange?: (isIn: boolean) => void,
   ): void {
     this.group = group;
     const strokeWidth = 5;
@@ -150,8 +148,10 @@ export default abstract class Mod {
       }
 
       // Check delete zone before any clamping (raw pixel coords)
-      onDeleteZoneChange?.(false);
-      if (isDeleteZone?.(group.x(), group.y(), this.width * slotWidth, this.height * slotHeight)) {
+      this.events.emit('deleteZoneChange', false);
+      const deleteResult = { inDeleteZone: false };
+      this.events.emit('checkDeleteZone', group.x(), group.y(), this.width * slotWidth, this.height * slotHeight, deleteResult);
+      if (deleteResult.inDeleteZone) {
         shadow.hide();
         this.events.emit('delete');
         return;
@@ -192,18 +192,17 @@ export default abstract class Mod {
       }
 
       // Check delete zone using full bounding box
-      const inDeleteZone = isDeleteZone?.(
-        group.x(), group.y(), this.width * slotWidth, this.height * slotHeight,
-      ) ?? false;
+      const moveResult = { inDeleteZone: false };
+      this.events.emit('checkDeleteZone', group.x(), group.y(), this.width * slotWidth, this.height * slotHeight, moveResult);
 
-      if (inDeleteZone) {
+      if (moveResult.inDeleteZone) {
         shadow.hide();
-        onDeleteZoneChange?.(true);
+        this.events.emit('deleteZoneChange', true);
         group.getStage()?.batchDraw();
         return;
       }
 
-      onDeleteZoneChange?.(false);
+      this.events.emit('deleteZoneChange', false);
 
       // Above the main rack (but not in delete zone): hide snap shadow
       if (group.y() < 0) {

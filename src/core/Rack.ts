@@ -349,7 +349,49 @@ export default class Rack {
     });
 
     mod.events.on('delete', () => {
-      this.remove(mod);
+      const group = mod.group;
+      if (!group) {
+        this.remove(mod);
+        return;
+      }
+
+      const w = mod.width * this.slotWidth;
+      const h = mod.height * this.slotHeight;
+
+      // Shift origin to center so the squish scales from the middle
+      group.offsetX(w / 2);
+      group.offsetY(h / 2);
+      group.x(group.x() + w / 2);
+      group.y(group.y() + h / 2);
+      group.draggable(false);
+      group.moveToTop();
+      this.layer?.batchDraw();
+
+      // Phase 1: squish (spread wide, flatten tall)
+      const squish = new Konva.Tween({
+        node: group,
+        duration: 0.08,
+        scaleX: 1.3,
+        scaleY: 0.5,
+        easing: Konva.Easings.EaseIn,
+        onFinish: () => {
+          squish.destroy();
+          // Phase 2: crunch to nothing
+          const crunch = new Konva.Tween({
+            node: group,
+            duration: 0.14,
+            scaleX: 0,
+            scaleY: 0,
+            easing: Konva.Easings.EaseIn,
+            onFinish: () => {
+              crunch.destroy();
+              this.remove(mod);
+            },
+          });
+          crunch.play();
+        },
+      });
+      squish.play();
     });
 
     layer.add(group);
@@ -360,8 +402,13 @@ export default class Rack {
       group,
       this.stageWidth,
       this.stageHeight,
-      (x, y, w, h) => this.systemRack?.isInDeleteZone(x, y, w, h) ?? false,
-      (isIn) => this.systemRack?.setDeleteHighlight(isIn),
     );
+
+    mod.events.on('checkDeleteZone', (x, y, w, h, result) => {
+      result.inDeleteZone = this.systemRack?.isInDeleteZone(x, y, w, h) ?? false;
+    });
+    mod.events.on('deleteZoneChange', (isIn) => {
+      this.systemRack?.setDeleteHighlight(isIn);
+    });
   }
 }
