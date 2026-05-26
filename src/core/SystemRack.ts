@@ -13,6 +13,7 @@ import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import Speaker from '../output/Speaker';
+import StickyNote from './StickyNote';
 
 type ModConstructor = new () => Mod;
 
@@ -36,6 +37,7 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Knob,               label: 'knob',    x: 1, y: 2 },
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },
   { Ctor: Speaker,            label: 'speaker', x: 0, y: 3 },
+  { Ctor: StickyNote, label: 'note',    x: 4, y: 2 },
 ];
 
 /** Number of grid rows in the System Rack. */

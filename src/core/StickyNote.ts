@@ -52,15 +52,12 @@ export default class StickyNote extends Mod {
   }
 
   draw(group: Konva.Group): void {
-    const slotWidth = this.rack?.slotWidth ?? 0;
-    const slotHeight = this.rack?.slotHeight ?? 0;
-
     const PADDING = 10;
     const SCROLLBAR_W = 14;
     const textX = PADDING;
     const textY = PADDING;
-    const textW = this.width * slotWidth - PADDING * 2 - SCROLLBAR_W - 4;
-    const textH = this.height * slotHeight - PADDING * 2;
+    const textW = group.width() - PADDING * 2 - SCROLLBAR_W - 4;
+    const textH = group.height() - PADDING * 2;
     const trackX = textX + textW + 4;
 
     this.textViewportHeight = textH;
