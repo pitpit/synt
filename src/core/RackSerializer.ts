@@ -17,6 +17,7 @@ import Flanger from '../effect/Flanger';
 import Vibrato from '../effect/Vibrato';
 import Tremolo from '../effect/Tremolo';
 import Panner from '../effect/Panner';
+import Phaser from '../effect/Phaser';
 
 // ---------------------------------------------------------------------------
 // Mod registry
@@ -31,6 +32,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Keyboard,
   Knob,
   Panner,
+  Phaser,
   SawtoothOscillator,
   SineOscillator,
   Speaker,
