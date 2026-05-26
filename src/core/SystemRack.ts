@@ -37,7 +37,7 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Knob,               label: 'knob',    x: 1, y: 2 },
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },
   { Ctor: Speaker,            label: 'speaker', x: 0, y: 3 },
-  { Ctor: StickyNote as unknown as ModConstructor, label: 'note',    x: 4, y: 2 },
+  { Ctor: StickyNote, label: 'note',    x: 4, y: 2 },
 ];
 
 /** Number of grid rows in the System Rack. */
