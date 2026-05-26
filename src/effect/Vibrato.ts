@@ -25,12 +25,9 @@ export default class Vibrato extends AudioMod {
       inputSignal.node.connect(this.node);
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
     } else if (inputSignal instanceof BrokenAudioSignal) {
-      const nodeToDispose = this.node;
+      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);this.node?.dispose();
       this.node = null;
-      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(nodeToDispose);
-      if (nodeToDispose) {
-        queueMicrotask(() => { nodeToDispose.dispose(); });
-      }
+      queueMicrotask(() => { this.node?.dispose(); });
     }
 
     const controlSignal = inputSignals[PlugPosition.EAST];
