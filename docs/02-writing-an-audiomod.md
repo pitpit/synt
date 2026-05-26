@@ -110,8 +110,10 @@ onSignalChanged(inputSignals: Signals): Signals {
     inputSignal.node.connect(this.node);
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
   } else if (inputSignal instanceof BrokenAudioSignal) {
-    outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    queueMicrotask(() => { this.node?.dispose(); });
+      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
+      const nodeToDispose = this.node;
+      this.node = null;
+      queueMicrotask(() => { nodeToDispose?.dispose(); });
   }
 
   return outputSignals;
@@ -140,8 +142,10 @@ onSignalChanged(inputSignals: Signals): Signals {
 
   } else if (inputSignal instanceof BrokenAudioSignal) {
     // Upstream disconnected — propagate the break and release the node
-    outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    queueMicrotask(() => { this.node?.dispose(); });
+      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
+      const nodeToDispose = this.node;
+      this.node = null;
+      queueMicrotask(() => { nodeToDispose?.dispose(); });
   }
   // null → nothing received yet; leave outputSignals[SOUTH] as null
 

@@ -93,8 +93,10 @@ onSignalChanged(inputSignals: Signals): Signals {
     input.node.connect(this.node);
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
   } else if (input instanceof BrokenAudioSignal) {
-    outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    queueMicrotask(() => { this.node?.dispose(); });
+      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
+      const nodeToDispose = this.node;
+      this.node = null;
+      queueMicrotask(() => { nodeToDispose?.dispose(); });
   }
 
   const ctrl = inputSignals[PlugPosition.EAST];
