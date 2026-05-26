@@ -11,6 +11,7 @@ import Vibrato from '../effect/Vibrato';
 import Tremolo from '../effect/Tremolo';
 import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
+import Reverb from '../effect/Reverb';
 import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
@@ -37,6 +38,7 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Panner,             label: 'pan',     x: 3, y: 1 },
   { Ctor: Flanger,            label: 'flanger', x: 4, y: 1 },
   { Ctor: Phaser,             label: 'phaser',  x: 4, y: 1 },
+  { Ctor: Reverb,             label: 'reverb',  x: 4, y: 1 },
   { Ctor: Arpeggiator,        label: 'arp',     x: 0, y: 2 },
   { Ctor: Knob,               label: 'knob',    x: 1, y: 2 },
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },

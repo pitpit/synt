@@ -26,6 +26,8 @@ const createEffectNode = () => {
     frequency: { value: 0 },
     depth: { value: 0 },
     pan: { value: 0 },
+    wet: { value: 0 },
+    decay: 0,
     start: jest.fn().mockReturnThis(),
   };
 };
@@ -35,6 +37,7 @@ const Vibrato = jest.fn(() => createEffectNode());
 const Tremolo = jest.fn(() => createEffectNode());
 const Panner = jest.fn(() => createEffectNode());
 const Phaser = jest.fn(() => createEffectNode());
+const Reverb = jest.fn(() => createEffectNode());
 
 export {
   Gain,
@@ -44,4 +47,5 @@ export {
   Tremolo,
   Panner,
   Phaser,
+  Reverb,
 };
