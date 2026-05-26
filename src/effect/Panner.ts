@@ -26,12 +26,11 @@ export default class Panner extends AudioMod {
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
     } else if (inputSignal instanceof BrokenAudioSignal) {
       outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-      this.node = null;
       queueMicrotask(() => { this.node?.dispose(); });
     }
 
     const controlSignal = inputSignals[PlugPosition.EAST];
-    if (controlSignal instanceof ControlSignal && this.node) {
+    if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
       // Knob outputs 0–1; map to Panner's -1 (left) to +1 (right)
       this.node.pan.value = controlSignal.value * 2 - 1;
     }

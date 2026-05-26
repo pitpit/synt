@@ -111,7 +111,6 @@ onSignalChanged(inputSignals: Signals): Signals {
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
   } else if (inputSignal instanceof BrokenAudioSignal) {
     outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    this.node = null;
     queueMicrotask(() => { this.node?.dispose(); });
   }
 
@@ -148,7 +147,7 @@ onSignalChanged(inputSignals: Signals): Signals {
 
   // --- Control input (EAST) ---
   const controlSignal = inputSignals[PlugPosition.EAST];
-  if (controlSignal instanceof ControlSignal && this.node) {
+  if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
     this.node.frequency.value = controlSignal.value * 10;   // map [0, 1] → [0, 10]
   }
 

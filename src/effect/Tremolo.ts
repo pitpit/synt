@@ -26,12 +26,11 @@ export default class Tremolo extends AudioMod {
       outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
     } else if (inputSignal instanceof BrokenAudioSignal) {
       outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-      this.node = null;
       queueMicrotask(() => { this.node?.dispose(); });
     }
 
     const controlSignal = inputSignals[PlugPosition.EAST];
-    if (controlSignal instanceof ControlSignal && this.node) {
+    if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
       this.node.frequency.value = controlSignal.value * 10;
     }
 

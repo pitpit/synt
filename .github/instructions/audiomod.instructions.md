@@ -94,12 +94,11 @@ onSignalChanged(inputSignals: Signals): Signals {
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
   } else if (input instanceof BrokenAudioSignal) {
     outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    this.node = null;
     queueMicrotask(() => { this.node?.dispose(); });
   }
 
   const ctrl = inputSignals[PlugPosition.EAST];
-  if (ctrl instanceof ControlSignal && this.node) {
+  if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
     this.node.frequency.value = ctrl.value * 4000; // map 0–1 to 0–4000 Hz
   }
 
