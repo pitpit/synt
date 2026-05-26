@@ -86,8 +86,8 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] add midi
 - [ ] Keyboard input (assign a key to a switch)
 - [ ] set a direct value for a Mod
-- [ ] import / export in yaml
 - [ ] have a smaller js bundle for smaller or older device acting as a client. Ability to push a synt setup to it?
+- [X] import / export in yaml
 
 ### Modules
 
@@ -97,24 +97,23 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] Protect against link loop?
 - [ ] Add a display module (for instance, to see an oscillator wave)
 - [ ] transition sound when linking a Control Mod to avoic clicks
-- [ ] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
+- [X] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
 
 ### UX
 
-- [ ] drag'n drop new Mod in the interface
-- [ ] add a sticky note mode to write info / doc / quick tour to explain how to use the interface
-- [ ] how can we adjut a know on mobile?  edit and play modes?
+- [ ] Add several layers to put more Mods?
+- [ ] Ability to rotate Mod on Rack?
+- [X] drag'n drop new Mod in the interface
+- [X] add a sticky note mode to write info / doc / quick tour to explain how to use the interface
 - [X] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
 - [X] Responsive view on small screens
-- [ ] Add several layers to put more Mods?
-- [ ] Ability to rotate Mod on Rack
-
 ### Codebase
 
+- [ ] Enable again e2e test for firefox "AudioContext reaches running state after user gesture and Tone.start() does not reject"
 - [X] Add a public licence
 - [X] Switch from Gibberish to Tone.js?
 - [X] Improve the src/ subtree structure to make it easier to understand
-- [ ] Switch from webpack to vite
+- [X] Switch from webpack to vite
 - [X] Upgrade to last node LTS version and update dependencies
 - [X] Switch from TravisCI to Github Actions
 - [X] PlugType.CTRL should be splitted into PlugType.CTRLOUT and  PlugType.CTRLIN

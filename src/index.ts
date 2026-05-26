@@ -1,9 +1,11 @@
 import Rack from './core/Rack';
+import SystemRack from './core/SystemRack';
 import { importRack } from './core/RackSerializer';
 import BurgerMenu from './ui/BurgerMenu';
 import './index.scss';
 
 const rack = new Rack();
+rack.systemRack = new SystemRack(rack);
 
 new BurgerMenu(rack);
 // Expose programmatic API (used by e2e tests)

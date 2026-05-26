@@ -236,6 +236,7 @@ export function importRack(yamlStr: string, rack: Rack, options: ImportOptions =
     rack.stageHeight = rackHeight;
     instances.forEach(({ mod, x, y }) => rack.add(mod, x, y));
     rack.draw();
+    rack.plugAll();
   };
 
   if (options.silent) {

@@ -33,6 +33,8 @@ export default abstract class Mod {
 
   readonly events:EventEmitter = new EventEmitter();
 
+  group: Konva.Group | null = null;
+
   private lastPropagationId: string|null = null;
 
   private outputSignals: Signals = [null, null, null, null];
@@ -88,6 +90,7 @@ export default abstract class Mod {
     stageWidth: number,
     stageHeight: number,
   ): void {
+    this.group = group;
     const strokeWidth = 5;
 
     group.position({
@@ -95,50 +98,7 @@ export default abstract class Mod {
       y: this.y * slotHeight + padding,
     });
 
-    group.size({
-      width: this.width * slotWidth,
-      height: this.height * slotHeight,
-    });
-
-    const rect = new Konva.Rect({
-      x: 0 + strokeWidth / 2,
-      y: 0 + strokeWidth / 2,
-      width: this.width * slotWidth - strokeWidth,
-      height: this.height * slotHeight - strokeWidth,
-      fill: 'white',
-      stroke: 'black',
-      strokeWidth,
-      cornerRadius: 0.5,
-    });
-    group.add(rect);
-
-    if (this.label) {
-      const text = new Konva.Text({
-        x: 0,
-        y: 0,
-        width: group.width(),
-        height: group.height(),
-        text: this.label,
-        fontSize: 14,
-        fontFamily: '"Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace',
-        fill: 'black',
-        align: 'center',
-        verticalAlign: 'middle',
-      });
-      group.add(text);
-    }
-
-    this.plugs.forEach((plug: Plug, plugPosition: number) => {
-      plug.draw(
-        group,
-        plugPosition,
-        this.width,
-        this.height,
-        slotWidth,
-        slotHeight,
-        strokeWidth,
-      );
-    });
+    this.drawVisual(group, slotWidth, slotHeight);
 
     // Draw drag and drop shadow
     // See https://codepen.io/pierrebleroux/pen/gGpvxJ
@@ -181,7 +141,19 @@ export default abstract class Mod {
     let targetY = this.y;
 
     group.on('dragend', () => {
+      document.body.style.cursor = '';
+
       if (!this.rack) {
+        return;
+      }
+
+      // Check delete zone before any clamping (raw pixel coords)
+      this.events.emit('deleteZoneChange', false);
+      const deleteResult = { inDeleteZone: false };
+      this.events.emit('checkDeleteZone', group.x(), group.y(), this.width * slotWidth, this.height * slotHeight, deleteResult);
+      if (deleteResult.inDeleteZone) {
+        shadow.hide();
+        this.events.emit('delete');
         return;
       }
 
@@ -189,10 +161,11 @@ export default abstract class Mod {
       let x = Math.round(group.x() / slotWidth);
       let y = Math.round(group.y() / slotHeight);
       x = Math.max(0, Math.min(x, stageWidth - this.width));
-      y = Math.max(0, Math.min(y, stageHeight - this.height));
+      // No lower-bound clamp on y: mods dragged above rack snap back
+      y = Math.min(y, stageHeight - this.height);
 
-      if (this.rack.isBusy(x, y, this)) {
-        // Move the Mod back to its prior slot
+      if (y < 0 || this.rack.isBusy(x, y, this)) {
+        // Out of bounds (above rack) or busy: snap back to last valid position
         this.x = targetX;
         this.y = targetY;
       } else {
@@ -203,15 +176,6 @@ export default abstract class Mod {
         x: padding + this.x * slotWidth,
         y: padding + this.y * slotHeight,
       });
-
-      // Prepare dragRect for next move
-      // targetX = this.x;
-      // targetY = this.y;
-      // shadow.hide();
-      // shadow.position({
-      //   x: padding + targetX * slotWidth,
-      //   y: padding + targetY * slotHeight,
-      // });
 
       const stage = group.getStage();
       if (!stage) {
@@ -226,6 +190,32 @@ export default abstract class Mod {
       if (!this.rack) {
         return;
       }
+
+      // Check delete zone using full bounding box
+      const moveResult = { inDeleteZone: false };
+      this.events.emit('checkDeleteZone', group.x(), group.y(), this.width * slotWidth, this.height * slotHeight, moveResult);
+
+      if (moveResult.inDeleteZone) {
+        shadow.hide();
+        this.events.emit('deleteZoneChange', true);
+        group.getStage()?.batchDraw();
+        return;
+      }
+
+      this.events.emit('deleteZoneChange', false);
+
+      // Above the main rack (but not in delete zone): hide snap shadow
+      if (group.y() < 0) {
+        shadow.hide();
+        group.getStage()?.batchDraw();
+        return;
+      }
+
+      // Back in the main rack area: restore normal cursor
+      document.body.style.cursor = '';
+
+      // Restore shadow visibility if it was hidden while above rack
+      shadow.show();
 
       // Compute new position
       let x = Math.round(group.x() / slotWidth);
@@ -257,6 +247,53 @@ export default abstract class Mod {
 
     group.on('dblclick dbltap', () => {
       this.events.emit('dblclick');
+    });
+  }
+
+  /**
+   * Draw the mod visual (background rect, label, plug indicators, custom draw)
+   * into a group without setting its position or attaching drag events.
+   * Used by SystemRack to render prototype tiles with the same appearance as
+   * main-rack mods.
+   */
+  drawVisual(group: Konva.Group, slotWidth: number, slotHeight: number): void {
+    const strokeWidth = 5;
+
+    group.size({
+      width: this.width * slotWidth,
+      height: this.height * slotHeight,
+    });
+
+    const rect = new Konva.Rect({
+      x: strokeWidth / 2,
+      y: strokeWidth / 2,
+      width: this.width * slotWidth - strokeWidth,
+      height: this.height * slotHeight - strokeWidth,
+      fill: 'white',
+      stroke: 'black',
+      strokeWidth,
+      cornerRadius: 0.5,
+    });
+    group.add(rect);
+
+    if (this.label) {
+      const text = new Konva.Text({
+        x: 0,
+        y: 0,
+        width: group.width(),
+        height: group.height(),
+        text: this.label,
+        fontSize: 14,
+        fontFamily: '"Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace',
+        fill: 'black',
+        align: 'center',
+        verticalAlign: 'middle',
+      });
+      group.add(text);
+    }
+
+    this.plugs.forEach((plug: Plug, plugPosition: number) => {
+      plug.draw(group, plugPosition, this.width, this.height, slotWidth, slotHeight, strokeWidth);
     });
 
     this.draw(group);
