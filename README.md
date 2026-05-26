@@ -113,7 +113,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 #### Filters
 - [ ] VCF low-pass — 12/24 dB/oct ladder-style low-pass filter with cutoff & resonance
-- [ ] VCF high-pass — high-pass filter with cutoff control
+- [X] VCF high-pass — high-pass filter with cutoff control
 - [ ] VCF band-pass — band-pass filter with center frequency and bandwidth
 - [ ] State-variable filter (SVF) — simultaneous LP/HP/BP outputs
 - [ ] Comb filter — resonant comb / Karplus-Strong body
