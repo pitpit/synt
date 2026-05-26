@@ -23,7 +23,7 @@ This program is free software: you can redistribute it and/or modify it under th
 
 - [Architecture](docs/01-architecture.md) — core concepts, module categories, signal flow, connection rules, and design patterns
 - [Writing an AudioMod](docs/02-writing-an-audiomod.md) — step-by-step guide to implementing a new audio module
-- [Testing](docs/03-testing.md) — unit, integration, and end-to-end browser testing strategy
+- [Testing](docs/03-testing-strategy.md) — unit, integration, and end-to-end browser testing strategy
 
 ## Inspiration
 
@@ -84,9 +84,9 @@ An HTML report is generated in `playwright-report/` after each run.
 ### Real world integration
 
 - [ ] add midi
-- [ ] Keyboard input (assign a key to a switch)
-- [ ] set a direct value for a Mod
-- [ ] have a smaller js bundle for smaller or older device acting as a client. Ability to push a synt setup to it?
+- [ ] Keyboard input (assign a key to a switchOn)
+- [ ] set a direct value for a Mod?
+- [ ] have a smaller js bundle for smaller or older device acting as a client. Ability to push remotly a synt setup to it?
 - [X] import / export in yaml
 
 ### Modules
@@ -96,17 +96,19 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] implement Flanger & Reverb effects
 - [ ] Protect against link loop?
 - [ ] Add a display module (for instance, to see an oscillator wave)
-- [ ] transition sound when linking a Control Mod to avoic clicks
 - [X] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
 
 ### UX
 
+- [ ] extends the zone to rotate or swipe the knob to the outter-circle
+- [ ] extends the zone to click or tap the switchOn to the outter-square
 - [ ] Add several layers to put more Mods?
 - [ ] Ability to rotate Mod on Rack?
 - [X] drag'n drop new Mod in the interface
 - [X] add a sticky note mode to write info / doc / quick tour to explain how to use the interface
 - [X] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
 - [X] Responsive view on small screens
+
 ### Codebase
 
 - [ ] Enable again e2e test for firefox "AudioContext reaches running state after user gesture and Tone.start() does not reject"
@@ -124,3 +126,4 @@ An HTML report is generated in `playwright-report/` after each run.
 ### Documentation
 
 - [ ] How to serve it from various devices (smartphone, esp32...)
+- [ ] Testing strategy
