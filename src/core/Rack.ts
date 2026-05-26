@@ -324,6 +324,12 @@ export default class Rack {
     if (!this.layer) return;
     this.add(mod, x, y);
     this.initModInLayer(mod, this.layer);
+    mod.plug([
+      this.getFromGrid(mod.x, mod.y - 1), // North
+      this.getFromGrid(mod.x + 1, mod.y), // East
+      this.getFromGrid(mod.x, mod.y + 1), // South
+      this.getFromGrid(mod.x - 1, mod.y), // West
+    ]);
     this.layer.batchDraw();
   }
 
