@@ -34,7 +34,7 @@ export default class Knob extends Mod {
 
   constructor() {
     super();
-    this.configure([PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.CTRLOUT], 'knob');
+    this.configure([PlugType.NULL, PlugType.CTRLOUT, PlugType.NULL, PlugType.CTRLOUT], 'knob');
   }
 
   private addWheelListener(_: Konva.Group) {
@@ -56,6 +56,7 @@ export default class Knob extends Mod {
       event.preventDefault();
       this.setValue(((this.pos + this.range) / this.range) * 0.5);
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
     });
   }
 
@@ -82,6 +83,7 @@ export default class Knob extends Mod {
         const dy = startY - t.clientY;
         this.setValue(startValue + dy * this.touchSensitivity);
         this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+        this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
       };
 
       const onEnd = (endEvt: TouchEvent) => {
@@ -171,6 +173,7 @@ export default class Knob extends Mod {
     if (this.group === null) {
       this.setValue(targetValue);
       this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
       return;
     }
 
@@ -192,6 +195,7 @@ export default class Knob extends Mod {
       } else {
         this.animationFrameId = null;
         this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+        this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
       }
     };
 
@@ -199,11 +203,16 @@ export default class Knob extends Mod {
   }
 
   protected onLinked(plugPosition: number, target: Mod): void {
-    if (plugPosition !== PlugPosition.WEST) {
+    let targetPlugPosition: number;
+    if (plugPosition === PlugPosition.WEST) {
+      targetPlugPosition = PlugPosition.EAST;
+    } else if (plugPosition === PlugPosition.EAST) {
+      targetPlugPosition = PlugPosition.WEST;
+    } else {
       return;
     }
 
-    const targetControlSignal = target.getInputSignal(PlugPosition.EAST);
+    const targetControlSignal = target.getInputSignal(targetPlugPosition);
     if (targetControlSignal instanceof ControlSignal) {
       this.animateToValue(targetControlSignal.value);
     } else {

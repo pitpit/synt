@@ -18,6 +18,7 @@ import Vibrato from '../effect/Vibrato';
 import Tremolo from '../effect/Tremolo';
 import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
+import Reverb from '../effect/Reverb';
 
 // ---------------------------------------------------------------------------
 // Mod registry
@@ -33,6 +34,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Knob,
   Panner,
   Phaser,
+  Reverb,
   SawtoothOscillator,
   SineOscillator,
   Speaker,
