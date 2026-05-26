@@ -41,6 +41,7 @@
                 "type": "string",
                 "enum": [
                   "Arpeggiator",
+                  "Chorus",
                   "Flanger",
                   "Gate",
                   "Keyboard",

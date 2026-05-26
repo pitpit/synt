@@ -94,7 +94,6 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] create duplicable/instanciable modules (to build more complex instruments)
 - [ ] Add a file player Mod?
 - [ ] Protect against link loop?
-- [ ] Add a display module (for instance, to see an oscillator wave)
 - [X] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
 
 #### Oscillators & Sources
@@ -130,7 +129,7 @@ An HTML report is generated in `playwright-report/` after each run.
 #### Effects
 - [ ] Delay — echo with time, feedback, and wet/dry
 - [ ] Reverb — convolution or algorithmic reverb
-- [ ] Chorus — multi-voice pitch detune effect
+- [X] Chorus — multi-voice pitch detune effect
 - [X] Flanger — short delay with LFO modulation
 - [X] Phaser — all-pass chain swept by LFO
 - [ ] Ring modulator — amplitude modulation producing sum/difference frequencies
