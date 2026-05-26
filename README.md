@@ -102,6 +102,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 - [ ] extends the zone to rotate or swipe the knob to the outter-circle
 - [ ] extends the zone to click or tap the switchOn to the outter-square
+- [ ] on Rack, "drag" cursor when the mod can be drag, "finger" cursor when it can be click, "pan" cursor when the stage can be pan
 - [ ] Add several layers to put more Mods?
 - [ ] Ability to rotate Mod on Rack?
 - [X] drag'n drop new Mod in the interface
