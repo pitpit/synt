@@ -317,6 +317,22 @@ export default class Rack {
   }
 
   /**
+   * Wire all mods in the rack to their adjacent neighbours.
+   * Call this after a full redraw (e.g. YAML import) so that connections
+   * are established without requiring each mod to be dragged first.
+   */
+  plugAll(): void {
+    this.mods.forEach((mod) => {
+      mod.plug([
+        this.getFromGrid(mod.x, mod.y - 1), // North
+        this.getFromGrid(mod.x + 1, mod.y), // East
+        this.getFromGrid(mod.x, mod.y + 1), // South
+        this.getFromGrid(mod.x - 1, mod.y), // West
+      ]);
+    });
+  }
+
+  /**
    * Add a mod to the rack dynamically (without a full redraw),
    * preserving existing mod connections.
    */
