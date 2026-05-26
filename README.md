@@ -93,16 +93,70 @@ An HTML report is generated in `playwright-report/` after each run.
 
 - [ ] create duplicable/instanciable modules (to build more complex instruments)
 - [ ] Add a file player Mod?
-- [ ] implement Flanger & Reverb effects
 - [ ] Protect against link loop?
 - [ ] Add a display module (for instance, to see an oscillator wave)
 - [X] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
+
+#### Oscillators & Sources
+- [ ] Wavetable oscillator — playback of user-defined or preset waveforms
+- [ ] Noise generator — white, pink, and brown noise
+- [ ] Sample & Hold — periodically captures and holds an input value
+- [ ] Clock / Tempo — master clock pulse generator with BPM control
+
+#### Envelopes & Modulators
+- [ ] ADSR envelope — Attack, Decay, Sustain, Release with gate input
+- [ ] AR envelope — simple Attack/Release, loopable
+- [ ] LFO-to-CV — dedicated slow LFO with depth and rate knobs
+- [ ] Random / S&H — random voltage generator (stepped or smooth)
+- [ ] Function generator — slew-limited ramp (rise/fall times)
+- [ ] Sequencer — step sequencer with CV and gate outputs (8 or 16 steps)
+- [ ] Arpeggiator — enhanced arpeggio patterns (already exists, keep improving)
+
+#### Filters
+- [ ] VCF low-pass — 12/24 dB/oct ladder-style low-pass filter with cutoff & resonance
+- [ ] VCF high-pass — high-pass filter with cutoff control
+- [ ] VCF band-pass — band-pass filter with center frequency and bandwidth
+- [ ] State-variable filter (SVF) — simultaneous LP/HP/BP outputs
+- [ ] Comb filter — resonant comb / Karplus-Strong body
+- [ ] Formant filter — vowel-like formant shaping
+
+#### Amplifiers & Mixers
+- [ ] VCA (Voltage-Controlled Amplifier) — amplitude controlled by CV
+- [ ] Mixer — multi-channel audio/CV mixer with level knobs
+- [ ] Attenuverter — scales and inverts a CV signal
+- [ ] CV-to-Audio / Audio-to-CV level shifter
+- [ ] Crossfader — smooth crossfade between two audio sources
+
+#### Effects
+- [ ] Delay — echo with time, feedback, and wet/dry
+- [ ] Reverb — convolution or algorithmic reverb
+- [ ] Chorus — multi-voice pitch detune effect
+- [ ] Flanger — short delay with LFO modulation
+- [ ] Phaser — all-pass chain swept by LFO
+- [ ] Ring modulator — amplitude modulation producing sum/difference frequencies
+- [ ] Waveshaper / Distortion — soft-clip, hard-clip, fold-back
+- [ ] Bit crusher — sample-rate and bit-depth reduction
+- [ ] Compressor / Limiter — dynamics control with threshold, ratio, attack, release
+- [ ] Pitch shifter — real-time pitch transposition
+
+#### Utilities & Logic
+- [ ] Quantizer — snaps CV to musical scale/chord
+- [ ] Slew limiter / Portamento — smooths abrupt CV changes
+- [ ] Voltage offset / DC source — adds a constant CV offset
+- [ ] Logic gates — AND, OR, XOR, NOT for gate signals
+- [ ] Clock divider — outputs sub-divisions of a master clock
+- [ ] Trigger-to-gate / Gate-to-trigger converter
+- [ ] Pitch-to-CV — detects audio pitch and outputs a V/Oct CV
+- [ ] MIDI-to-CV — converts MIDI note/velocity/CC to CV signals
+- [ ] Multiplier / Switch — routes a signal to one of N outputs
+- [ ] Scope / Oscilloscope — visual display of an audio or CV waveform
 
 ### UX
 
 - [ ] extends the zone to rotate or swipe the knob to the outter-circle
 - [ ] extends the zone to click or tap the switchOn to the outter-square
 - [ ] on Rack, "drag" cursor when the mod can be drag, "finger" cursor when it can be click, "pan" cursor when the stage can be pan
+- [ ] import/export current value of the mod in yaml
 - [ ] Add several layers to put more Mods?
 - [ ] Ability to rotate Mod on Rack?
 - [X] drag'n drop new Mod in the interface

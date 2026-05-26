@@ -2,7 +2,7 @@
 
 This guide walks you through implementing a new `AudioMod`. For background on the architecture see [01-architecture.md](01-architecture.md).
 
-Extend `AudioMod` (rather than `Mod` directly) when your module processes or produces audio. Control-only modules such as `Knob` extend `Mod` directly.
+Extend `AudioMod` (rather than `Mod` directly) when your module processes or produces audio.
 
 ---
 
@@ -111,8 +111,7 @@ onSignalChanged(inputSignals: Signals): Signals {
     outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
   } else if (inputSignal instanceof BrokenAudioSignal) {
     outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    this.node?.dispose();
-    this.node = null;
+    queueMicrotask(() => { this.node?.dispose(); });
   }
 
   return outputSignals;
@@ -142,14 +141,13 @@ onSignalChanged(inputSignals: Signals): Signals {
   } else if (inputSignal instanceof BrokenAudioSignal) {
     // Upstream disconnected — propagate the break and release the node
     outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-    this.node?.dispose();
-    this.node = null;
+    queueMicrotask(() => { this.node?.dispose(); });
   }
   // null → nothing received yet; leave outputSignals[SOUTH] as null
 
   // --- Control input (EAST) ---
   const controlSignal = inputSignals[PlugPosition.EAST];
-  if (controlSignal instanceof ControlSignal && this.node) {
+  if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
     this.node.frequency.value = controlSignal.value * 10;   // map [0, 1] → [0, 10]
   }
 
@@ -165,9 +163,13 @@ When a module is removed or a plug is unlinked, a `BrokenAudioSignal` propagates
 
 | Module role | What to do |
 |-------------|------------|
-| **Effect** (IN → OUT) | Dispose the Tone.js node (`this.node?.dispose()`); emit `new BrokenAudioSignal(this.node)` on the output plug; set `this.node = null` |
+| **Effect** (IN → OUT) | Emit `new BrokenAudioSignal(this.node)` on the output plug, then schedule `this.node?.dispose()` via `queueMicrotask` |
 | **Sink** (IN, no OUT) | Disconnect and dispose the Tone.js node; return `[null, null, null, null]` |
 | **Pass-through** (IN → OUT, no processing) | Forward the `BrokenAudioSignal` unchanged to the output plug |
+
+### Why `queueMicrotask` for disposal?
+
+Calling `dispose()` synchronously inside `onSignalChanged` would tear down the Tone.js node while the signal is still propagating through the graph. The Web Audio API throws if you disconnect a node that is still referenced further down the same call stack. `queueMicrotask` defers the disposal to the end of the current microtask checkpoint — after propagation has fully unwound — so all downstream modules have already received the `BrokenAudioSignal` and stopped referencing the node before it is destroyed.
 
 ---
 
@@ -213,6 +215,48 @@ draw(group: Konva.Group) {
 ```
 
 `pushOutput(plugPosition, signal)` routes `signal` to the module connected on that plug and starts downstream propagation from there. This is the pattern used by `SwitchOn` to pass audio on press and cut it on release, independently of any upstream signal change.
+
+---
+
+## Registering a new module
+
+Three files must be updated for every new module.
+
+### 1. `src/core/RackSerializer.ts` — MOD_REGISTRY
+
+Import the class and add it to `MOD_REGISTRY` so it can be instantiated from a saved YAML file:
+
+```ts
+import MyModule from '../[category]/MyModule';
+
+const MOD_REGISTRY: Record<string, AnyModConstructor> = {
+  // ... existing entries ...
+  MyModule,
+};
+```
+
+### 2. `synt.schema.json` — type enum
+
+Add the class name to the `"type"` enum so YAML files are validated:
+
+```json
+"enum": ["...", "MyModule"]
+```
+
+### 3. `src/core/SystemRack.ts` — prototype palette
+
+Import the class and add an entry to `PROTOS` so the module appears in the draggable panel:
+
+```ts
+import MyModule from '../[category]/MyModule';
+
+const PROTOS: ProtoEntry[] = [
+  // ...
+  { Ctor: MyModule, label: 'mymod', x: N, y: N },
+];
+```
+
+`x` and `y` are grid column/row positions in the palette (0-based). Pick an unused cell.
 
 ---
 
