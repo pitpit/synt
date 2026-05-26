@@ -82,6 +82,7 @@ Each of the four sides of a module has a `Plug` with one of these types (defined
 |-----------|------|---------|
 | `oscillator/` | Audio generators | `AudioMod` |
 | `effect/` | Audio processors | `AudioMod` |
+| `filter/` | Audio filters | `AudioMod` |
 | `control/` | User input & signal gating | `Mod` / `AudioMod` |
 | `output/` | Audio sink | `AudioMod` |
 
@@ -106,6 +107,17 @@ The Tone.js oscillator node is created lazily on the first `onSignalChanged` cal
 - SOUTH: `OUT` (audio output)
 
 They create a Tone.js effect node on-demand, connect the incoming audio node to it, and wire up the rate from the control signal. When a `BrokenAudioSignal` arrives they call `dispose()` to release the audio node.
+
+### Filters (`filter/`)
+
+`HighPassFilter` wraps Tone.js `Filter` in `'highpass'` mode.
+
+Default plug layout:
+- NORTH: `IN` (audio input)
+- EAST: `CTRLIN` (cutoff frequency control, maps 0–1 → 0–4000 Hz)
+- SOUTH: `OUT` (audio output)
+
+The Tone.js `Filter` node is recreated each time a new upstream `AudioSignal` arrives. On `BrokenAudioSignal` the node is released via `queueMicrotask`.
 
 ### Controls (`control/`)
 

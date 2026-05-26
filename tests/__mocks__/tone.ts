@@ -33,6 +33,7 @@ const createEffectNode = () => {
 };
 
 const Chorus = jest.fn(() => createEffectNode());
+const Filter = jest.fn(() => createEffectNode());
 const Vibrato = jest.fn(() => createEffectNode());
 const Tremolo = jest.fn(() => createEffectNode());
 const Panner = jest.fn(() => createEffectNode());
@@ -43,6 +44,7 @@ export {
   Gain,
   getDestination,
   Chorus,
+  Filter,
   Vibrato,
   Tremolo,
   Panner,

@@ -13,6 +13,7 @@ import Tremolo from '../effect/Tremolo';
 import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
 import Reverb from '../effect/Reverb';
+import HighPassFilter from '../filter/HighPassFilter';
 import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
@@ -37,10 +38,11 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Gate,               label: 'gate',    x: 1, y: 1 },
   { Ctor: Tremolo,            label: 'tremolo', x: 2, y: 1 },
   { Ctor: Panner,             label: 'pan',     x: 3, y: 1 },
-  { Ctor: Chorus,             label: 'chorus',  x: 5, y: 1 },
   { Ctor: Flanger,            label: 'flanger', x: 4, y: 1 },
+  { Ctor: Chorus,             label: 'chorus',  x: 5, y: 1 },
   { Ctor: Phaser,             label: 'phaser',  x: 6, y: 1 },
   { Ctor: Reverb,             label: 'reverb',  x: 7, y: 1 },
+  { Ctor: HighPassFilter,     label: 'hp-flt',  x: 8, y: 1 },
   { Ctor: Arpeggiator,        label: 'arp',     x: 0, y: 2 },
   { Ctor: Knob,               label: 'knob',    x: 1, y: 2 },
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },
