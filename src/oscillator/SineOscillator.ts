@@ -7,7 +7,7 @@ export default class SineOscillator extends Oscillator {
     this.label = 'sine';
   }
 
-  protected createNode(): ToneOscillator {
+  protected createOutputNode(): ToneOscillator {
     return new ToneOscillator({ frequency: 220, type: 'sine' }).start();
   }
 }

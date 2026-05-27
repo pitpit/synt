@@ -1,38 +1,34 @@
 import { Oscillator as ToneOscillator } from 'tone';
-import AudioMod from '../core/AudioMod';
+import SourceMod from '../core/SourceMod';
 import PlugType from '../core/PlugType';
 import Signals from '../core/Signals';
 import ControlSignal from '../core/ControlSignal';
 import PlugPosition from '../core/PlugPosition';
-import AudioSignal from '../core/AudioSignal';
 
-export default abstract class Oscillator extends AudioMod {
-  node: ToneOscillator | null = null;
-
+export default abstract class Oscillator extends SourceMod {
   constructor() {
     super();
     this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT], 'osc');
   }
 
-  protected getDefaultOptions(): Record<string, unknown> {
-    return {
-      frequency: 220,
-    };
+  protected abstract createOutputNode(): ToneOscillator;
+
+  /**
+   * Expose the underlying Tone.js oscillator node for subclasses and tests.
+   */
+  get node(): ToneOscillator | null {
+    return this.outputNode as ToneOscillator | null;
   }
 
-  protected abstract createNode(): ToneOscillator;
-
-  onSignalChanged(inputSignals: Signals): Signals {
-    if (!this.node) {
-      this.node = this.createNode();
+  protected override mapControl(plugPosition: number, value: number): void {
+    if (plugPosition === PlugPosition.EAST) {
+      (this.outputNode as ToneOscillator).frequency.value = value * 400;
     }
-    const outputSignals: Signals = [null, null, null, null];
-    outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
+  }
 
-    const controlSignal = inputSignals[PlugPosition.EAST];
-    if (controlSignal instanceof ControlSignal) {
-      this.node.frequency.value = controlSignal.value * 400;
-    }
-    return outputSignals;
+  override onSignalChanged(inputSignals: Signals): Signals {
+    this.ensureOutputNode();
+    return super.onSignalChanged(inputSignals);
   }
 }
+

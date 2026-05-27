@@ -7,7 +7,7 @@ export default class SquareOscillator extends Oscillator {
     this.label = 'square';
   }
 
-  protected createNode(): ToneOscillator {
+  protected createOutputNode(): ToneOscillator {
     return new ToneOscillator({ frequency: 220, type: 'square' }).start();
   }
 }
