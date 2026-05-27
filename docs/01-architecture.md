@@ -21,21 +21,29 @@ onSignalChanged(inputSignals: Signals): Signals
 // return value[PlugPosition.SOUTH] → signal emitted on the south plug
 ```
 
-`AudioMod` is a thin semantic subclass of `Mod` that marks audio-processing modules (oscillators, effects, speaker). Control-only modules (e.g. `Knob`) extend `Mod` directly.
+Three specialised base classes extend `Mod` for audio-processing modules:
+
+| Class | Role |
+|-------|------|
+| `SourceMod` | Audio generators — manages a Tone.js output node; calls `connect()` on link |
+| `EffectMod` | Audio processors — manages a single Tone.js node that acts as both input and output |
+| `SinkMod` | Audio sinks — manages a `ToneGain` node connected to the system destination |
+
+Control-only modules (e.g. `Knob`) extend `Mod` directly.
 
 ---
 
 ### Signal
 
-Every value flowing between modules is a `Signal`. There are three concrete types:
+The only signal type used for inter-module communication is `ControlSignal`:
 
 | Type | Description |
 |------|-------------|
-| `AudioSignal` | Wraps a Tone.js `ToneAudioNode`. Represents an audio stream. |
-| `ControlSignal` | Carries a single numeric value (typically 0–1). Used to modulate parameters such as frequency or gain. |
-| `BrokenAudioSignal` | Wraps the last valid `ToneAudioNode` but marks it as disconnected. Propagated downstream when a module is removed or a plug is unlinked, so that downstream nodes can call `disconnect()` and clean up the audio graph. |
+| `ControlSignal` | Carries a single numeric value in the range `[0, 1]`. Used to modulate parameters such as frequency or gain. |
 
-Signals implement `eq(other: Signal): boolean` for change detection — `onSignalChanged` is only called when the incoming signal actually differs from the previous one.
+**Audio routing** does not use signals. When two audio plugs are linked, `SourceMod` and `EffectMod` call `connect()` on the underlying Tone.js node directly via the `onLinked` hook. When a plug is unlinked or a module is removed, `disconnect()` / `dispose()` are called via `onUnlinked` and `onSnatched`.
+
+`ControlSignal` implements `eq(other: Signal): boolean` for change detection — `onSignalChanged` is only called when the incoming signal actually differs from the previous one.
 
 ---
 
@@ -80,11 +88,11 @@ Each of the four sides of a module has a `Plug` with one of these types (defined
 
 | Directory | Role | Extends |
 |-----------|------|---------|
-| `oscillator/` | Audio generators | `AudioMod` |
-| `effect/` | Audio processors | `AudioMod` |
-| `filter/` | Audio filters | `AudioMod` |
-| `control/` | User input & signal gating | `Mod` / `AudioMod` |
-| `output/` | Audio sink | `AudioMod` |
+| `oscillator/` | Audio generators | `SourceMod` |
+| `effect/` | Audio processors | `EffectMod` |
+| `filter/` | Audio filters | `EffectMod` |
+| `control/` | User input & signal gating | `Mod` / `EffectMod` |
+| `output/` | Audio sink | `SinkMod` |
 
 ### Oscillators (`oscillator/`)
 
@@ -96,17 +104,17 @@ Default plug layout:
 - SOUTH: `OUT` (audio output)
 - WEST: `NULL`
 
-The Tone.js oscillator node is created lazily on the first `onSignalChanged` call and started immediately. If a `ControlSignal` is present on EAST, its value is mapped to frequency: `frequency = controlValue × 400`.
+Each concrete oscillator implements `createOutputNode()` to return the matching `ToneOscillator` type. The node is created lazily the first time the oscillator is wired into a signal chain (via `onLinked`). When a `ControlSignal` arrives on EAST, `mapControl` maps its value to frequency: `frequency = controlValue × 400`.
 
 ### Effects (`effect/`)
 
-`Tremolo` and `Vibrato` both follow the same pattern:
+All effects follow the same `EffectMod` pattern:
 
 - NORTH: `IN` (audio input)
-- EAST: `CTRLIN` (effect rate control)
+- EAST: `CTRLIN` (one or more CV control inputs)
 - SOUTH: `OUT` (audio output)
 
-They create a Tone.js effect node on-demand, connect the incoming audio node to it, and wire up the rate from the control signal. When a `BrokenAudioSignal` arrives they call `dispose()` to release the audio node.
+Each effect implements `createEffectNode()` to instantiate its Tone.js node. The node is created lazily when first linked. Tone.js `connect()` / `disconnect()` calls are handled automatically by `EffectMod` via the `onLinked` / `onUnlinked` / `onSnatched` lifecycle hooks. CV parameters are applied by overriding `mapControl(plugPosition, value)`.
 
 ### Filters (`filter/`)
 
@@ -117,25 +125,25 @@ Default plug layout:
 - EAST: `CTRLIN` (cutoff frequency control, maps 0–1 → 0–4000 Hz)
 - SOUTH: `OUT` (audio output)
 
-The Tone.js `Filter` node is recreated each time a new upstream `AudioSignal` arrives. On `BrokenAudioSignal` the node is released via `queueMicrotask`.
+`HighPassFilter` extends `EffectMod`. The Tone.js `Filter` node is created lazily on first link and managed by the base class lifecycle hooks. The `mapControl` override maps the CV value to the filter's `frequency` parameter.
 
 ### Controls (`control/`)
 
 | Module | Plug layout | Behaviour |
 |--------|-------------|-----------|
 | `Knob` | WEST: `CTRLOUT` | Mouse-wheel or vertical touch-drag changes value in [0, 1]. Emits a `ControlSignal`. |
-| `Gate` | NORTH: `IN`, SOUTH: `OUT` | Transparent pass-through — forwards any signal unchanged. |
-| `SwitchOn` | NORTH: `IN`, SOUTH: `OUT` | Press/hold to pass audio; release emits `BrokenAudioSignal` to cut the downstream chain. |
+| `Gate` | NORTH: `IN`, SOUTH: `OUT` | Extends `EffectMod` with a `ToneGain(1)` effect node — audio passes through at full volume. |
+| `SwitchOn` | NORTH: `IN`, SOUTH: `OUT` | Extends `EffectMod` with a `ToneGain(0)` — `pressOn()` sets gain to 1; `pressOff()` sets gain to 0. |
 | `Keyboard` | WEST: `CTRLOUT` | Visual keyboard display; reserved for future MIDI/keyboard input. |
 
 ### Output (`output/`)
 
-`Speaker` is the terminal sink. It has no output plugs:
+`Speaker` extends `SinkMod`. It has no output plugs:
 
 - NORTH: `IN` (audio input)
 - EAST: `CTRLIN` (optional gain, 0–1)
 
-On receiving an `AudioSignal` it creates a `Tone.Gain` node, connects the incoming audio node to it, and connects the gain node to the Tone.js destination (system output). On `BrokenAudioSignal` it calls `dispose()` to release the nodes.
+`SinkMod` lazily creates a `ToneGain` node connected to `getDestination()` (the system audio output) the first time an upstream plug is linked. When the `CTRLIN` receives a `ControlSignal`, the gain value is updated in real time.
 
 ---
 
@@ -148,10 +156,29 @@ classDiagram
         +onSignalChanged(inputs) Signals
         +start()
         +plug()
+        #onLinked(plugPosition, target)
+        #onUnlinked(plugPosition, prev)
+        #onSnatched()
     }
-    class AudioMod
+    class SourceMod {
+        <<abstract>>
+        #createOutputNode() ToneAudioNode
+        +audioOutputNode ToneAudioNode
+    }
+    class EffectMod {
+        <<abstract>>
+        #createEffectNode() ToneAudioNode
+        +node ToneAudioNode
+        +audioInputNode ToneAudioNode
+        +audioOutputNode ToneAudioNode
+    }
+    class SinkMod {
+        <<abstract>>
+        +audioInputNode ToneAudioNode
+    }
     class Oscillator {
         <<abstract>>
+        +node ToneOscillator
     }
     class SineOscillator
     class SquareOscillator
@@ -159,6 +186,12 @@ classDiagram
     class TriangleOscillator
     class Tremolo
     class Vibrato
+    class Reverb
+    class Phaser
+    class Chorus
+    class Flanger
+    class Panner
+    class HighPassFilter
     class Speaker
     class SwitchOn
     class Gate
@@ -166,16 +199,24 @@ classDiagram
     class Keyboard
     class StickyNote
 
-    Mod <|-- AudioMod
-    Mod <|-- Gate
+    Mod <|-- SourceMod
+    Mod <|-- EffectMod
+    Mod <|-- SinkMod
     Mod <|-- Knob
     Mod <|-- Keyboard
     Mod <|-- StickyNote
-    AudioMod <|-- Oscillator
-    AudioMod <|-- Tremolo
-    AudioMod <|-- Vibrato
-    AudioMod <|-- Speaker
-    AudioMod <|-- SwitchOn
+    SourceMod <|-- Oscillator
+    EffectMod <|-- Tremolo
+    EffectMod <|-- Vibrato
+    EffectMod <|-- Reverb
+    EffectMod <|-- Phaser
+    EffectMod <|-- Chorus
+    EffectMod <|-- Flanger
+    EffectMod <|-- Panner
+    EffectMod <|-- HighPassFilter
+    EffectMod <|-- Gate
+    EffectMod <|-- SwitchOn
+    SinkMod <|-- Speaker
     Oscillator <|-- SineOscillator
     Oscillator <|-- SquareOscillator
     Oscillator <|-- SawtoothOscillator
@@ -186,29 +227,40 @@ classDiagram
 
 ## Signal Flow & Propagation
 
-Synt uses a **push-based** propagation model. When any module's state changes (e.g. a knob is turned, a plug is connected), propagation starts from the **entry modules** and pushes signals downstream.
+Synt uses two separate mechanisms for audio and control signals.
+
+### Audio routing (Tone.js graph wiring)
+
+Audio never travels as a message between modules. When two audio plugs are **linked**, `SourceMod` or `EffectMod` calls `connect()` on the Tone.js node immediately via `onLinked`:
+
+```
+oscillator.plug([null, null, speaker, null])
+  → oscillator.onLinked(SOUTH, speaker)
+  → oscillator.outputNode.connect(speaker.audioInputNode)
+```
+
+When a plug is **unlinked** or a module is **snatched** (removed), `disconnect()` / `dispose()` are called via `onUnlinked` and `onSnatched`.
+
+### Control routing (push-based propagation)
+
+`ControlSignal` values propagate through the graph using a push model. When a knob is turned:
+
+```
+Knob (entry)
+  │  start() / pushOutput(WEST, controlSignal)
+  ▼
+onSignalChanged(inputs) → output Signals
+  │  pushOutput(plugPosition, signal)
+  ▼
+Connected module
+  │  ...and so on
+```
 
 ### Entry modules
 
 A module is an *entry* if it has at least one linked output plug (`OUT` or `CTRLOUT`) and no linked input plugs (`IN` or `CTRLIN`). Oscillators and knobs are the typical entries.
 
 `findEntries()` walks upstream from any module by following input plugs until it reaches modules with no inputs — those are the entries.
-
-### Propagation steps
-
-```
-Entry module
-  │  start()
-  ▼
-onSignalChanged(inputs) → output Signals
-  │  pushOutput(plugPosition, signal)
-  ▼
-Linked module's plug
-  │  pushInput(plugPosition, signal)
-  ▼
-onSignalChanged(inputs) → output Signals
-  │  ...and so on
-```
 
 ### Deduplication
 
@@ -234,17 +286,11 @@ Connections are validated by `Plug.isLinkable()` before any link is established.
 
 ### Lazy Tone.js node creation
 
-Modules don't allocate a Tone.js audio node in their constructor. The node is created the first time `onSignalChanged` is called with a valid input, deferring resource allocation until the module is actually wired into a live signal chain.
+Modules don't allocate a Tone.js audio node in their constructor. The node is created lazily the first time `onLinked` fires (i.e. when the module is wired into a live audio chain), deferring resource allocation until it is needed.
 
-### Graceful disconnection via `BrokenAudioSignal`
+### Topology-driven audio graph management
 
-When a plug is unlinked or a module is moved, the upstream plug emits a `BrokenAudioSignal` (wrapping the last known `ToneAudioNode`). Each downstream module that receives it:
-
-1. Detects `instanceof BrokenAudioSignal`
-2. Calls `dispose()` on its Tone.js node (which disconnects all connections)
-3. Forwards the `BrokenAudioSignal` further downstream
-
-This prevents orphaned audio nodes and avoids audible glitches from dangling connections.
+When plugs are connected or disconnected, `SourceMod` and `EffectMod` call `connect()` / `disconnect()` on the Tone.js nodes directly via the lifecycle hooks `onLinked`, `onUnlinked`, and `onSnatched`. When a module is removed (`snatch()`), `onSnatched()` calls `dispose()` on its Tone.js node, releasing all Web Audio resources cleanly.
 
 ### Change detection
 
