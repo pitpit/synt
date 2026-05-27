@@ -58,7 +58,7 @@ export default class Speaker extends SinkMod {
   protected override mapControl(plugPosition: number, value: number): void {
     if (plugPosition === PlugPosition.EAST) {
       this.gain = value;
-      (this.audioInputNode as ToneGain).gain.value = value;
+      (this.audioInputNode).gain.value = value;
     }
   }
 }
