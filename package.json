@@ -42,10 +42,9 @@
     "tone": "^15.1.22",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0",
+    "unzipper": "^0.12.3",
     "vite": "^8.0.14",
-    "vite-plugin-css-injected-by-js": "^5.0.1",
-    "http-server": "^14.1.0",
-    "unzipper": "^0.12.3"
+    "vite-plugin-css-injected-by-js": "^5.0.1"
   },
   "overrides": {
     "serialize-javascript": ">=7.0.3",

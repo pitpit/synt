@@ -13,7 +13,7 @@ const testYaml = readFileSync(join(__dirname, '../../../public/test.synt.yaml'),
  * so they are registered prior to navigation.
  */
 export async function gotoTestRack(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/synt/');
   await page.waitForLoadState('networkidle');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await page.evaluate((yaml) => (window as any).synt.importRack(yaml), testYaml);

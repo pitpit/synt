@@ -34,7 +34,7 @@ Each oscillator-integration file imports a `TestOscillator` (defined alongside t
 ## Layer 3 – E2E tests (`tests/e2e/`)
 
 **Runner:** Playwright (`npm run test:e2e`)
-**Server:** Vite production build served by `http-server` on port 8080.
+**Server:** Vite production build served by `vite preview` on port 8080.
 
 `npm run test:e2e` runs `npm run build` first, guaranteeing the `dist/` folder exists before Playwright starts.
 

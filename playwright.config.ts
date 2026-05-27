@@ -71,19 +71,20 @@ export default defineConfig({
   reporter: [['html'], ['list']],
 
   use: {
-    baseURL: 'http://localhost:8080',
+    baseURL: 'http://localhost:8080/synt/',
     screenshot: 'only-on-failure',
     //video: 'retain-on-failure',
   },
 
   /**
-   * Serve the production build with http-server.
+   * Serve the production build with `vite preview` so that the `/synt/` base
+   * path (set in vite.config.ts for GitHub Pages) is handled correctly.
    * `test:e2e` runs `npm run build` before `playwright test`, so dist/ is
    * guaranteed to exist when Playwright starts.
    */
   webServer: {
-    command: 'npx http-server dist -p 8080 -s',
-    url: 'http://localhost:8080',
+    command: 'npx vite preview --port 8080',
+    url: 'http://localhost:8080/synt/',
     reuseExistingServer: !process.env.CI,
   },
 
