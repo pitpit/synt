@@ -29,6 +29,7 @@ export default defineConfig(async () => {
     server: {
       port: 9000,
       open: true,
+      host: '0.0.0.0'
     },
   };
 });

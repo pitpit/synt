@@ -119,14 +119,18 @@ export default abstract class Mod {
     }
     layer.add(shadow);
 
-    group.on('mouseover', () => {
-      document.body.style.cursor = 'pointer';
+    group.on('mouseenter', () => {
+      if (!group.draggable()) return;
+      document.body.style.cursor = 'grab';
     });
-    group.on('mouseout', () => {
-      document.body.style.cursor = 'default';
+    group.on('mouseleave', () => {
+      if (!group.draggable()) return;
+      if (group.isDragging()) return;
+      document.body.style.cursor = '';
     });
 
     group.on('dragstart', () => {
+      document.body.style.cursor = 'grab';
       shadow.show();
       shadow.moveToTop();
       group.moveToTop();
@@ -210,8 +214,8 @@ export default abstract class Mod {
         return;
       }
 
-      // Back in the main rack area: restore normal cursor
-      document.body.style.cursor = '';
+      // Keep drag cursor locked until dragend
+      document.body.style.cursor = 'grab';
 
       // Restore shadow visibility if it was hidden while above rack
       shadow.show();

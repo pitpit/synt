@@ -10,9 +10,6 @@ export default class Knob extends Mod {
   /** Value change per pixel for touch (0.05 = 20 px covers 0→1). */
   touchSensitivity: number = 0.005;
 
-  /** Wheel scaling factor (pos units per normalised-delta pixel). */
-  wheelSensitivity: number = 0.5;
-
   value: number = 0.5;
 
   /** Accumulated rotation position in the range [-range, +range], shared between wheel and touch handlers. */
@@ -23,6 +20,10 @@ export default class Knob extends Mod {
   centerX: number = 0;
 
   centerY: number = 0;
+
+  outerCircle: Konva.Circle|null = null;
+
+  interactionCircle: Konva.Circle|null = null;
 
   innerCircle: Konva.Circle|null = null;
 
@@ -37,33 +38,61 @@ export default class Knob extends Mod {
     this.configure([PlugType.NULL, PlugType.CTRLOUT, PlugType.NULL, PlugType.CTRLOUT], 'knob');
   }
 
-  private addWheelListener(_: Konva.Group) {
-    if (!this.innerCircle) return;
-    this.innerCircle.on('wheel', (e) => {
-      // Stop the event from reaching the stage zoom handler
+  private addMouseDragListener(group: Konva.Group) {
+    if (!this.interactionCircle) return;
+    let isAdjusting = false;
+
+    this.interactionCircle.on('mouseenter', () => {
+      document.body.style.cursor = 'pointer';
+    });
+
+    this.interactionCircle.on('mouseleave', () => {
+      if (isAdjusting) return;
+      document.body.style.cursor = 'grab';
+    });
+
+    this.interactionCircle.on('mousedown', (e) => {
+      if (e.evt.button !== 0) return;
+
+      // Capture pointer: prevent stage pan/zoom and mod drag while adjusting.
       e.cancelBubble = true;
-      const event = e.evt;
-      // Normalize across deltaMode: 0=pixels, 1=lines (~16px each), 2=pages
-      const normalizedDelta = event.deltaMode === 1
-        ? event.deltaY * 16
-        : event.deltaY;
-      this.pos -= normalizedDelta * this.wheelSensitivity;
-      if (this.pos < -this.range) {
-        this.pos = -this.range;
-      } else if (this.pos > this.range) {
-        this.pos = this.range;
-      }
-      event.preventDefault();
-      this.setValue(((this.pos + this.range) / this.range) * 0.5);
-      this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
-      this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
+      group.draggable(false);
+      isAdjusting = true;
+      document.body.style.cursor = 'pointer';
+
+      const startY = e.evt.clientY;
+      const startValue = this.value;
+
+      const onMove = (moveEvt: MouseEvent) => {
+        moveEvt.preventDefault();
+        const dy = startY - moveEvt.clientY;
+        this.setValue(startValue + dy * this.touchSensitivity);
+        this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+        this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
+      };
+
+      const onEnd = () => {
+        isAdjusting = false;
+        group.draggable(true);
+        const pointerPosition = group.getStage()?.getPointerPosition();
+        if (pointerPosition && this.interactionCircle?.intersects(pointerPosition)) {
+          document.body.style.cursor = 'pointer';
+        } else {
+          document.body.style.cursor = 'grab';
+        }
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onEnd);
+      };
+
+      window.addEventListener('mousemove', onMove, { passive: false });
+      window.addEventListener('mouseup', onEnd);
     });
   }
 
   private addTouchListener(group: Konva.Group) {
-    if (!this.innerCircle) return;
+    if (!this.interactionCircle) return;
 
-    this.innerCircle.on('touchstart', (e) => {
+    this.interactionCircle.on('touchstart', (e) => {
       if (e.evt.touches.length !== 1) return;
       // Capture touch: prevent stage pan and mod drag
       e.cancelBubble = true;
@@ -100,12 +129,19 @@ export default class Knob extends Mod {
   }
 
   private drawKnob(group:Konva.Group) {
-    const circle = new Konva.Circle({
+    this.outerCircle = new Konva.Circle({
       x: this.centerX,
       y: this.centerY,
       radius: 24,
       stroke: 'black',
       strokeWidth: 4,
+    });
+
+    this.interactionCircle = new Konva.Circle({
+      x: this.centerX,
+      y: this.centerY,
+      radius: 24,
+      fill: 'rgba(0, 0, 0, 0.001)',
     });
 
     this.innerCircle = new Konva.Circle({
@@ -120,9 +156,10 @@ export default class Knob extends Mod {
       fill: 'white',
     });
 
-    group.add(circle);
+    group.add(this.outerCircle);
     group.add(this.innerCircle);
     group.add(this.pinCircle);
+    group.add(this.interactionCircle);
     this.updatePinCirclePosition();
   }
 
@@ -226,7 +263,9 @@ export default class Knob extends Mod {
     this.group = group;
 
     this.drawKnob(group);
-    this.addWheelListener(group);
-    this.addTouchListener(group);
+    if (this.rack !== null) {
+      this.addMouseDragListener(group);
+      this.addTouchListener(group);
+    }
   }
 }

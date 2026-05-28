@@ -7,6 +7,8 @@ import PlugType from '../core/PlugType';
 export default class SwitchOn extends EffectMod {
   private subgroup: Konva.Group | null = null;
 
+  private interactionRect: Konva.Rect | null = null;
+
   private insideRect: Konva.Rect | null = null;
 
   constructor() {
@@ -19,26 +21,41 @@ export default class SwitchOn extends EffectMod {
   }
 
   private drawSwitchOn(group: Konva.Group) {
-    let padding: number = 30;
+    const outerPadding = 30;
+    const innerPadding = outerPadding + 5;
+    const width = group.width() - outerPadding * 2;
+    const height = group.height() - outerPadding * 2;
 
     this.subgroup = new Konva.Group();
     const outsideRect = new Konva.Rect({
-      x: padding,
-      y: padding,
-      width: group.width() - padding * 2,
-      height: group.height() - padding * 2,
+      name: 'switch-on-outer',
+      x: outerPadding,
+      y: outerPadding,
+      width,
+      height,
       cornerRadius: 5,
       stroke: 'black',
       strokeWidth: 3,
     });
     this.subgroup.add(outsideRect);
 
-    padding += 5;
+    this.interactionRect = new Konva.Rect({
+      name: 'switch-on-interaction',
+      x: outerPadding,
+      y: outerPadding,
+      width,
+      height,
+      cornerRadius: 5,
+      fill: 'rgba(0, 0, 0, 0.001)',
+      strokeEnabled: false,
+    });
+
     const insideRect = new Konva.Rect({
-      x: padding,
-      y: padding,
-      width: group.width() - padding * 2,
-      height: group.height() - padding * 2,
+      name: 'switch-on-inner',
+      x: innerPadding,
+      y: innerPadding,
+      width: group.width() - innerPadding * 2,
+      height: group.height() - innerPadding * 2,
       cornerRadius: 2.5,
       stroke: 'black',
       fill: 'black',
@@ -46,12 +63,21 @@ export default class SwitchOn extends EffectMod {
     });
     this.insideRect = insideRect;
     this.subgroup.add(insideRect);
+    this.subgroup.add(this.interactionRect);
 
     group.add(this.subgroup);
   }
 
   private addTouchListener(group: Konva.Group) {
-    if (!this.insideRect) return;
+    if (!this.interactionRect) return;
+
+    this.interactionRect.on('mouseenter', () => {
+      document.body.style.cursor = 'pointer';
+    });
+
+    this.interactionRect.on('mouseleave', () => {
+      document.body.style.cursor = 'grab';
+    });
 
     const pressOn = () => {
       (this.ensureEffectNode() as ToneGain).gain.value = 1;
@@ -61,16 +87,25 @@ export default class SwitchOn extends EffectMod {
       (this.ensureEffectNode() as ToneGain).gain.value = 0;
     };
 
-    this.insideRect.on('mousedown', pressOn);
-    this.insideRect.on('mouseup', pressOff);
-
-    this.insideRect.on('touchstart', (e) => {
+    this.interactionRect.on('mousedown', (e) => {
       e.cancelBubble = true;
       group.draggable(false);
       pressOn();
     });
 
-    this.insideRect.on('touchend', (e) => {
+    this.interactionRect.on('mouseup', (e) => {
+      e.cancelBubble = true;
+      group.draggable(true);
+      pressOff();
+    });
+
+    this.interactionRect.on('touchstart', (e) => {
+      e.cancelBubble = true;
+      group.draggable(false);
+      pressOn();
+    });
+
+    this.interactionRect.on('touchend', (e) => {
       e.cancelBubble = true;
       group.draggable(true);
       pressOff();
@@ -79,6 +114,8 @@ export default class SwitchOn extends EffectMod {
 
   draw(group: Konva.Group) {
     this.drawSwitchOn(group);
-    this.addTouchListener(group);
+    if (this.rack !== null) {
+      this.addTouchListener(group);
+    }
   }
 }
