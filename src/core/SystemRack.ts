@@ -224,11 +224,12 @@ export default class SystemRack {
     let grabOffsetY = 0;
     let ghost: Konva.Group | null = null;
 
-    protoGroup.on('mouseover', () => {
+    protoGroup.on('mouseenter', () => {
       document.body.style.cursor = 'grab';
     });
-    protoGroup.on('mouseout', () => {
-      document.body.style.cursor = 'default';
+    protoGroup.on('mouseleave', () => {
+      if (ghost) return;
+      document.body.style.cursor = '';
     });
 
     protoGroup.on('mousedown touchstart', (e) => {
@@ -237,6 +238,7 @@ export default class SystemRack {
       // Prevent browser scroll / default touch behaviour
       (e.evt as Event).preventDefault();
       rack.stage.draggable(false);
+      document.body.style.cursor = 'grab';
 
       const layerPos = layer.getRelativePointerPosition();
       if (!layerPos) return;
@@ -316,6 +318,7 @@ export default class SystemRack {
 
         rack.stage.off('.sysghost');
         rack.stage.draggable(true);
+        document.body.style.cursor = '';
 
         if (snapHighlight) {
           snapHighlight.destroy();
