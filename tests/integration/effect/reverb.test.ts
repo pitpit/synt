@@ -1,7 +1,5 @@
 import Speaker from '../../../src/output/Speaker';
 import Reverb from '../../../src/effect/Reverb';
-import AudioSignal from '../../../src/core/AudioSignal';
-import BrokenAudioSignal from '../../../src/core/BrokenAudioSignal';
 import ControlSignal from '../../../src/core/ControlSignal';
 import PlugPosition from '../../../src/core/PlugPosition';
 import Knob from '../../../src/control/Knob';
@@ -11,16 +9,13 @@ test('1 oscillator + 1 reverb + 1 speaker', () => {
   const oscillator = new TestOscillator();
   const reverb = new Reverb();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'connect');
 
   oscillator.plug([null, null, null, null]);
   reverb.plug([oscillator, null, null, null]);
   speaker.plug([reverb, null, null, null]);
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new AudioSignal(reverb.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(reverb.node);
+  expect(reverb.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('1 oscillator + 1 reverb + 1 speaker - snatch reverb does not throw', () => {
@@ -35,43 +30,38 @@ test('1 oscillator + 1 reverb + 1 speaker - snatch reverb does not throw', () =>
   expect(() => { reverb.snatch(); }).not.toThrow();
 });
 
-test('1 oscillator + 1 reverb + 1 speaker - snatch reverb disconnects speaker', async () => {
+test('1 oscillator + 1 reverb + 1 speaker - snatch reverb disconnects', () => {
   const oscillator = new TestOscillator();
   const reverb = new Reverb();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   oscillator.plug([null, null, null, null]);
   reverb.plug([oscillator, null, null, null]);
   speaker.plug([reverb, null, null, null]);
 
-  const nodeBeforeSnatch = reverb.node;
+  const reverbNode = reverb.node;
+  const speakerGain = speaker.audioInputNode;
   reverb.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new BrokenAudioSignal(nodeBeforeSnatch));
-
-  await Promise.resolve(); // flush queueMicrotask to trigger deferred dispose
-  expect(nodeBeforeSnatch?.dispose).toHaveBeenCalledTimes(1);
-
-  spy.mockRestore();
+  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(reverbNode);
+  expect(reverbNode?.disconnect).toHaveBeenCalledWith(speakerGain);
+  expect(reverbNode?.dispose).toHaveBeenCalledTimes(1);
 });
 
-test('1 oscillator + 1 reverb + 1 speaker - snatch oscillator disconnects speaker', () => {
+test('1 oscillator + 1 reverb + 1 speaker - snatch oscillator does not throw', () => {
   const oscillator = new TestOscillator();
   const reverb = new Reverb();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   oscillator.plug([null, null, null, null]);
   reverb.plug([oscillator, null, null, null]);
   speaker.plug([reverb, null, null, null]);
 
+  const oscNode = oscillator.node;
+  const reverbNode = reverb.node;
+
   expect(() => { oscillator.snatch(); }).not.toThrow();
-
-  expect(spy).toHaveBeenCalledTimes(1);
-
-  spy.mockRestore();
+  expect(oscNode?.disconnect).toHaveBeenCalledWith(reverbNode);
 });
 
 test('CV on EAST sets reverb decay', () => {
@@ -107,3 +97,4 @@ test('CV on WEST sets reverb wet value', () => {
 
   expect(reverb.node?.wet.value).toBe(0.75);
 });
+

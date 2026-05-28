@@ -1,167 +1,146 @@
 import Speaker from '../../../src/output/Speaker';
-import AudioSignal from '../../../src/core/AudioSignal';
-import BrokenAudioSignal from '../../../src/core/BrokenAudioSignal';
+import ControlSignal from '../../../src/core/ControlSignal';
+import PlugPosition from '../../../src/core/PlugPosition';
 import TestOscillator from '../oscillator/TestOscillator';
 import Gate from '../../../src/control/Gate';
 import Knob from '../../../src/control/Knob';
-import ControlSignal from '../../../src/core/ControlSignal';
-import PlugPosition from '../../../src/core/PlugPosition';
 
 test('1 oscillator + 1 speaker', () => {
   const oscillator = new TestOscillator();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'connect');
 
   oscillator.plug([null, null, null, null]);
   speaker.plug([oscillator, null, null, null]);
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new AudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('1 speaker + 1 oscillator', () => {
   const oscillator = new TestOscillator();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'connect');
 
   speaker.plug([null, null, null, null]);
   oscillator.plug([null, null, speaker, null]);
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new AudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('1 oscillator + 1 speaker - 1 speaker', () => {
   const oscillator = new TestOscillator();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   oscillator.plug([null, null, null, null]);
   speaker.plug([oscillator, null, null, null]);
+
+  const speakerGain = speaker.audioInputNode;
   speaker.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(speakerGain);
+  expect(speakerGain.dispose).toHaveBeenCalledTimes(1);
 });
 
 test('1 oscillator + 1 speaker - 1 oscillator', () => {
   const oscillator = new TestOscillator();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   oscillator.plug([null, null, null, null]);
   speaker.plug([oscillator, null, null, null]);
+
+  const oscNode = oscillator.node;
+  const speakerGain = speaker.audioInputNode;
   oscillator.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscNode?.disconnect).toHaveBeenCalledWith(speakerGain);
 });
 
 test('1 oscillator + 1 gate + 1 speaker', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'connect');
 
   oscillator.plug([null, null, null, null]);
   gate.plug([oscillator, null, null, null]);
   speaker.plug([gate, null, null, null]);
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new AudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(gate.audioInputNode);
+  expect(gate.audioOutputNode.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('1 oscillator + 1 speaker + 1 gate', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'connect');
 
   oscillator.plug([null, null, null, null]);
   speaker.plug([gate, null, null, null]);
   gate.plug([oscillator, null, speaker, null]);
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new AudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(gate.audioInputNode);
+  expect(gate.audioOutputNode.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('1 speaker + 1 gate + 1 oscillator', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'connect');
 
   speaker.plug([null, null, null, null]);
   gate.plug([null, null, speaker, null]);
   oscillator.plug([null, null, gate, null]);
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(new AudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(gate.audioInputNode);
+  expect(gate.audioOutputNode.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('1 speaker + 1 gate + 1 oscillator - 1 oscillator', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   speaker.plug([null, null, null, null]);
   gate.plug([null, null, speaker, null]);
   oscillator.plug([null, null, gate, null]);
+
+  const oscNode = oscillator.node;
+  const gateNode = gate.audioInputNode;
   oscillator.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscNode?.disconnect).toHaveBeenCalledWith(gateNode);
 });
 
 test('1 speaker + 1 gate + 1 oscillator - 1 gate', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   speaker.plug([null, null, null, null]);
   gate.plug([null, null, speaker, null]);
   oscillator.plug([null, null, gate, null]);
+
+  const gateNode = gate.audioInputNode;
+  const speakerGain = speaker.audioInputNode;
   gate.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(gateNode);
+  expect(gateNode.disconnect).toHaveBeenCalledWith(speakerGain);
+  expect(gateNode.dispose).toHaveBeenCalledTimes(1);
 });
 
 test('1 speaker + 1 gate + 1 oscillator - 1 speaker', () => {
   const oscillator = new TestOscillator();
   const gate = new Gate();
   const speaker = new Speaker();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   speaker.plug([null, null, null, null]);
   gate.plug([null, null, speaker, null]);
   oscillator.plug([null, null, gate, null]);
+
+  const gateNode = gate.audioInputNode;
+  const speakerGain = speaker.audioInputNode;
   speaker.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(gateNode.disconnect).toHaveBeenCalledWith(speakerGain);
+  expect(speakerGain.dispose).toHaveBeenCalledTimes(1);
 });
 
 test('1 oscillator + 1 speaker + 1 knob', () => {
@@ -177,7 +156,7 @@ test('1 oscillator + 1 speaker + 1 knob', () => {
   const controlSignal = new ControlSignal(0.5);
   knob.pushOutput(PlugPosition.WEST, controlSignal);
 
-  expect(spy).toHaveBeenCalledTimes(2);
+  expect(spy).toHaveBeenCalledTimes(1);
   expect(spy).toHaveBeenLastCalledWith([null, controlSignal, null, null]);
 
   spy.mockRestore();
@@ -187,7 +166,6 @@ test('1 oscillator + 1 speaker  + 1 knob - 1 oscillator', () => {
   const oscillator = new TestOscillator();
   const speaker = new Speaker();
   const knob = new Knob();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   oscillator.plug([null, null, null, null]);
   speaker.plug([oscillator, null, null, null]);
@@ -196,19 +174,17 @@ test('1 oscillator + 1 speaker  + 1 knob - 1 oscillator', () => {
   const controlSignal = new ControlSignal(0.5);
   knob.pushOutput(PlugPosition.WEST, controlSignal);
 
+  const oscNode = oscillator.node;
+  const speakerGain = speaker.audioInputNode;
   oscillator.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscNode?.disconnect).toHaveBeenCalledWith(speakerGain);
 });
 
 test('1 oscillator + 1 speaker  + 1 knob - 1 speaker', () => {
   const oscillator = new TestOscillator();
   const speaker = new Speaker();
   const knob = new Knob();
-  const spy = jest.spyOn(speaker, 'disconnect');
 
   oscillator.plug([null, null, null, null]);
   speaker.plug([oscillator, null, null, null]);
@@ -217,12 +193,11 @@ test('1 oscillator + 1 speaker  + 1 knob - 1 speaker', () => {
   const controlSignal = new ControlSignal(0.5);
   knob.pushOutput(PlugPosition.WEST, controlSignal);
 
+  const speakerGain = speaker.audioInputNode;
   speaker.snatch();
 
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(new BrokenAudioSignal(oscillator.node));
-
-  spy.mockRestore();
+  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(speakerGain);
+  expect(speakerGain.dispose).toHaveBeenCalledTimes(1);
 });
 
 test('new knob recalls previous control signal value on speaker connect', () => {

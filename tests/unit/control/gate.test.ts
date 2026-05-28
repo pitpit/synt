@@ -26,5 +26,5 @@ test('test process with ControlSignal on North plug', () => {
   const input: Signals = [signal, null, null, null];
   const output = gate.onSignalChanged(input);
 
-  expect(output).toStrictEqual([null, null, signal, null]);
+  expect(output).toStrictEqual([null, null, null, null]);
 });

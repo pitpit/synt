@@ -1,42 +1,89 @@
-# Writing an AudioMod
+# Writing an Audio Module
 
-This guide walks you through implementing a new `AudioMod`. For background on the architecture see [01-architecture.md](01-architecture.md).
+This guide walks you through implementing a new audio module. For background on the architecture see [01-architecture.md](01-architecture.md).
 
-Extend `AudioMod` (rather than `Mod` directly) when your module processes or produces audio.
+Choose the base class that matches your module's role:
+
+| Base class | Use for |
+|------------|---------|
+| `SourceMod` | Audio generators (oscillators, noise sources) |
+| `EffectMod` | Audio processors (effects, filters, gates) |
+| `SinkMod` | Audio sinks (speaker output) |
+
+Control-only modules (e.g. `Knob`) extend `Mod` directly.
 
 ---
 
-## Minimal skeleton
+## Source modules (`SourceMod`)
 
-Every `AudioMod` needs five things:
+Extend `SourceMod` for modules that **produce** audio with no audio input.
 
 ```ts
+import { Oscillator as ToneOscillator } from 'tone';
 import type { ToneAudioNode } from 'tone';
-import AudioMod from '../core/AudioMod';
+import SourceMod from '../core/SourceMod';
 import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
-import Signals from '../core/Signals';
-import AudioSignal from '../core/AudioSignal';
-import BrokenAudioSignal from '../core/BrokenAudioSignal';
-import ControlSignal from '../core/ControlSignal';
 
-export default class MyEffect extends AudioMod {
-  node: ToneAudioNode | null = null;  // (1) Tone.js audio node — created lazily
-
+export default class MySineOscillator extends SourceMod {
   constructor() {
     super();
-    this.configure(                   // (2) declare plug layout
-      [PlugType.IN, PlugType.CTRLIN, PlugType.OUT],
-      'my-effect',                    //     optional label
-    );
+    this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT], 'osc');
   }
 
-  onSignalChanged(inputSignals: Signals): Signals {  // (3) signal logic
-    const outputSignals: Signals = [null, null, null, null];
-    // ... your logic here ...
-    return outputSignals;
+  protected createOutputNode(): ToneAudioNode {
+    return new ToneOscillator({ frequency: 220, type: 'sine' }).start();
+  }
+
+  protected override mapControl(plugPosition: number, value: number): void {
+    if (plugPosition === PlugPosition.EAST) {
+      (this.outputNode as ToneOscillator).frequency.value = value * 400;
+    }
   }
 }
+```
+
+`SourceMod` calls `createOutputNode()` lazily the first time the module is linked downstream. When a `ControlSignal` arrives on any plug, `mapControl` is called automatically with the plug position and value in `[0, 1]`.
+
+`SourceMod` does not provide a `get node()` helper. If you maintain an abstract family (like `Oscillator`) and need a strongly typed node getter for subclasses/tests, add it in that family class.
+
+---
+
+## Effect modules (`EffectMod`)
+
+Extend `EffectMod` for modules that **process** audio — they have both an audio input and an audio output.
+
+```ts
+import { Tremolo as ToneTremolo } from 'tone';
+import type { ToneAudioNode } from 'tone';
+import EffectMod from '../core/EffectMod';
+import PlugType from '../core/PlugType';
+import PlugPosition from '../core/PlugPosition';
+
+export default class MyTremolo extends EffectMod {
+  constructor() {
+    super();
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'tremolo');
+  }
+
+  protected createEffectNode(): ToneAudioNode {
+    return new ToneTremolo(8, 1).start();
+  }
+
+  protected override mapControl(plugPosition: number, value: number): void {
+    if (plugPosition === PlugPosition.EAST) {
+      (this.effectNode as ToneTremolo).frequency.value = value * 10;
+    }
+  }
+}
+```
+
+`EffectMod` calls `createEffectNode()` lazily when first linked. The single effect node serves as both `audioInputNode` and `audioOutputNode`. Tone.js node wiring is handled automatically by the base class lifecycle hooks (`onLinked`, `onUnlinked`, `onSnatched`).
+
+The `get node()` getter (returns `ToneAudioNode | null`) is provided by `EffectMod` — **do not redeclare it**. Cast to the specific type inside `mapControl`:
+
+```ts
+(this.effectNode as ToneTremolo).frequency.value = value * 10;
 ```
 
 ---
@@ -54,9 +101,9 @@ this.configure(plugTypes, label?, width?, height?)
 | `0` | NORTH | Audio or control **input** |
 | `1` | EAST | **Control** input |
 | `2` | SOUTH | Audio or control **output** |
-| `3` | WEST | Rarely used |
+| `3` | WEST | Rarely used — second control input |
 
-Trailing `PlugType.NULL` entries can be omitted — unset positions accept no connections. `label` is the text shown on the module tile. `width` and `height` are the number of grid slots the module occupies (default: 1 × 1).
+Trailing `PlugType.NULL` entries can be omitted. `label` is the text shown on the module tile. `width` and `height` are the number of grid slots the module occupies (default: 1 × 1).
 
 ```ts
 // Source — no audio input, control on EAST, audio out on SOUTH
@@ -65,115 +112,45 @@ this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT], 'osc');
 // Effect — audio in on NORTH, control on EAST, audio out on SOUTH
 this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'tremolo');
 
+// Effect with two CV inputs (EAST + WEST)
+// [NORTH: IN, EAST: CTRLIN, SOUTH: OUT, WEST: CTRLIN]
+this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.CTRLIN], 'reverb');
+
 // Sink — audio in and control in, no output, 2-slot wide
 this.configure([PlugType.IN, PlugType.CTRLIN], 'speaker', 2);
 ```
 
 ---
 
-## Two Tone.js node init patterns
+## CV Mapping Conventions
 
-### 1. Lazy-once (source modules)
+Scale `ControlSignal.value` (always `[0, 1]`) to the Tone.js parameter range inside `mapControl`:
 
-Create the Tone.js node the first time `onSignalChanged` is called and reuse it for the lifetime of the module. No upstream audio input is needed.
-
-```ts
-onSignalChanged(inputSignals: Signals): Signals {
-  if (!this.node) {
-    this.node = new ToneOscillator({ frequency: 220, type: 'sine' }).start();
-  }
-
-  const outputSignals: Signals = [null, null, null, null];
-  outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
-
-  const controlSignal = inputSignals[PlugPosition.EAST];
-  if (controlSignal instanceof ControlSignal) {
-    this.node.frequency.value = controlSignal.value * 400;
-  }
-
-  return outputSignals;
-}
-```
-
-### 2. Recreate on input (processor / effect modules)
-
-Dispose any existing node and create a fresh one each time a new upstream `AudioSignal` arrives. Explicitly connect the upstream node to the new effect node.
-
-```ts
-onSignalChanged(inputSignals: Signals): Signals {
-  const outputSignals: Signals = [null, null, null, null];
-  const inputSignal = inputSignals[PlugPosition.NORTH];
-
-  if (inputSignal instanceof AudioSignal && inputSignal.node) {
-    this.node?.dispose();
-    this.node = new ToneTremolo(8, 1).start() as ToneTremolo;
-    inputSignal.node.connect(this.node);
-    outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
-  } else if (inputSignal instanceof BrokenAudioSignal) {
-      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-      const nodeToDispose = this.node;
-      this.node = null;
-      queueMicrotask(() => { nodeToDispose?.dispose(); });
-  }
-
-  return outputSignals;
-}
-```
+| Parameter | Typical mapping |
+|-----------|----------------|
+| Oscillator pitch (Hz) | `value * 400` |
+| Effect rate / modulation (Hz) | `value * 10` |
+| Filter cutoff (Hz) | `value * 4000` |
+| Panning | `(value * 2) - 1` → `-1` (left) to `+1` (right) |
+| Gain / amplitude | `value` (0–1 linear) |
+| Reverb decay (s) | `value * 10` |
 
 ---
 
-## `onSignalChanged` template
+## Event-driven modules (`pushOutput`)
 
-Full annotated template covering every case:
+If your module emits control signals in response to user interactions — rather than upstream signal changes — call `pushOutput()` directly from a `draw()` event handler:
 
 ```ts
-onSignalChanged(inputSignals: Signals): Signals {
-  const outputSignals: Signals = [null, null, null, null];
-
-  // --- Audio input (NORTH) ---
-  const inputSignal = inputSignals[PlugPosition.NORTH];
-
-  if (inputSignal instanceof AudioSignal && inputSignal.node) {
-    // Valid audio arriving — dispose old node, create and connect a fresh one
-    this.node?.dispose();
-    this.node = new ToneTremolo(8, 1).start() as ToneTremolo;
-    inputSignal.node.connect(this.node);
-    outputSignals[PlugPosition.SOUTH] = new AudioSignal(this.node);
-
-  } else if (inputSignal instanceof BrokenAudioSignal) {
-    // Upstream disconnected — propagate the break and release the node
-      outputSignals[PlugPosition.SOUTH] = new BrokenAudioSignal(this.node);
-      const nodeToDispose = this.node;
-      this.node = null;
-      queueMicrotask(() => { nodeToDispose?.dispose(); });
-  }
-  // null → nothing received yet; leave outputSignals[SOUTH] as null
-
-  // --- Control input (EAST) ---
-  const controlSignal = inputSignals[PlugPosition.EAST];
-  if (controlSignal instanceof ControlSignal && this.node && !this.node.disposed) {
-    this.node.frequency.value = controlSignal.value * 10;   // map [0, 1] → [0, 10]
-  }
-
-  return outputSignals;
+draw(group: Konva.Group) {
+  group.on('mousedown', () => {
+    this.pushOutput(PlugPosition.WEST, new ControlSignal(1));
+  });
+  group.on('mouseup', () => {
+    this.pushOutput(PlugPosition.WEST, new ControlSignal(0));
+  });
 }
 ```
-
----
-
-## `BrokenAudioSignal` propagation rules
-
-When a module is removed or a plug is unlinked, a `BrokenAudioSignal` propagates downstream. Every module in the chain must handle it:
-
-| Module role | What to do |
-|-------------|------------|
-| **Effect** (IN → OUT) | Emit `new BrokenAudioSignal(this.node)` on the output plug, then schedule `this.node?.dispose()` via `queueMicrotask` |
-| **Sink** (IN, no OUT) | Disconnect and dispose the Tone.js node; return `[null, null, null, null]` |
-| **Pass-through** (IN → OUT, no processing) | Forward the `BrokenAudioSignal` unchanged to the output plug |
-
-### Why `queueMicrotask` for disposal?
-
-Calling `dispose()` synchronously inside `onSignalChanged` would tear down the Tone.js node while the signal is still propagating through the graph. The Web Audio API throws if you disconnect a node that is still referenced further down the same call stack. `queueMicrotask` defers the disposal to the end of the current microtask checkpoint — after propagation has fully unwound — so all downstream modules have already received the `BrokenAudioSignal` and stopped referencing the node before it is destroyed.
 
 ---
 
@@ -196,29 +173,6 @@ draw(group: Konva.Group) {
 ```
 
 `draw()` is called once from `init()`, after the background rectangle and plug indicators are added.
-
----
-
-## `pushOutput()` for event-driven modules
-
-`onSignalChanged` is invoked by the propagation system in response to upstream changes. If your module needs to emit a signal at an arbitrary time — for example from a user interaction — call `this.pushOutput()` directly from a `draw()` event handler:
-
-```ts
-draw(group: Konva.Group) {
-  group.on('mousedown', () => {
-    if (this.signal) {
-      this.pushOutput(PlugPosition.SOUTH, this.signal);
-    }
-  });
-  group.on('mouseup', () => {
-    if (this.signal instanceof AudioSignal) {
-      this.pushOutput(PlugPosition.SOUTH, new BrokenAudioSignal(this.signal.node));
-    }
-  });
-}
-```
-
-`pushOutput(plugPosition, signal)` routes `signal` to the module connected on that plug and starts downstream propagation from there. This is the pattern used by `SwitchOn` to pass audio on press and cut it on release, independently of any upstream signal change.
 
 ---
 
@@ -266,36 +220,69 @@ const PROTOS: ProtoEntry[] = [
 
 ## Testing
 
-Integration tests live in `tests/integration/` and mirror the `src/` directory structure. The Tone.js mock at `tests/__mocks__/tone.ts` is wired automatically by Jest via `moduleNameMapper` and keeps tests free of Web Audio API dependencies.
+Integration tests live in `tests/integration/` and mirror the `src/` directory structure. The Tone.js mock at `tests/__mocks__/tone.ts` is wired automatically by Jest via `moduleNameMapper`.
 
-### Test helper
+### TestOscillator helper (source modules)
 
-For modules that wrap a Tone.js node it is easiest to pre-seed `this.node` with a plain object stub cast to the appropriate type. For source modules (lazy-once pattern) this prevents `createNode()` from being called:
+Override `createOutputNode()` with a stub that exposes `connect`, `disconnect`, and `dispose` as `jest.fn()`:
 
 ```ts
-// tests/integration/effect/TestMyEffect.ts
-import type { ToneAudioNode } from 'tone';
-import MyEffect from '../../../src/effect/MyEffect';
+// tests/integration/oscillator/TestMySineOscillator.ts
+import { Oscillator as ToneOscillator } from 'tone';
+import MySineOscillator from '../../../src/oscillator/MySineOscillator';
 
-export default class TestMyEffect extends MyEffect {
-  constructor() {
-    super();
-    this.node = { frequency: { value: 0 } } as unknown as ToneAudioNode;
+export default class TestMySineOscillator extends MySineOscillator {
+  protected createOutputNode(): ToneOscillator {
+    return {
+      frequency: { value: 0 },
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+      dispose: jest.fn(),
+    } as unknown as ToneOscillator;
   }
 }
 ```
 
-For effect modules that recreate the node inside `onSignalChanged` (recreate-on-input pattern), add the relevant Tone.js class to `tests/__mocks__/tone.ts`:
+### Effect integration test pattern
+
+Integration tests verify Tone.js graph wiring — that node `connect()` / `disconnect()` are called on the right audio nodes when plugs are linked/unlinked:
 
 ```ts
-const MyEffect = jest.fn((freq, depth) => ({
-  frequency: { value: freq },
-  depth: { value: depth },
+test('1 oscillator + 1 effect + 1 speaker', () => {
+  const oscillator = new TestOscillator();
+  const effect = new MyTremolo();
+  const speaker = new Speaker();
+
+  oscillator.plug([null, null, null, null]);
+  effect.plug([oscillator, null, null, null]);
+  speaker.plug([effect, null, null, null]);
+
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(effect.audioInputNode);
+  expect(effect.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
+});
+
+test('snatch oscillator', () => {
+  // ... setup and plug ...
+  const oscNode = oscillator.node;
+  oscillator.snatch();
+
+  expect(oscNode?.disconnect).toHaveBeenCalledWith(effect.audioInputNode);
+});
+```
+
+### Adding effect mocks to the Tone.js mock
+
+If your effect uses a Tone.js class not yet in `tests/__mocks__/tone.ts`, add it:
+
+```ts
+const MyEffect = jest.fn(() => ({
+  frequency: { value: 0 },
   connect: jest.fn(),
   disconnect: jest.fn(),
   dispose: jest.fn(),
   start: jest.fn().mockReturnThis(),
 }));
 
-export { MyEffect, Gain, getDestination };
+export { MyEffect, /* existing exports */ };
 ```
+

@@ -7,7 +7,7 @@ export default class TriangleOscillator extends Oscillator {
     this.label = 'triangle';
   }
 
-  protected createNode(): ToneOscillator {
+  protected createOutputNode(): ToneOscillator {
     return new ToneOscillator({ frequency: 220, type: 'triangle' }).start();
   }
 }

@@ -7,8 +7,7 @@ import PlugType from './PlugType';
 import PlugPosition from './PlugPosition';
 import Signals from './Signals';
 import { Signal } from './Signal';
-import BrokenAudioSignal from './BrokenAudioSignal';
-import AudioSignal from './AudioSignal';
+
 
 export default abstract class Mod {
   /**
@@ -389,12 +388,30 @@ export default abstract class Mod {
   }
 
   /**
+   * Hook called when a link from this mod to a previously connected mod is broken.
+   * Subclasses can override it to disconnect Tone.js nodes or clean up state.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onUnlinked(plugPosition: number, prev: Mod): void {
+    // Do nothing by default
+  }
+
+  /**
+   * Hook called after all plugs have been unlinked in snatch().
+   * Subclasses can override it to dispose Tone.js nodes.
+   */
+  protected onSnatched(): void {
+    // Do nothing by default
+  }
+
+  /**
    * TODO move it to Plugs or Plug
    */
   unlink(plugPosition: number): void {
     const plug = this.plugs.getPlug(plugPosition);
     if (plug.mod) {
       const { mod } = plug;
+      this.onUnlinked(plugPosition, mod);
       plug.mod = null;
       // Notify e2e tests that a plug connection was removed.
       window.dispatchEvent(new CustomEvent('test:mod:unlink'));
@@ -429,39 +446,14 @@ export default abstract class Mod {
 
   /**
    * Snatch current Mod from linked Mods.
-   * then it unlinks each plug.
+   * Unlinks each plug (triggering onUnlinked hooks for Tone.js cleanup),
+   * then calls onSnatched() for final node disposal.
    */
   snatch(): void {
-    // this.plugs.resetUntriggeredLinkedInput();
-
-    this.plugs.forEach((plug: Plug, plugPosition: number) => {
-      this.breakSignal(plugPosition);
-    });
-
-    this.plugs.forEach((plug: Plug, plugPosition: number) => {
+    this.plugs.forEach((_plug: Plug, plugPosition: number) => {
       this.unlink(plugPosition);
     });
-
-    // Redo propagation
-    // const outputSignals: Signals = this.processInputs(this.inputSignals);
-    // this.pushOutputs(outputSignals);
-  }
-
-  /**
-   * break the signal on a given plug
-   */
-  private breakSignal(plugPosition: number) {
-    const plug = this.plugs.getPlug(plugPosition);
-    if (plug.isInput()) {
-      const previousSignal = this.inputSignals[plugPosition];
-      if (previousSignal instanceof AudioSignal) {
-        const signal = new BrokenAudioSignal(previousSignal.node);
-        this.pushInput(plugPosition, signal);
-      }
-    } else if (plug.mod && plug.isOutput()) {
-      const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-      plug.mod.breakSignal(oppositePlugPosition);
-    }
+    this.onSnatched();
   }
 
   private static generateProcessId(): string {
@@ -487,15 +479,19 @@ export default abstract class Mod {
 
     let outputSignals: Signals;
     const oldInputSignal = this.inputSignals[plugPosition];
-    const inputSignals: Signals = [null, null, null, null];
-    inputSignals[plugPosition] = inputSignal;
+    this.inputSignals[plugPosition] = inputSignal;
     if (inputSignal && oldInputSignal && inputSignal.eq(oldInputSignal)) {
       // Do not recompute output but propagate it directly
       outputSignals = this.outputSignals;
     } else {
-      outputSignals = this.processInputs(inputSignals);
+      const snapshot: Signals = [
+        this.inputSignals[0],
+        this.inputSignals[1],
+        this.inputSignals[2],
+        this.inputSignals[3],
+      ];
+      outputSignals = this.processInputs(snapshot);
     }
-    this.inputSignals[plugPosition] = inputSignal;
 
     this.pushOutputs(outputSignals);
   }

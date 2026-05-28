@@ -7,7 +7,7 @@ export default class SawtoothOscillator extends Oscillator {
     this.label = 'saw';
   }
 
-  protected createNode(): ToneOscillator {
+  protected createOutputNode(): ToneOscillator {
     return new ToneOscillator({ frequency: 220, type: 'sawtooth' }).start();
   }
 }

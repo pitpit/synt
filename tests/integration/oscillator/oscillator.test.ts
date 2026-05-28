@@ -1,5 +1,4 @@
 import Knob from '../../../src/control/Knob';
-import AudioSignal from '../../../src/core/AudioSignal';
 import ControlSignal from '../../../src/core/ControlSignal';
 import PlugPosition from '../../../src/core/PlugPosition';
 import TestOscillator from './TestOscillator';
@@ -18,9 +17,7 @@ test('1 oscillator + 1 knob', () => {
 
   expect(spy).toHaveBeenCalledTimes(2);
   expect(spy).toHaveBeenLastCalledWith([null, controlSignal, null, null]);
-  expect(spy).toHaveReturnedTimes(2);
-  expect(spy).toHaveLastReturnedWith([null, null, new AudioSignal(oscillator.node), null]);
-  expect(oscillator.node.frequency.value).toBe(200);
+  expect(oscillator.node?.frequency.value).toBe(200);
 
   spy.mockRestore();
 });
@@ -38,5 +35,5 @@ test('new knob recalls previous control signal value on connect', () => {
 
   expect(secondKnob.value).toBeCloseTo(0.8);
   expect(secondKnob.pos).toBeCloseTo(secondKnob.range * (2 * 0.8 - 1));
-  expect(oscillator.node.frequency.value).toBeCloseTo(320);
+  expect(oscillator.node?.frequency.value).toBeCloseTo(320);
 });

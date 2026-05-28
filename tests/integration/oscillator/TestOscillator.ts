@@ -6,15 +6,11 @@ const makeStubNode = () => ({
   frequency: { value: 0 },
   connect: jest.fn(),
   disconnect: jest.fn(),
+  dispose: jest.fn(),
 }) as unknown as ToneOscillator;
 
 export default class TestOscillator extends Oscillator {
-  constructor() {
-    super();
-    this.node = makeStubNode();
-  }
-
-  protected createNode(): ToneOscillator {
+  protected createOutputNode(): ToneOscillator {
     return makeStubNode();
   }
 }

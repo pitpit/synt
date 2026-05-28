@@ -1,18 +1,15 @@
-import Mod from '../core/Mod';
+import { Gain as ToneGain } from 'tone';
+import type { ToneAudioNode } from 'tone';
+import EffectMod from '../core/EffectMod';
 import PlugType from '../core/PlugType';
-import Signals from '../core/Signals';
-import PlugPosition from '../core/PlugPosition';
 
-export default class Gate extends Mod {
+export default class Gate extends EffectMod {
   constructor() {
     super();
     this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
   }
 
-  onSignalChanged(inputSignals: Signals): Signals {
-    const outputSignals: Signals = [null, null, null, null];
-    const inputSignal = inputSignals[PlugPosition.NORTH];
-    outputSignals[PlugPosition.SOUTH] = inputSignal || null;
-    return outputSignals;
+  protected createEffectNode(): ToneAudioNode {
+    return new ToneGain(1);
   }
 }

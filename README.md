@@ -165,6 +165,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 ### Codebase
 
+- [X] use vite preview instead of http-server for e2e tests
 - [ ] Enable again e2e test for firefox "AudioContext reaches running state after user gesture and Tone.start() does not reject"
 - [X] Add a public licence
 - [X] Switch from Gibberish to Tone.js?
