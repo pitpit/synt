@@ -81,6 +81,8 @@ items.forEach(function(item) { process(item); });
 - No floating promises — always `await` or explicitly `.catch()` async calls.
 - No unused variables (warn).
 
+Project override: `@typescript-eslint/no-unused-vars` is configured as a warning (not an error), which is useful for temporary scaffolding while iterating.
+
 ## Running the Linter
 
 ```sh

@@ -25,7 +25,7 @@ Three specialised base classes extend `Mod` for audio-processing modules:
 
 | Class | Role |
 |-------|------|
-| `SourceMod` | Audio generators — manages a Tone.js output node; calls `connect()` on link |
+| `SourceMod` | Audio generators — manages a Tone.js output node and wires it during lifecycle hooks |
 | `EffectMod` | Audio processors — manages a single Tone.js node that acts as both input and output |
 | `SinkMod` | Audio sinks — manages a `ToneGain` node connected to the system destination |
 
@@ -33,15 +33,13 @@ Control-only modules (e.g. `Knob`) extend `Mod` directly.
 
 ---
 
-### Signal
+### ControlSignal
 
-The only signal type used for inter-module communication is `ControlSignal`:
+`ControlSignal` carries a single numeric value in the range `[0, 1]`. Used to modulate parameters such as frequency or gain.
 
-| Type | Description |
-|------|-------------|
-| `ControlSignal` | Carries a single numeric value in the range `[0, 1]`. Used to modulate parameters such as frequency or gain. |
+**Audio routing** does not use signals. When two audio plugs are linked, `SourceMod` and `EffectMod` wire the underlying Tone.js nodes via `onLinked`. When a plug is unlinked or a module is removed, nodes are unwired/disposed via `onUnlinked` and `onSnatched`.
 
-**Audio routing** does not use signals. When two audio plugs are linked, `SourceMod` and `EffectMod` call `connect()` on the underlying Tone.js node directly via the `onLinked` hook. When a plug is unlinked or a module is removed, `disconnect()` / `dispose()` are called via `onUnlinked` and `onSnatched`.
+`connect()` / `disconnect()` are Tone.js node methods, not public methods on `Mod` instances.
 
 `ControlSignal` implements `eq(other: Signal): boolean` for change detection — `onSignalChanged` is only called when the incoming signal actually differs from the previous one.
 
@@ -114,7 +112,7 @@ All effects follow the same `EffectMod` pattern:
 - EAST: `CTRLIN` (one or more CV control inputs)
 - SOUTH: `OUT` (audio output)
 
-Each effect implements `createEffectNode()` to instantiate its Tone.js node. The node is created lazily when first linked. Tone.js `connect()` / `disconnect()` calls are handled automatically by `EffectMod` via the `onLinked` / `onUnlinked` / `onSnatched` lifecycle hooks. CV parameters are applied by overriding `mapControl(plugPosition, value)`.
+Each effect implements `createEffectNode()` to instantiate its Tone.js node. The node is created lazily when first linked. Tone.js node wiring is handled automatically by `EffectMod` via the `onLinked` / `onUnlinked` / `onSnatched` lifecycle hooks. CV parameters are applied by overriding `mapControl(plugPosition, value)`.
 
 ### Filters (`filter/`)
 
@@ -131,10 +129,11 @@ Default plug layout:
 
 | Module | Plug layout | Behaviour |
 |--------|-------------|-----------|
-| `Knob` | WEST: `CTRLOUT` | Mouse-wheel or vertical touch-drag changes value in [0, 1]. Emits a `ControlSignal`. |
-| `Gate` | NORTH: `IN`, SOUTH: `OUT` | Extends `EffectMod` with a `ToneGain(1)` effect node — audio passes through at full volume. |
-| `SwitchOn` | NORTH: `IN`, SOUTH: `OUT` | Extends `EffectMod` with a `ToneGain(0)` — `pressOn()` sets gain to 1; `pressOff()` sets gain to 0. |
-| `Keyboard` | WEST: `CTRLOUT` | Visual keyboard display; reserved for future MIDI/keyboard input. |
+| `Knob` | NORTH: `NULL`, EAST: `CTRLOUT`, SOUTH: `NULL`, WEST: `CTRLOUT` | Mouse-wheel or vertical touch-drag changes value in [0, 1]. Emits a `ControlSignal` from both EAST and WEST. |
+| `Arpeggiator` | NORTH: `NULL`, EAST: `CTRLIN`, SOUTH: `NULL`, WEST: `CTRLOUT` | Emits a stepped `ControlSignal` sequence; EAST control input maps 0–1 to the arpeggio clock interval. |
+| `Gate` | NORTH: `IN`, EAST: `NULL`, SOUTH: `OUT`, WEST: `NULL` | Extends `EffectMod` with a `ToneGain(1)` effect node — audio passes through at full volume. |
+| `SwitchOn` | NORTH: `IN`, EAST: `NULL`, SOUTH: `OUT`, WEST: `NULL` | Extends `EffectMod` with a `ToneGain(0)` — press on/off toggles gain between 1 and 0. |
+| `Keyboard` | NORTH: `NULL`, EAST: `NULL`, SOUTH: `NULL`, WEST: `CTRLOUT` | Visual keyboard display; in `src/control/Keyboard.ts` the exported class is currently named `Knob`. |
 
 ### Output (`output/`)
 
@@ -142,6 +141,8 @@ Default plug layout:
 
 - NORTH: `IN` (audio input)
 - EAST: `CTRLIN` (optional gain, 0–1)
+- SOUTH: `NULL`
+- WEST: `NULL`
 
 `SinkMod` lazily creates a `ToneGain` node connected to `getDestination()` (the system audio output) the first time an upstream plug is linked. When the `CTRLIN` receives a `ControlSignal`, the gain value is updated in real time.
 
@@ -196,6 +197,7 @@ classDiagram
     class SwitchOn
     class Gate
     class Knob
+    class Arpeggiator
     class Keyboard
     class StickyNote
 
@@ -203,6 +205,7 @@ classDiagram
     Mod <|-- EffectMod
     Mod <|-- SinkMod
     Mod <|-- Knob
+    Mod <|-- Arpeggiator
     Mod <|-- Keyboard
     Mod <|-- StickyNote
     SourceMod <|-- Oscillator
@@ -231,7 +234,7 @@ Synt uses two separate mechanisms for audio and control signals.
 
 ### Audio routing (Tone.js graph wiring)
 
-Audio never travels as a message between modules. When two audio plugs are **linked**, `SourceMod` or `EffectMod` calls `connect()` on the Tone.js node immediately via `onLinked`:
+Audio never travels as a message between modules. When two audio plugs are **linked**, `SourceMod` or `EffectMod` wires the Tone.js node immediately via `onLinked`:
 
 ```
 oscillator.plug([null, null, speaker, null])
@@ -239,7 +242,7 @@ oscillator.plug([null, null, speaker, null])
   → oscillator.outputNode.connect(speaker.audioInputNode)
 ```
 
-When a plug is **unlinked** or a module is **snatched** (removed), `disconnect()` / `dispose()` are called via `onUnlinked` and `onSnatched`.
+When a plug is **unlinked** or a module is **snatched** (removed), nodes are unwired/disposed via `onUnlinked` and `onSnatched`.
 
 ### Control routing (push-based propagation)
 
@@ -290,7 +293,7 @@ Modules don't allocate a Tone.js audio node in their constructor. The node is cr
 
 ### Topology-driven audio graph management
 
-When plugs are connected or disconnected, `SourceMod` and `EffectMod` call `connect()` / `disconnect()` on the Tone.js nodes directly via the lifecycle hooks `onLinked`, `onUnlinked`, and `onSnatched`. When a module is removed (`snatch()`), `onSnatched()` calls `dispose()` on its Tone.js node, releasing all Web Audio resources cleanly.
+When plugs are connected or disconnected, `SourceMod` and `EffectMod` wire and unwire Tone.js nodes via the lifecycle hooks `onLinked`, `onUnlinked`, and `onSnatched`. When a module is removed (`snatch()`), `onSnatched()` calls `dispose()` on its Tone.js node, releasing all Web Audio resources cleanly.
 
 ### Change detection
 

@@ -23,11 +23,11 @@ Unit tests cover individual module classes in isolation. Real source classes are
 
 **Runner:** Jest (same `npm test` invocation as unit tests)
 
-Integration tests wire two or more real module instances together through the plug system, verifying that `plug()` / `snatch()` correctly wires and unwires the Tone.js audio graph. Assertions check that `connect()` and `disconnect()` are called on the right nodes — audio routing is topology-driven, not signal-driven.
+Integration tests wire two or more real module instances together through the plug system, verifying that `plug()` / `snatch()` correctly wires and unwires the Tone.js audio graph. Assertions check node-level `connect()` and `disconnect()` calls on the right audio nodes, and module-specific tests also verify CV mapping behaviour (for example, knob-driven parameter updates).
 
 ### Helper fixtures
 
-Each oscillator-integration file imports a `TestOscillator` (defined alongside the tests) that extends the real oscillator class and overrides `createOutputNode()` with a minimal stub exposing `connect`, `disconnect`, and `dispose` as `jest.fn()`, keeping tests fast while exercising the real `plug()` / `snatch()` topology.
+Each oscillator-integration file imports a `TestOscillator` (defined alongside the tests) that extends the real oscillator class and overrides `createOutputNode()` with a lightweight stub node exposing `connect`, `disconnect`, `dispose`, and a `frequency` value. This keeps tests fast while exercising the real `plug()` / `snatch()` topology.
 
 ---
 

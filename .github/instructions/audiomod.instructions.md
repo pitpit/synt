@@ -45,6 +45,8 @@ this.configure([PlugType.IN, PlugType.CTRLIN], 'speaker', 2);
 
 Override `createOutputNode()` to return the Tone.js node. The base class calls it lazily the first time the module is linked downstream.
 
+`SourceMod` does not provide a built-in `get node()` getter. If your module family needs a strongly typed getter for tests (as `Oscillator` does), declare it in that family base class.
+
 ```ts
 import { Oscillator as ToneOscillator } from 'tone';
 import type { ToneAudioNode } from 'tone';
@@ -72,7 +74,7 @@ export default class MySineOscillator extends SourceMod {
 
 ## Implementing `EffectMod`
 
-Override `createEffectNode()` to return the Tone.js node. Tone.js `connect()` / `disconnect()` and node lifecycle are managed automatically by `EffectMod` lifecycle hooks.
+Override `createEffectNode()` to return the Tone.js node. Tone.js node wiring and lifecycle are managed automatically by `EffectMod` lifecycle hooks.
 
 ```ts
 import { Tremolo as ToneTremolo } from 'tone';
@@ -152,7 +154,7 @@ const PROTOS: ProtoEntry[] = [
 
 ## Testing
 
-Integration tests live in `tests/integration/` mirroring `src/`. The Tone.js mock at `tests/__mocks__/tone.ts` is wired via `moduleNameMapper` in Jest config. Tests verify Tone.js graph wiring — that `connect()` / `disconnect()` are called on the right nodes.
+Integration tests live in `tests/integration/` mirroring `src/`. The Tone.js mock at `tests/__mocks__/tone.ts` is wired via `moduleNameMapper` in Jest config. Tests verify Tone.js graph wiring — that node-level `connect()` / `disconnect()` are called on the right audio nodes.
 
 ### TestOscillator helper (source modules)
 
@@ -187,7 +189,7 @@ test('1 oscillator + 1 effect + 1 speaker', () => {
   speaker.plug([effect, null, null, null]);
 
   expect(oscillator.node?.connect).toHaveBeenCalledWith(effect.audioInputNode);
-  expect(effect.audioOutputNode.connect).toHaveBeenCalledWith(speaker.audioInputNode);
+  expect(effect.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('snatch oscillator', () => {

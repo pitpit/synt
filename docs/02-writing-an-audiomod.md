@@ -45,6 +45,8 @@ export default class MySineOscillator extends SourceMod {
 
 `SourceMod` calls `createOutputNode()` lazily the first time the module is linked downstream. When a `ControlSignal` arrives on any plug, `mapControl` is called automatically with the plug position and value in `[0, 1]`.
 
+`SourceMod` does not provide a `get node()` helper. If you maintain an abstract family (like `Oscillator`) and need a strongly typed node getter for subclasses/tests, add it in that family class.
+
 ---
 
 ## Effect modules (`EffectMod`)
@@ -76,7 +78,7 @@ export default class MyTremolo extends EffectMod {
 }
 ```
 
-`EffectMod` calls `createEffectNode()` lazily when first linked. The single effect node serves as both `audioInputNode` and `audioOutputNode`. Tone.js `connect()` / `disconnect()` calls are handled automatically by the base class lifecycle hooks (`onLinked`, `onUnlinked`, `onSnatched`).
+`EffectMod` calls `createEffectNode()` lazily when first linked. The single effect node serves as both `audioInputNode` and `audioOutputNode`. Tone.js node wiring is handled automatically by the base class lifecycle hooks (`onLinked`, `onUnlinked`, `onSnatched`).
 
 The `get node()` getter (returns `ToneAudioNode | null`) is provided by `EffectMod` — **do not redeclare it**. Cast to the specific type inside `mapControl`:
 
@@ -110,7 +112,8 @@ this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT], 'osc');
 // Effect — audio in on NORTH, control on EAST, audio out on SOUTH
 this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'tremolo');
 
-// Effect with two CV inputs — audio in, EAST + WEST control inputs, audio out
+// Effect with two CV inputs (EAST + WEST)
+// [NORTH: IN, EAST: CTRLIN, SOUTH: OUT, WEST: CTRLIN]
 this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.CTRLIN], 'reverb');
 
 // Sink — audio in and control in, no output, 2-slot wide
@@ -242,7 +245,7 @@ export default class TestMySineOscillator extends MySineOscillator {
 
 ### Effect integration test pattern
 
-Integration tests verify Tone.js graph wiring — that `connect()` / `disconnect()` are called on the right nodes when plugs are linked/unlinked:
+Integration tests verify Tone.js graph wiring — that node `connect()` / `disconnect()` are called on the right audio nodes when plugs are linked/unlinked:
 
 ```ts
 test('1 oscillator + 1 effect + 1 speaker', () => {
@@ -255,7 +258,7 @@ test('1 oscillator + 1 effect + 1 speaker', () => {
   speaker.plug([effect, null, null, null]);
 
   expect(oscillator.node?.connect).toHaveBeenCalledWith(effect.audioInputNode);
-  expect(effect.audioOutputNode.connect).toHaveBeenCalledWith(speaker.audioInputNode);
+  expect(effect.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
 test('snatch oscillator', () => {
