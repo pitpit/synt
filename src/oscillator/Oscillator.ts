@@ -2,7 +2,6 @@ import { Oscillator as ToneOscillator } from 'tone';
 import SourceMod from '../core/SourceMod';
 import PlugType from '../core/PlugType';
 import Signals from '../core/Signals';
-import ControlSignal from '../core/ControlSignal';
 import PlugPosition from '../core/PlugPosition';
 
 export default abstract class Oscillator extends SourceMod {

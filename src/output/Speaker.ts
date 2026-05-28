@@ -1,4 +1,3 @@
-import { Gain as ToneGain } from 'tone';
 import Konva from 'konva';
 import SinkMod from '../core/SinkMod';
 import PlugType from '../core/PlugType';
