@@ -18,6 +18,7 @@ import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import ControlMeter from '../control/ControlMeter';
+import Oscilloscope from '../control/Oscilloscope';
 import Speaker from '../output/Speaker';
 import StickyNote from './StickyNote';
 
@@ -49,7 +50,8 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },
   { Ctor: ControlMeter,       label: 'ctrl-m',  x: 3, y: 2 },
   { Ctor: Speaker,            label: 'speaker', x: 0, y: 3 },
-  { Ctor: StickyNote, label: 'note',    x: 4, y: 2 },
+  { Ctor: Oscilloscope, label: 'scope',   x: 4, y: 2 },
+  { Ctor: StickyNote,   label: 'note',    x: 6, y: 2 },
 ];
 
 /** Number of grid rows in the System Rack. */

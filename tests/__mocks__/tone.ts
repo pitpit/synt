@@ -34,6 +34,15 @@ const createEffectNode = () => {
 
 const Chorus = jest.fn(() => createEffectNode());
 const Filter = jest.fn(() => createEffectNode());
+
+const createWaveformNode = (size: number) => ({
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+  dispose: jest.fn(),
+  getValue: jest.fn().mockReturnValue(new Float32Array(size)),
+});
+
+const Waveform = jest.fn((size: number) => createWaveformNode(size));
 const Vibrato = jest.fn(() => createEffectNode());
 const Tremolo = jest.fn(() => createEffectNode());
 const Panner = jest.fn(() => createEffectNode());
@@ -45,6 +54,7 @@ export {
   getDestination,
   Chorus,
   Filter,
+  Waveform,
   Vibrato,
   Tremolo,
   Panner,

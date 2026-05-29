@@ -14,6 +14,7 @@ import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import Arpeggiator from '../control/Arpeggiator';
 import ControlMeter from '../control/ControlMeter';
+import Oscilloscope from '../control/Oscilloscope';
 import Chorus from '../effect/Chorus';
 import Flanger from '../effect/Flanger';
 import Vibrato from '../effect/Vibrato';
@@ -38,6 +39,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   HighPassFilter,
   Keyboard,
   Knob,
+  Oscilloscope,
   Panner,
   Phaser,
   Reverb,

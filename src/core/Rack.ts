@@ -100,12 +100,15 @@ export default class Rack {
     return null;
   }
 
-  private addToGrid(mod:Mod): this {
-    if (!this.grid[mod.x]) {
-      this.grid[mod.x] = [];
+  private addToGrid(mod: Mod): this {
+    for (let dx = 0; dx < mod.width; dx += 1) {
+      for (let dy = 0; dy < mod.height; dy += 1) {
+        if (!this.grid[mod.x + dx]) {
+          this.grid[mod.x + dx] = [];
+        }
+        this.grid[mod.x + dx][mod.y + dy] = mod;
+      }
     }
-    this.grid[mod.x][mod.y] = mod;
-
     return this;
   }
 
@@ -324,10 +327,10 @@ export default class Rack {
   plugAll(): void {
     this.mods.forEach((mod) => {
       mod.plug([
-        this.getFromGrid(mod.x, mod.y - 1), // North
-        this.getFromGrid(mod.x + 1, mod.y), // East
-        this.getFromGrid(mod.x, mod.y + 1), // South
-        this.getFromGrid(mod.x - 1, mod.y), // West
+        this.getFromGrid(mod.x, mod.y - 1),              // North
+        this.getFromGrid(mod.x + mod.width, mod.y),      // East
+        this.getFromGrid(mod.x, mod.y + mod.height),     // South
+        this.getFromGrid(mod.x - 1, mod.y),              // West
       ]);
     });
   }
@@ -341,10 +344,10 @@ export default class Rack {
     this.add(mod, x, y);
     this.initModInLayer(mod, this.layer);
     mod.plug([
-      this.getFromGrid(mod.x, mod.y - 1), // North
-      this.getFromGrid(mod.x + 1, mod.y), // East
-      this.getFromGrid(mod.x, mod.y + 1), // South
-      this.getFromGrid(mod.x - 1, mod.y), // West
+      this.getFromGrid(mod.x, mod.y - 1),              // North
+      this.getFromGrid(mod.x + mod.width, mod.y),      // East
+      this.getFromGrid(mod.x, mod.y + mod.height),     // South
+      this.getFromGrid(mod.x - 1, mod.y),              // West
     ]);
     this.layer.batchDraw();
   }
@@ -363,10 +366,10 @@ export default class Rack {
       this.removeFromGrid(mod).addToGrid(mod);
 
       mod.plug([
-        this.getFromGrid(mod.x, mod.y - 1), // North
-        this.getFromGrid(mod.x + 1, mod.y), // East
-        this.getFromGrid(mod.x, mod.y + 1), // South
-        this.getFromGrid(mod.x - 1, mod.y), // West
+        this.getFromGrid(mod.x, mod.y - 1),              // North
+        this.getFromGrid(mod.x + mod.width, mod.y),      // East
+        this.getFromGrid(mod.x, mod.y + mod.height),     // South
+        this.getFromGrid(mod.x - 1, mod.y),              // West
       ]);
     });
 
