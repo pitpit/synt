@@ -18,6 +18,7 @@ import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import ControlMeter from '../control/ControlMeter';
+import MidiIn from '../control/MidiIn';
 import Oscilloscope from '../control/Oscilloscope';
 import Speaker from '../output/Speaker';
 import StickyNote from './StickyNote';
@@ -49,6 +50,7 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Knob,               label: 'knob',    x: 1, y: 2 },
   { Ctor: SwitchOn,           label: 'switch',  x: 2, y: 2 },
   { Ctor: ControlMeter,       label: 'ctrl-m',  x: 3, y: 2 },
+  { Ctor: MidiIn,             label: 'midi',    x: 5, y: 2 },
   { Ctor: Speaker,            label: 'speaker', x: 0, y: 3 },
   { Ctor: Oscilloscope, label: 'scope',   x: 4, y: 2 },
   { Ctor: StickyNote,   label: 'note',    x: 6, y: 2 },

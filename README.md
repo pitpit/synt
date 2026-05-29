@@ -24,6 +24,7 @@ This program is free software: you can redistribute it and/or modify it under th
 - [Architecture](docs/01-architecture.md) — core concepts, module categories, signal flow, connection rules, and design patterns
 - [Writing an AudioMod](docs/02-writing-an-audiomod.md) — step-by-step guide to implementing a new audio module
 - [Testing](docs/03-testing-strategy.md) — unit, integration, and end-to-end browser testing strategy
+- [Web MIDI & MidiIn](docs/04-web-midi-and-midiin.md) — Web MIDI API integration, the MidiIn module, implicit learn workflow, and browser support
 
 ## Inspiration
 
