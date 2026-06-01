@@ -109,13 +109,20 @@ export default class Oscilloscope extends EffectMod {
       listening: false,
     }));
 
+    const clipGroup = new Konva.Group({
+      clip: {
+        x: padX, y: padY, width: dw, height: dh,
+      },
+    });
+    group.add(clipGroup);
+
     this.waveformLineLeft = new Konva.Line({
       points: [],
       stroke: '#ffffff',
       strokeWidth: 1.5,
       listening: false,
     });
-    group.add(this.waveformLineLeft);
+    clipGroup.add(this.waveformLineLeft);
 
     this.waveformLineRight = new Konva.Line({
       points: [],
@@ -123,7 +130,7 @@ export default class Oscilloscope extends EffectMod {
       strokeWidth: 1.5,
       listening: false,
     });
-    group.add(this.waveformLineRight);
+    clipGroup.add(this.waveformLineRight);
 
     this.startAnimation(group);
   }
@@ -141,8 +148,7 @@ export default class Oscilloscope extends EffectMod {
       const points: number[] = [];
       for (let i = 0; i < samples; i += 1) {
         points.push(padX + (i / (samples - 1)) * dw);
-        const y = midY - data[triggerIdx + i] * this.amplitude * (dh / 2 - 2);
-        points.push(Math.max(padY, Math.min(padY + dh, y)));
+        points.push(midY - data[triggerIdx + i] * this.amplitude * (dh / 2 - 2));
       }
       return points;
     };
