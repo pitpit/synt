@@ -394,11 +394,16 @@ export default abstract class Mod {
     target.link(oppositePlugPosition, this);
 
     // Replay the cached output signal to the newly connected target.
-    // This handles the case where onLinked is a no-op (e.g. ControlMeter's
-    // output side) but there is already a live signal flowing through this plug.
+    // Only do this when there is an active upstream source (at least one input
+    // plug is currently linked). If the mod has no input plugs at all (e.g.
+    // Knob) it is always considered active. This prevents a pass-through mod
+    // like ControlMeter from replaying a stale signal when it is connected
+    // downstream while its own input is not live.
     if (plug.isOutput()) {
       const cachedOutput = this.outputSignals[plugPosition];
-      if (cachedOutput) {
+      const hasInputPlugs = this.plugs.items.some((p: Plug) => p.isInput());
+      const hasLinkedInput = this.plugs.items.some((p: Plug) => p.isInput() && p.mod !== null);
+      if (cachedOutput && (!hasInputPlugs || hasLinkedInput)) {
         target.pushInput(oppositePlugPosition, cachedOutput);
       }
     }

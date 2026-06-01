@@ -158,3 +158,21 @@ test('disconnecting knob resets all ControlMeters in a chain', () => {
   expect(display2.getText()).toBe('0.000');
   expect(display3.getText()).toBe('0.000');
 });
+
+test('connecting ControlMeter to an AudioMod without a live source does not change AudioMod value', () => {
+  const meter = new ControlMeter();
+  const speaker = new Speaker();
+
+  // Seed a signal through the meter (simulates prior Knob use)
+  meter.onSignalChanged([null, new ControlSignal(0.58), null, null]);
+
+  // Speaker has its own stored value from before
+  speaker.plug([null, null, null, null]);
+  speaker.pushInput(PlugPosition.EAST, new ControlSignal(0.3));
+
+  // Now connect meter to speaker with NO Knob attached to meter
+  meter.plug([null, null, null, speaker]);
+
+  // Speaker's recall value must NOT have been overwritten by meter's stale output
+  expect((speaker.getRecallSignal(PlugPosition.EAST) as ControlSignal | null)?.value).toBeCloseTo(0.3);
+});
