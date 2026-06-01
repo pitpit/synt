@@ -101,14 +101,14 @@ test('re-plugging source after snatch restarts the animation', () => {
 
   // Simulate a drag: snatch cancels animation and disposes the effect node
   scope.snatch();
-  expect((scope as any).animationFrameId).toBeNull();
+  expect((scope as unknown as { animationFrameId: number | null }).animationFrameId).toBeNull();
 
   // Re-plug (simulates dragend back next to the source)
   oscillator.plug([null, null, null, null]);
   scope.plug([oscillator, null, null, null]);
 
   // Animation should have been restarted
-  expect((scope as any).animationFrameId).not.toBeNull();
+  expect((scope as unknown as { animationFrameId: number | null }).animationFrameId).not.toBeNull();
 });
 
 test('knob connected to WEST sets vertical zoom without throwing', () => {
@@ -153,7 +153,7 @@ test('waveform Y coordinates are clamped within display bounds when amplitude is
 
   const group = new Konva.Group({ width: 200, height: 100 });
   scope.draw(group);
-  animCallback!(0);
+  if (animCallback) animCallback(0);
   rafSpy.mockRestore();
 
   // w=200, h=100 → padY=10, dh=80 → valid Y range: [10, 90]

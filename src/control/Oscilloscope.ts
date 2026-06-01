@@ -42,11 +42,9 @@ export default class Oscilloscope extends EffectMod {
       // Force stereo upmixing: 'speakers' interpretation with explicit channelCount=2
       // maps a mono signal equally to both output channels.
       const rawGain = (this._upmixNode as unknown as { input: GainNode }).input;
-      if (rawGain) {
-        rawGain.channelCount = 2;
-        rawGain.channelCountMode = 'explicit';
-        rawGain.channelInterpretation = 'speakers';
-      }
+      rawGain.channelCount = 2;
+      rawGain.channelCountMode = 'explicit';
+      rawGain.channelInterpretation = 'speakers';
       this._upmixNode.connect(this.ensureEffectNode());
     }
     return this._upmixNode;
@@ -174,7 +172,7 @@ export default class Oscilloscope extends EffectMod {
         && this.animationFrameId === null
         && this.waveformLineLeft
         && this.group) {
-      this.startAnimation(this.group as Konva.Group);
+      this.startAnimation(this.group);
     }
     super.onLinked(plugPosition, target);
   }
