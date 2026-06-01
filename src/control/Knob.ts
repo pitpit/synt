@@ -204,6 +204,8 @@ export default class Knob extends Mod {
     const targetValue = Math.max(0, Math.min(1, value));
     const startValue = this.value;
     if (Math.abs(targetValue - startValue) < 1e-6) {
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
       return;
     }
 
@@ -213,6 +215,12 @@ export default class Knob extends Mod {
       this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
       return;
     }
+
+    // Push the target signal immediately so connected modules (e.g. Oscillator)
+    // receive the correct value without waiting for the animation to finish.
+    // The rAF loop below only updates the visual knob position.
+    this.pushOutput(PlugPosition.WEST, new ControlSignal(targetValue));
+    this.pushOutput(PlugPosition.EAST, new ControlSignal(targetValue));
 
     let startTime: number|null = null;
     const step = (timestamp: number) => {
@@ -231,8 +239,6 @@ export default class Knob extends Mod {
         this.animationFrameId = window.requestAnimationFrame(step);
       } else {
         this.animationFrameId = null;
-        this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
-        this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
       }
     };
 
@@ -249,11 +255,12 @@ export default class Knob extends Mod {
       return;
     }
 
-    const targetControlSignal = target.getInputSignal(targetPlugPosition);
+    const targetControlSignal = target.getRecallSignal(targetPlugPosition);
     if (targetControlSignal instanceof ControlSignal) {
       this.animateToValue(targetControlSignal.value);
     } else {
-      this.animateToValue(0.5);
+      this.pushOutput(PlugPosition.WEST, new ControlSignal(this.value));
+      this.pushOutput(PlugPosition.EAST, new ControlSignal(this.value));
     }
   }
 

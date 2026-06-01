@@ -42,6 +42,7 @@
                 "enum": [
                   "Arpeggiator",
                   "Chorus",
+                  "ControlMeter",
                   "Flanger",
                   "Gate",
                   "HighPassFilter",
