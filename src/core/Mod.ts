@@ -40,8 +40,6 @@ export default abstract class Mod {
 
   private inputSignals: Signals = [null, null, null, null];
 
-  private recallSignals: Signals = [null, null, null, null];
-
   /**
    * This method is called when drawing.
    * You'll have to override it to customize your Mod appearance.
@@ -512,7 +510,7 @@ export default abstract class Mod {
     const oldInputSignal = this.inputSignals[plugPosition];
     this.inputSignals[plugPosition] = inputSignal;
     if (inputSignal) {
-      this.recallSignals[plugPosition] = inputSignal;
+      this.events.emit('input', plugPosition, inputSignal);
     }
     if (inputSignal && oldInputSignal && inputSignal.eq(oldInputSignal)) {
       // Do not recompute output but propagate it directly
@@ -565,12 +563,4 @@ export default abstract class Mod {
     return this.inputSignals[plugPosition];
   }
 
-  /**
-   * Return the signal a connecting Knob should recall for the given plug.
-   * By default delegates to getInputSignal. Mods that act as transparent
-   * pass-throughs (e.g. ControlMeter) can override this to look downstream.
-   */
-  getRecallSignal(plugPosition: number): Signal|null {
-    return this.recallSignals[plugPosition];
-  }
 }

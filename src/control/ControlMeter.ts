@@ -4,7 +4,6 @@ import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
 import ControlSignal from '../core/ControlSignal';
 import Signals from '../core/Signals';
-import { Signal } from '../core/Signal';
 
 export default class ControlMeter extends Mod {
   private displayText: Konva.Text | null = null;
@@ -58,12 +57,5 @@ export default class ControlMeter extends Mod {
     if (downstream instanceof ControlMeter) {
       downstream.cascadeReset();
     }
-  }
-
-  public override getRecallSignal(plugPosition: number): Signal | null {
-    if (plugPosition === PlugPosition.EAST) {
-      return this.plugs.getPlug(PlugPosition.WEST).mod?.getRecallSignal(PlugPosition.EAST) ?? null;
-    }
-    return null;
   }
 }

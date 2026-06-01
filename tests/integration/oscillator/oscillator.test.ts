@@ -2,6 +2,7 @@ import Knob from '../../../src/control/Knob';
 import ControlSignal from '../../../src/core/ControlSignal';
 import PlugPosition from '../../../src/core/PlugPosition';
 import TestOscillator from './TestOscillator';
+import KnobMemory from '../../../src/core/KnobMemory';
 
 test('1 oscillator + 1 knob', () => {
   const oscillator = new TestOscillator();
@@ -26,6 +27,10 @@ test('new knob recalls previous control signal value on connect', () => {
   const oscillator = new TestOscillator();
   const firstKnob = new Knob();
   const secondKnob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(oscillator);
+  firstKnob.knobMemory = knobMemory;
+  secondKnob.knobMemory = knobMemory;
 
   oscillator.plug([null, null, null, null]);
   firstKnob.plug([null, null, null, oscillator]);

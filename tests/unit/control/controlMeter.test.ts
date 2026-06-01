@@ -5,6 +5,7 @@ import Knob from '../../../src/control/Knob';
 import PlugPosition from '../../../src/core/PlugPosition';
 import PlugType from '../../../src/core/PlugType';
 import Speaker from '../../../src/output/Speaker';
+import KnobMemory from '../../../src/core/KnobMemory';
 
 function stubDisplay(meter: ControlMeter): { getText(): string } {
   let value = '0.000';
@@ -54,21 +55,25 @@ test('resets display to 0.000 when EAST plug is disconnected', () => {
   expect(display.getText()).toBe('0.000');
 });
 
-test('getRecallSignal(EAST) returns null when no downstream mod on WEST', () => {
+test('recall returns null when no downstream mod on WEST', () => {
   const meter = new ControlMeter();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(meter);
 
-  expect(meter.getRecallSignal(PlugPosition.EAST)).toBeNull();
+  expect(knobMemory.get(meter, PlugPosition.EAST)).toBeNull();
 });
 
-test('getRecallSignal(EAST) returns downstream mod input signal', () => {
+test('recall returns downstream mod input signal', () => {
   const meter = new ControlMeter();
   const speaker = new Speaker();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
 
   speaker.plug([null, null, null, null]);
   meter.plug([null, null, null, speaker]);
   speaker.pushInput(PlugPosition.EAST, new ControlSignal(0.42));
 
-  const recalled = meter.getRecallSignal(PlugPosition.EAST);
+  const recalled = knobMemory.get(meter, PlugPosition.EAST);
 
   expect(recalled).toBeInstanceOf(ControlSignal);
   expect((recalled as ControlSignal).value).toBeCloseTo(0.42);
@@ -162,6 +167,8 @@ test('disconnecting knob resets all ControlMeters in a chain', () => {
 test('connecting ControlMeter to an AudioMod without a live source does not change AudioMod value', () => {
   const meter = new ControlMeter();
   const speaker = new Speaker();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
 
   // Seed a signal through the meter (simulates prior Knob use)
   meter.onSignalChanged([null, new ControlSignal(0.58), null, null]);
@@ -174,5 +181,5 @@ test('connecting ControlMeter to an AudioMod without a live source does not chan
   meter.plug([null, null, null, speaker]);
 
   // Speaker's recall value must NOT have been overwritten by meter's stale output
-  expect((speaker.getRecallSignal(PlugPosition.EAST) as ControlSignal | null)?.value).toBeCloseTo(0.3);
+  expect((knobMemory.get(speaker, PlugPosition.EAST) as ControlSignal | null)?.value).toBeCloseTo(0.3);
 });
