@@ -109,3 +109,20 @@ test('re-plugging source after snatch restarts the animation', () => {
   // Animation should have been restarted
   expect((scope as any).animationFrameId).not.toBeNull();
 });
+
+test('knob connected to WEST sets vertical zoom without throwing', () => {
+  const oscillator = new TestOscillator();
+  const scope = new Oscilloscope();
+  const knob = new Knob();
+
+  oscillator.plug([null, null, null, null]);
+  scope.plug([oscillator, null, null, null]);
+  knob.plug([null, null, null, null]);
+
+  expect(() => { scope.plug([null, null, null, knob]); }).not.toThrow();
+
+  // At knob value 0 amplitude = 0.1; at 1 amplitude = 10
+  // At default 0.5 it equals exactly 1 (geometric midpoint), so check extremes via formula
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expect((scope as any).amplitude).toBeCloseTo(1, 5);
+});

@@ -15,12 +15,15 @@ export default class Oscilloscope extends EffectMod {
 
   private animationFrameId: number | null = null;
 
-  /** Number of samples drawn per frame — controls horizontal scale. Range [8, 256]. */
-  private windowSize: number = 128;
+  /** Number of samples drawn per frame — controls time window width. Range [16, 2048]. */
+  private samples: number = 128;
+
+  /** Amplitude multiplier applied to the waveform. Range [0.1, 10]. */
+  private amplitude: number = 1;
 
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'scope', 2);
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.CTRLIN], 'scope', 2);
   }
 
   protected createEffectNode(): ToneAudioNode {
@@ -32,17 +35,22 @@ export default class Oscilloscope extends EffectMod {
     if (eastSignal instanceof ControlSignal) {
       // Log scale [16, 2048]: knob left = zoomed in, knob right = zoomed out.
       // 16 × 2^(value × 7) distributes evenly across zoom levels.
-      this.windowSize = Math.round(16 * Math.pow(2, eastSignal.value * 7));
+      this.samples = Math.round(16 * Math.pow(2, eastSignal.value * 7));
+    }
+    const westSignal = inputSignals[PlugPosition.WEST];
+    if (westSignal instanceof ControlSignal) {
+      // Log scale [0.1, 10]: knob left = zoomed out, knob right = zoomed in.
+      this.amplitude = 0.1 * Math.pow(100, westSignal.value);
     }
     return super.onSignalChanged(inputSignals);
   }
 
   /**
-   * Find the first rising zero-crossing in the buffer, leaving at least windowSize
-   * samples after the index. Returns 0 as fallback when no crossing is found.
+   * Find the first rising zero-crossing in the buffer, leaving at least `samples`
+   * entries after the index. Returns 0 as fallback when no crossing is found.
    */
   private findTriggerIndex(data: Float32Array): number {
-    const searchLimit = data.length - this.windowSize;
+    const searchLimit = data.length - this.samples;
     for (let i = 1; i < searchLimit; i += 1) {
       if (data[i - 1] < 0 && data[i] >= 0) {
         return i;
@@ -105,11 +113,11 @@ export default class Oscilloscope extends EffectMod {
     const dh = h - 2 * padY;
     const midY = padY + dh / 2;
 
-    const buildPoints = (data: Float32Array, triggerIdx: number, windowSize: number): number[] => {
+    const buildPoints = (data: Float32Array, triggerIdx: number, samples: number): number[] => {
       const points: number[] = [];
-      for (let i = 0; i < windowSize; i += 1) {
-        points.push(padX + (i / (windowSize - 1)) * dw);
-        points.push(midY - data[triggerIdx + i] * (dh / 2 - 2));
+      for (let i = 0; i < samples; i += 1) {
+        points.push(padX + (i / (samples - 1)) * dw);
+        points.push(midY - data[triggerIdx + i] * this.amplitude * (dh / 2 - 2));
       }
       return points;
     };
@@ -120,13 +128,13 @@ export default class Oscilloscope extends EffectMod {
       if (!this.effectNode || !this.waveformLineLeft || !this.waveformLineRight) return;
 
       const [left, right] = (this.effectNode as ToneAnalyser).getValue() as Float32Array[];
-      const windowSize = this.windowSize;
+      const samples = this.samples;
 
       const triggerIdxLeft = this.findTriggerIndex(left);
-      this.waveformLineLeft.points(buildPoints(left, triggerIdxLeft, windowSize));
+      this.waveformLineLeft.points(buildPoints(left, triggerIdxLeft, samples));
 
       const triggerIdxRight = this.findTriggerIndex(right);
-      this.waveformLineRight.points(buildPoints(right, triggerIdxRight, windowSize));
+      this.waveformLineRight.points(buildPoints(right, triggerIdxRight, samples));
 
       group.getLayer()?.batchDraw();
     };
