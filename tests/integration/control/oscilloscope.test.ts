@@ -128,7 +128,7 @@ test('knob connected to WEST sets vertical zoom without throwing', () => {
   expect((scope as any).amplitude).toBeCloseTo(1, 5);
 });
 
-test('waveform Y coordinates are clamped within display bounds when amplitude is large', () => {
+test('waveform Y coordinates extend beyond display bounds when amplitude is large (clipped by canvas)', () => {
   const oscillator = new TestOscillator();
   const scope = new Oscilloscope();
 
@@ -156,13 +156,17 @@ test('waveform Y coordinates are clamped within display bounds when amplitude is
   if (animCallback) animCallback(0);
   rafSpy.mockRestore();
 
-  // w=200, h=100 → padY=10, dh=80 → valid Y range: [10, 90]
+  // w=200, h=100 → padY=10, dh=80, midY=50, amplitude=10
+  // With amplitude=10, saturated data (value=1.0): y = 50 - 1.0 * 10 * (40 - 2) = 50 - 380 = -330
+  // Points are NOT clamped — the clip group on the canvas handles boundary clipping.
   const padY = 10;
   const dh = 80;
+  const midY = padY + dh / 2;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const points = (scope as any).waveformLineLeft.points() as number[];
+  // All Y values should be equal (saturated signal) and well outside display bounds
   for (let i = 1; i < points.length; i += 2) {
-    expect(points[i]).toBeGreaterThanOrEqual(padY);
-    expect(points[i]).toBeLessThanOrEqual(padY + dh);
+    expect(points[i]).toBeLessThan(padY);
+    expect(points[i]).toBe(midY - 1.0 * 10 * (dh / 2 - 2));
   }
 });
