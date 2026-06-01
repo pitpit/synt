@@ -1,3 +1,4 @@
+import Konva from 'konva';
 import Oscilloscope from '../../../src/control/Oscilloscope';
 import Speaker from '../../../src/output/Speaker';
 import Knob from '../../../src/control/Knob';
@@ -59,4 +60,52 @@ test('knob connected to EAST sets trigger level without throwing', () => {
   scope.plug([null, knob, null, null]);
 
   expect(() => { knob.plug([null, null, null, null]); }).not.toThrow();
+});
+
+test('disconnecting source clears the waveform display', () => {
+  const oscillator = new TestOscillator();
+  const scope = new Oscilloscope();
+
+  oscillator.plug([null, null, null, null]);
+  scope.plug([oscillator, null, null, null]);
+
+  const group = new Konva.Group({ width: 200, height: 100 });
+  scope.draw(group);
+
+  // Simulate waveform data already rendered on both channels
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (scope as any).waveformLineLeft.points([10, 50, 20, 40, 30, 60]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (scope as any).waveformLineRight.points([10, 50, 20, 40, 30, 60]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expect((scope as any).waveformLineLeft.points()).toHaveLength(6);
+
+  scope.unlink(0); // NORTH
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expect((scope as any).waveformLineLeft.points()).toEqual([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expect((scope as any).waveformLineRight.points()).toEqual([]);
+});
+
+test('re-plugging source after snatch restarts the animation', () => {
+  const oscillator = new TestOscillator();
+  const scope = new Oscilloscope();
+
+  oscillator.plug([null, null, null, null]);
+  scope.plug([oscillator, null, null, null]);
+
+  const group = new Konva.Group({ width: 200, height: 100 });
+  scope.draw(group);
+
+  // Simulate a drag: snatch cancels animation and disposes the effect node
+  scope.snatch();
+  expect((scope as any).animationFrameId).toBeNull();
+
+  // Re-plug (simulates dragend back next to the source)
+  oscillator.plug([null, null, null, null]);
+  scope.plug([oscillator, null, null, null]);
+
+  // Animation should have been restarted
+  expect((scope as any).animationFrameId).not.toBeNull();
 });

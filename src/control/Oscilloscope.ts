@@ -1,14 +1,17 @@
 import Konva from 'konva';
-import { Waveform as ToneWaveform } from 'tone';
+import { Analyser as ToneAnalyser } from 'tone';
 import type { ToneAudioNode } from 'tone';
 import EffectMod from '../core/EffectMod';
+import Mod from '../core/Mod';
 import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
 import ControlSignal from '../core/ControlSignal';
 import Signals from '../core/Signals';
 
 export default class Oscilloscope extends EffectMod {
-  private waveformLine: Konva.Line | null = null;
+  private waveformLineLeft: Konva.Line | null = null;
+
+  private waveformLineRight: Konva.Line | null = null;
 
   private animationFrameId: number | null = null;
 
@@ -21,7 +24,7 @@ export default class Oscilloscope extends EffectMod {
   }
 
   protected createEffectNode(): ToneAudioNode {
-    return new ToneWaveform(2048);
+    return new ToneAnalyser({ type: 'waveform', size: 2048, channels: 2 });
   }
 
   override onSignalChanged(inputSignals: Signals): Signals {
@@ -49,6 +52,7 @@ export default class Oscilloscope extends EffectMod {
   }
 
   draw(group: Konva.Group): void {
+    this.group = group;
     const w = group.width();
     const h = group.height();
     // padX: border strokeWidth (5px) + plug line stroke (5px). padY: same.
@@ -73,13 +77,21 @@ export default class Oscilloscope extends EffectMod {
       listening: false,
     }));
 
-    this.waveformLine = new Konva.Line({
+    this.waveformLineLeft = new Konva.Line({
       points: [],
-      stroke: '#00ff88',
+      stroke: '#ffffff',
       strokeWidth: 1.5,
       listening: false,
     });
-    group.add(this.waveformLine);
+    group.add(this.waveformLineLeft);
+
+    this.waveformLineRight = new Konva.Line({
+      points: [],
+      stroke: '#ff4444',
+      strokeWidth: 1.5,
+      listening: false,
+    });
+    group.add(this.waveformLineRight);
 
     this.startAnimation(group);
   }
@@ -93,26 +105,52 @@ export default class Oscilloscope extends EffectMod {
     const dh = h - 2 * padY;
     const midY = padY + dh / 2;
 
-    const animate = () => {
-      this.animationFrameId = requestAnimationFrame(animate);
-
-      if (!this.effectNode || !this.waveformLine) return;
-
-      const data = (this.effectNode as ToneWaveform).getValue();
-      const triggerIdx = this.findTriggerIndex(data);
-      const windowSize = this.windowSize;
+    const buildPoints = (data: Float32Array, triggerIdx: number, windowSize: number): number[] => {
       const points: number[] = [];
-
       for (let i = 0; i < windowSize; i += 1) {
         points.push(padX + (i / (windowSize - 1)) * dw);
         points.push(midY - data[triggerIdx + i] * (dh / 2 - 2));
       }
+      return points;
+    };
 
-      this.waveformLine.points(points);
+    const animate = () => {
+      this.animationFrameId = requestAnimationFrame(animate);
+
+      if (!this.effectNode || !this.waveformLineLeft || !this.waveformLineRight) return;
+
+      const [left, right] = (this.effectNode as ToneAnalyser).getValue() as Float32Array[];
+      const windowSize = this.windowSize;
+
+      const triggerIdxLeft = this.findTriggerIndex(left);
+      this.waveformLineLeft.points(buildPoints(left, triggerIdxLeft, windowSize));
+
+      const triggerIdxRight = this.findTriggerIndex(right);
+      this.waveformLineRight.points(buildPoints(right, triggerIdxRight, windowSize));
+
       group.getLayer()?.batchDraw();
     };
 
     this.animationFrameId = requestAnimationFrame(animate);
+  }
+
+  protected override onLinked(plugPosition: number, target: Mod): void {
+    if (plugPosition === PlugPosition.NORTH
+        && this.animationFrameId === null
+        && this.waveformLineLeft
+        && this.group) {
+      this.startAnimation(this.group as Konva.Group);
+    }
+    super.onLinked(plugPosition, target);
+  }
+
+  protected override onUnlinked(plugPosition: number, prev: Mod): void {
+    if (plugPosition === PlugPosition.NORTH) {
+      this.waveformLineLeft?.points([]);
+      this.waveformLineRight?.points([]);
+      this.waveformLineLeft?.getLayer()?.batchDraw();
+    }
+    super.onUnlinked(plugPosition, prev);
   }
 
   protected override onSnatched(): void {
