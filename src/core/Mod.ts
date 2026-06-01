@@ -40,6 +40,8 @@ export default abstract class Mod {
 
   private inputSignals: Signals = [null, null, null, null];
 
+  private recallSignals: Signals = [null, null, null, null];
+
   /**
    * This method is called when drawing.
    * You'll have to override it to customize your Mod appearance.
@@ -307,7 +309,7 @@ export default abstract class Mod {
    * A mod is an entry if it has at least one linked OUT plug and no IN plug (linked or not)
    */
   isEntry(): boolean {
-    const haveIn = this.plugs.items.some((plug: Plug) => plug.type === PlugType.IN);
+    const haveIn = this.plugs.items.some((plug: Plug) => plug.type === PlugType.IN || plug.type === PlugType.CTRLIN);
     const haveLinkedOut = this.plugs.items.some((plug: Plug) => plug.isOutput());
     return haveLinkedOut && !haveIn;
   }
@@ -376,10 +378,30 @@ export default abstract class Mod {
     // Notify e2e tests that a plug connection was established.
     window.dispatchEvent(new CustomEvent('test:mod:link'));
 
+    // Clear the target's receiving slot (if it's an input) before onLinked fires,
+    // so the first incoming signal always triggers onSignalChanged even when the
+    // value equals the stale cached entry from before the disconnect.
+    // This is done here (not in the reverse target.link call) so the clearing
+    // happens before onLinked pushes a signal, and is not repeated afterwards.
+    const targetOppPlug = target.plugs.getPlug(oppositePlugPosition);
+    if (targetOppPlug.isInput()) {
+      target.inputSignals[oppositePlugPosition] = null;
+    }
+
     this.onLinked(plugPosition, target);
 
     // Reserse link
     target.link(oppositePlugPosition, this);
+
+    // Replay the cached output signal to the newly connected target.
+    // This handles the case where onLinked is a no-op (e.g. ControlMeter's
+    // output side) but there is already a live signal flowing through this plug.
+    if (plug.isOutput()) {
+      const cachedOutput = this.outputSignals[plugPosition];
+      if (cachedOutput) {
+        target.pushInput(oppositePlugPosition, cachedOutput);
+      }
+    }
   }
 
   /**
@@ -484,6 +506,9 @@ export default abstract class Mod {
     let outputSignals: Signals;
     const oldInputSignal = this.inputSignals[plugPosition];
     this.inputSignals[plugPosition] = inputSignal;
+    if (inputSignal) {
+      this.recallSignals[plugPosition] = inputSignal;
+    }
     if (inputSignal && oldInputSignal && inputSignal.eq(oldInputSignal)) {
       // Do not recompute output but propagate it directly
       outputSignals = this.outputSignals;
@@ -533,5 +558,14 @@ export default abstract class Mod {
    */
   getInputSignal(plugPosition: number): Signal|null {
     return this.inputSignals[plugPosition];
+  }
+
+  /**
+   * Return the signal a connecting Knob should recall for the given plug.
+   * By default delegates to getInputSignal. Mods that act as transparent
+   * pass-throughs (e.g. ControlMeter) can override this to look downstream.
+   */
+  getRecallSignal(plugPosition: number): Signal|null {
+    return this.recallSignals[plugPosition];
   }
 }
