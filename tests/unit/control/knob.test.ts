@@ -5,6 +5,7 @@ import ControlMeter from '../../../src/control/ControlMeter';
 import ControlSignal from '../../../src/core/ControlSignal';
 import PlugPosition from '../../../src/core/PlugPosition';
 import Speaker from '../../../src/output/Speaker';
+import KnobMemory from '../../../src/core/KnobMemory';
 import type Rack from '../../../src/core/Rack';
 
 interface KonvaNodeWithListeners {
@@ -34,6 +35,10 @@ test('recalls previous control signal value on reconnect without animation runti
   const speaker = new Speaker();
   const firstKnob = new Knob();
   const secondKnob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
+  firstKnob.knobMemory = knobMemory;
+  secondKnob.knobMemory = knobMemory;
 
   speaker.plug([null, null, null, null]);
   firstKnob.plug([null, null, null, speaker]);
@@ -91,6 +96,9 @@ test('attaches interaction listeners when attached to a rack', () => {
 test('recalls AudioMod value after disconnect and reconnect of same knob', () => {
   const speaker = new Speaker();
   const knob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
+  knob.knobMemory = knobMemory;
 
   speaker.plug([null, null, null, null]);
   knob.plug([null, null, null, speaker]);
@@ -109,16 +117,71 @@ test('recalls AudioMod value after disconnect and reconnect of same knob', () =>
 
 test('does not recall ControlMeter own input — keeps current value when no downstream AudioMod', () => {
   const meter = new ControlMeter();
-  const knob = new Knob();
+  const firstKnob = new Knob();
+  const secondKnob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(meter);
+  firstKnob.knobMemory = knobMemory;
+  secondKnob.knobMemory = knobMemory;
 
-  // Seed a ControlSignal into the meter directly (simulates a prior push)
-  meter.onSignalChanged([null, new ControlSignal(0.9), null, null]);
+  // A prior Knob pushed a signal through the meter (stores in RecallStore)
+  firstKnob.plug([null, null, null, meter]);
+  firstKnob.pushOutput(PlugPosition.WEST, new ControlSignal(0.9));
+  firstKnob.unlink(PlugPosition.WEST);
 
-  // Knob connects to meter; meter has no downstream mod so getRecallSignal returns null
-  knob.plug([null, null, null, meter]);
+  // Second Knob connects; meter has no downstream mod so should not recall
+  secondKnob.plug([null, null, null, meter]);
 
-  // Knob should keep its default value (0.5), not recall 0.9 from meter's own input cache
-  expect(knob.value).toBeCloseTo(0.5);
+  // Knob should keep its default value (0.5), not recall 0.9 from meter's stored signal
+  expect(secondKnob.value).toBeCloseTo(0.5);
+});
+
+test('does not recall through a chain of ControlMeters with no downstream AudioMod', () => {
+  const meter1 = new ControlMeter();
+  const meter2 = new ControlMeter();
+  const firstKnob = new Knob();
+  const secondKnob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(meter1);
+  knobMemory.observe(meter2);
+  firstKnob.knobMemory = knobMemory;
+  secondKnob.knobMemory = knobMemory;
+
+  // Chain: firstKnob → meter1 → meter2 (no AudioMod at the end)
+  meter1.plug([null, null, null, meter2]);
+  firstKnob.plug([null, null, null, meter1]);
+  firstKnob.pushOutput(PlugPosition.WEST, new ControlSignal(0.9));
+  firstKnob.unlink(PlugPosition.WEST);
+
+  secondKnob.plug([null, null, null, meter1]);
+
+  expect(secondKnob.value).toBeCloseTo(0.5);
+});
+
+test('recalls value through a chain of ControlMeters to an AudioMod', () => {
+  const speaker = new Speaker();
+  const meter1 = new ControlMeter();
+  const meter2 = new ControlMeter();
+  const firstKnob = new Knob();
+  const secondKnob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
+  knobMemory.observe(meter1);
+  knobMemory.observe(meter2);
+  firstKnob.knobMemory = knobMemory;
+  secondKnob.knobMemory = knobMemory;
+
+  // Chain: firstKnob → meter1 → meter2 → speaker
+  speaker.plug([null, null, null, null]);
+  meter2.plug([null, null, null, speaker]);
+  meter1.plug([null, null, null, meter2]);
+  firstKnob.plug([null, null, null, meter1]);
+  firstKnob.pushOutput(PlugPosition.WEST, new ControlSignal(0.65));
+  firstKnob.unlink(PlugPosition.WEST);
+
+  secondKnob.plug([null, null, null, meter1]);
+
+  expect(secondKnob.value).toBeCloseTo(0.65);
 });
 
 test('recalls value via ControlMeter passthrough to AudioMod', () => {
@@ -126,6 +189,11 @@ test('recalls value via ControlMeter passthrough to AudioMod', () => {
   const firstKnob = new Knob();
   const meter = new ControlMeter();
   const secondKnob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
+  knobMemory.observe(meter);
+  firstKnob.knobMemory = knobMemory;
+  secondKnob.knobMemory = knobMemory;
 
   speaker.plug([null, null, null, null]);
   meter.plug([null, null, null, speaker]);
@@ -136,7 +204,7 @@ test('recalls value via ControlMeter passthrough to AudioMod', () => {
   firstKnob.unlink(PlugPosition.WEST);
   secondKnob.plug([null, null, null, meter]);
 
-  // secondKnob should recall 0.35 (stored in speaker's inputSignals via the chain)
+  // secondKnob should recall 0.35 (stored in speaker via the chain)
   expect(secondKnob.value).toBeCloseTo(0.35);
 });
 
@@ -144,6 +212,10 @@ test('recalls value after both ControlMeter and Knob are fully unplugged and rep
   const speaker = new Speaker();
   const meter = new ControlMeter();
   const knob = new Knob();
+  const knobMemory = new KnobMemory();
+  knobMemory.observe(speaker);
+  knobMemory.observe(meter);
+  knob.knobMemory = knobMemory;
 
   // Build chain: knob → meter → speaker
   speaker.plug([null, null, null, null]);

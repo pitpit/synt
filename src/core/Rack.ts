@@ -2,6 +2,7 @@ import Konva from 'konva';
 import * as Tone from 'tone';
 import Mod from './Mod';
 import SystemRack from './SystemRack';
+import KnobMemory, { isKnobMemoryConsumer } from './KnobMemory';
 
 export default class Rack {
   stage: Konva.Stage;
@@ -29,6 +30,8 @@ export default class Rack {
   mods: Array<Mod> = [];
 
   grid: Array<Array<Mod|null>> = [];
+
+  readonly knobMemory: KnobMemory = new KnobMemory();
 
   constructor() {
     // Setup container
@@ -69,6 +72,10 @@ export default class Rack {
     mod.rack = this;
     mod.x = x;
     mod.y = y;
+    this.knobMemory.observe(mod);
+    if (isKnobMemoryConsumer(mod)) {
+      mod.knobMemory = this.knobMemory;
+    }
     // TODO check if not already in rack
     this.mods.push(mod);
     this.addToGrid(mod);
@@ -296,7 +303,7 @@ export default class Rack {
    * Call draw() afterwards to re-render.
    */
   clear(): this {
-    [...this.mods].forEach((mod) => { mod.snatch(); });
+    [...this.mods].forEach((mod) => { this.knobMemory.unobserve(mod); mod.snatch(); });
     this.mods = [];
     this.grid = [];
     this.layer = null;
@@ -309,6 +316,7 @@ export default class Rack {
    * and destroying its Konva group.
    */
   remove(mod: Mod): void {
+    this.knobMemory.unobserve(mod);
     mod.snatch();
     const idx = this.mods.indexOf(mod);
     if (idx !== -1) {

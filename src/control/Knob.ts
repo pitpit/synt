@@ -3,8 +3,9 @@ import Mod from '../core/Mod';
 import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
 import ControlSignal from '../core/ControlSignal';
+import KnobMemory, { KnobMemoryConsumer } from '../core/KnobMemory';
 
-export default class Knob extends Mod {
+export default class Knob extends Mod implements KnobMemoryConsumer {
   range: number = 400;
 
   /** Value change per pixel for touch (0.05 = 20 px covers 0→1). */
@@ -32,6 +33,8 @@ export default class Knob extends Mod {
   private animationFrameId: number|null = null;
 
   private readonly animationDurationMs: number = 180;
+
+  knobMemory: KnobMemory | null = null;
 
   constructor() {
     super();
@@ -255,7 +258,7 @@ export default class Knob extends Mod {
       return;
     }
 
-    const targetControlSignal = target.getRecallSignal(targetPlugPosition);
+    const targetControlSignal = this.knobMemory?.get(target, targetPlugPosition) ?? null;
     if (targetControlSignal instanceof ControlSignal) {
       this.animateToValue(targetControlSignal.value);
     } else {
