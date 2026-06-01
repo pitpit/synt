@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import { Analyser as ToneAnalyser } from 'tone';
+import { Analyser as ToneAnalyser, Gain as ToneGain } from 'tone';
 import type { ToneAudioNode } from 'tone';
 import EffectMod from '../core/EffectMod';
 import Mod from '../core/Mod';
@@ -15,6 +15,8 @@ export default class Oscilloscope extends EffectMod {
 
   private animationFrameId: number | null = null;
 
+  private _upmixNode: ToneGain | null = null;
+
   /** Number of samples drawn per frame — controls time window width. Range [16, 2048]. */
   private samples: number = 128;
 
@@ -28,6 +30,30 @@ export default class Oscilloscope extends EffectMod {
 
   protected createEffectNode(): ToneAudioNode {
     return new ToneAnalyser({ type: 'waveform', size: 2048, channels: 2 });
+  }
+
+  /**
+   * Returns a Gain node configured to upmix mono input to stereo, so that a
+   * mono oscillator populates both analyser channels (left=white, right=red).
+   */
+  private ensureUpmixNode(): ToneGain {
+    if (!this._upmixNode) {
+      this._upmixNode = new ToneGain(1);
+      // Force stereo upmixing: 'speakers' interpretation with explicit channelCount=2
+      // maps a mono signal equally to both output channels.
+      const rawGain = (this._upmixNode as unknown as { input: GainNode }).input;
+      if (rawGain) {
+        rawGain.channelCount = 2;
+        rawGain.channelCountMode = 'explicit';
+        rawGain.channelInterpretation = 'speakers';
+      }
+      this._upmixNode.connect(this.ensureEffectNode());
+    }
+    return this._upmixNode;
+  }
+
+  override get audioInputNode(): ToneAudioNode {
+    return this.ensureUpmixNode();
   }
 
   override onSignalChanged(inputSignals: Signals): Signals {
@@ -117,7 +143,8 @@ export default class Oscilloscope extends EffectMod {
       const points: number[] = [];
       for (let i = 0; i < samples; i += 1) {
         points.push(padX + (i / (samples - 1)) * dw);
-        points.push(midY - data[triggerIdx + i] * this.amplitude * (dh / 2 - 2));
+        const y = midY - data[triggerIdx + i] * this.amplitude * (dh / 2 - 2);
+        points.push(Math.max(padY, Math.min(padY + dh, y)));
       }
       return points;
     };
@@ -165,6 +192,10 @@ export default class Oscilloscope extends EffectMod {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
+    }
+    if (this._upmixNode) {
+      this._upmixNode.dispose();
+      this._upmixNode = null;
     }
     super.onSnatched();
   }

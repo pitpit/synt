@@ -13,7 +13,7 @@ test('oscilloscope passes audio through: osc → scope → speaker', () => {
   scope.plug([oscillator, null, null, null]);
   speaker.plug([scope, null, null, null]);
 
-  expect(oscillator.node?.connect).toHaveBeenCalledWith(scope.node);
+  expect(oscillator.node?.connect).toHaveBeenCalledWith(scope.audioInputNode);
   expect(scope.node?.connect).toHaveBeenCalledWith(speaker.audioInputNode);
 });
 
@@ -38,11 +38,12 @@ test('snatch oscilloscope disconnects and disposes waveform node', () => {
   scope.plug([oscillator, null, null, null]);
   speaker.plug([scope, null, null, null]);
 
+  const scopeInput = scope.audioInputNode;
   const scopeNode = scope.node;
   const speakerInput = speaker.audioInputNode;
   scope.snatch();
 
-  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(scopeNode);
+  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(scopeInput);
   expect(scopeNode?.disconnect).toHaveBeenCalledWith(speakerInput);
   expect(scopeNode?.dispose).toHaveBeenCalledTimes(1);
 });
@@ -125,4 +126,43 @@ test('knob connected to WEST sets vertical zoom without throwing', () => {
   // At default 0.5 it equals exactly 1 (geometric midpoint), so check extremes via formula
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expect((scope as any).amplitude).toBeCloseTo(1, 5);
+});
+
+test('waveform Y coordinates are clamped within display bounds when amplitude is large', () => {
+  const oscillator = new TestOscillator();
+  const scope = new Oscilloscope();
+
+  oscillator.plug([null, null, null, null]);
+  scope.plug([oscillator, null, null, null]);
+
+  // Force maximum amplitude
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (scope as any).amplitude = 10;
+
+  // Return a saturated waveform (value = 1.0 throughout)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const analyserNode = (scope as any).effectNode;
+  const saturated = new Float32Array(2048).fill(1.0);
+  analyserNode.getValue.mockReturnValue([saturated, saturated]);
+
+  let animCallback: FrameRequestCallback | null = null;
+  const rafSpy = jest.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((cb) => {
+    animCallback = cb;
+    return 1;
+  });
+
+  const group = new Konva.Group({ width: 200, height: 100 });
+  scope.draw(group);
+  animCallback!(0);
+  rafSpy.mockRestore();
+
+  // w=200, h=100 → padY=10, dh=80 → valid Y range: [10, 90]
+  const padY = 10;
+  const dh = 80;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const points = (scope as any).waveformLineLeft.points() as number[];
+  for (let i = 1; i < points.length; i += 2) {
+    expect(points[i]).toBeGreaterThanOrEqual(padY);
+    expect(points[i]).toBeLessThanOrEqual(padY + dh);
+  }
 });

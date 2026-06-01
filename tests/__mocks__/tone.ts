@@ -1,5 +1,10 @@
 const createGainNode = () => ({
   gain: { value: 0.5 },
+  input: {
+    channelCount: 2,
+    channelCountMode: 'max',
+    channelInterpretation: 'speakers',
+  },
   connect: jest.fn(),
   disconnect: jest.fn(),
   dispose: jest.fn(),
