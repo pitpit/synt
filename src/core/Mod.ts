@@ -309,9 +309,9 @@ export default abstract class Mod {
    * A mod is an entry if it has at least one linked OUT plug and no IN plug (linked or not)
    */
   isEntry(): boolean {
-    const haveIn = this.plugs.items.some((plug: Plug) => plug.type === PlugType.IN);
-    const haveOut = this.plugs.items.some((plug: Plug) => plug.type === PlugType.OUT);
-    return haveOut && !haveIn;
+    const haveIn = this.plugs.items.some((plug: Plug) => plug.type === PlugType.IN || plug.type === PlugType.CTRLIN);
+    const haveLinkedOut = this.plugs.items.some((plug: Plug) => plug.isOutput());
+    return haveLinkedOut && !haveIn;
   }
 
   /**
