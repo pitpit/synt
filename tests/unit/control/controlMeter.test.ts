@@ -9,8 +9,8 @@ import Speaker from '../../../src/output/Speaker';
 function stubDisplay(meter: ControlMeter): { getText(): string } {
   let value = '0.000';
   const mock = {
-    text(v?: string): string | void {
-      if (v !== undefined) { value = v; return; }
+    text(v?: string): string | undefined {
+      if (v !== undefined) { value = v; return undefined; }
       return value;
     },
     getLayer: () => null,
