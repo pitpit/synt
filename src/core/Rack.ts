@@ -350,6 +350,7 @@ export default class Rack {
       this.getFromGrid(mod.x - 1, mod.y),              // West
     ]);
     this.layer.batchDraw();
+    mod.onAdded();
   }
 
   private initModInLayer(mod: Mod, layer: Konva.Layer): void {
@@ -371,6 +372,7 @@ export default class Rack {
         this.getFromGrid(mod.x, mod.y + mod.height),     // South
         this.getFromGrid(mod.x - 1, mod.y),              // West
       ]);
+      mod.onAdded();
     });
 
     mod.events.on('delete', () => {

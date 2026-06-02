@@ -2,11 +2,21 @@ import { expect, test } from '@jest/globals';
 import MidiIn from '../../../src/control/MidiIn';
 import Speaker from '../../../src/output/Speaker';
 import TestOscillator from '../oscillator/TestOscillator';
+import ControlSignal from '../../../src/core/ControlSignal';
+import PlugPosition from '../../../src/core/PlugPosition';
 
-// Helper to read the current gain value from MidiIn's underlying Tone.js node.
-// ToneGain is mocked in tests/__mocks__/tone.ts; gain.value is a plain property.
-function gainValue(midiIn: MidiIn): number {
-  return (midiIn.audioInputNode as unknown as { gain: { value: number } }).gain.value;
+// Helper to access the mock AmplitudeEnvelope node on MidiIn.
+function envelopeNode(midiIn: MidiIn) {
+  return midiIn.audioInputNode as unknown as {
+    triggerAttack: jest.Mock;
+    triggerRelease: jest.Mock;
+  };
+}
+
+// Helper to read the current CTRLOUT (WEST plug) signal value.
+function ctrlOutValue(midiIn: MidiIn): number | null {
+  const signals = (midiIn as unknown as { outputSignals: (ControlSignal | null)[] }).outputSignals;
+  return signals[PlugPosition.WEST]?.value ?? null;
 }
 
 test('1 oscillator + 1 midiIn + 1 speaker connects audio graph', () => {
@@ -31,11 +41,11 @@ test('snatch midiIn disconnects oscillator and disposes gain node', () => {
   midiIn.plug([oscillator, null, null, null]);
   speaker.plug([midiIn, null, null, null]);
 
-  const gainNode = midiIn.audioInputNode;
+  const envNode = midiIn.audioInputNode;
   midiIn.snatch();
 
-  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(gainNode);
-  expect(gainNode.dispose).toHaveBeenCalledTimes(1);
+  expect(oscillator.node?.disconnect).toHaveBeenCalledWith(envNode);
+  expect(envNode.dispose).toHaveBeenCalledTimes(1);
 });
 
 test('snatch oscillator disconnects from midiIn', () => {
@@ -52,95 +62,158 @@ test('snatch oscillator disconnects from midiIn', () => {
   expect(oscNode?.disconnect).toHaveBeenCalledWith(gainNode);
 });
 
-test('trigger NoteOn message sets gain from velocity', () => {
+test('trigger NoteOn message triggers attack with velocity', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0x90, 60, 100); // learn NoteOn Ch1 note 60
-  midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger
+  midiIn.receiveMIDIMessage(0x90, 60, 80);
 
-  expect(gainValue(midiIn)).toBeCloseTo(80 / 127);
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 80 / 127);
 });
 
-test('NoteOff message after NoteOn trigger resets gain to 0', () => {
+test('NoteOff message after NoteOn trigger releases envelope', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0x90, 60, 100); // learn
   midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger
   midiIn.receiveMIDIMessage(0x80, 60, 0);   // NoteOff
 
-  expect(gainValue(midiIn)).toBe(0);
+  expect(envelopeNode(midiIn).triggerRelease).toHaveBeenCalled();
 });
 
-test('NoteOn velocity 0 treated as release and resets gain to 0', () => {
+test('NoteOn velocity 0 treated as release — triggers release', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0x90, 60, 100); // learn
   midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger
-  midiIn.receiveMIDIMessage(0x90, 60, 0);   // NoteOn vel=0 → release
+  midiIn.receiveMIDIMessage(0x90, 60, 0);   // NoteOn vel=0 → release (same note)
 
-  expect(gainValue(midiIn)).toBe(0);
+  expect(envelopeNode(midiIn).triggerRelease).toHaveBeenCalled();
 });
 
-test('different note on same channel triggers gate at that note velocity', () => {
+test('NoteOn velocity 0 for a NEW note triggers attack with default velocity (device sends vel-0 always)', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0x90, 60, 100); // learn (any NoteOn Ch1)
-  midiIn.receiveMIDIMessage(0x90, 64, 80);  // different note — still triggers
+  midiIn.receiveMIDIMessage(0x90, 64, 0);   // press note 64 with vel=0 → default 64/127
 
-  expect(gainValue(midiIn)).toBeCloseTo(80 / 127);
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 64 / 127);
 });
 
-test('message with different channel does not affect gain', () => {
+test('any NoteOn triggers envelope at that note velocity', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0x91, 60, 100); // learn Ch2 note 60
-  const before = gainValue(midiIn);
-  midiIn.receiveMIDIMessage(0x90, 60, 80);  // Ch1 note 60 — different channel
+  midiIn.receiveMIDIMessage(0x90, 64, 80);
 
-  expect(gainValue(midiIn)).toBe(before);
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 80 / 127);
 });
 
-test('realtime message (0xF8 clock) is ignored during learn', () => {
+test('realtime message (0xF8 clock) is ignored', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
   midiIn.receiveMIDIMessage(0xf8, 0, 0); // MIDI clock — should be ignored
-  // learnPending should still be true; the real trigger should work next
-  midiIn.receiveMIDIMessage(0x90, 60, 100); // learn
-  midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger
+  midiIn.receiveMIDIMessage(0x90, 60, 80);
 
-  expect(gainValue(midiIn)).toBeCloseTo(80 / 127);
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 80 / 127);
 });
 
-test('CC message sets gain from value', () => {
+// ---------------------------------------------------------------------------
+// CTRLOUT (WEST plug) — pitch CV
+// ---------------------------------------------------------------------------
+
+test('pitch mode: CTRLOUT outputs noteToCV on NoteOn trigger', () => {
+  const midiIn = new MidiIn();
+  midiIn.receiveMIDIMessage(0x90, 69, 80);  // A4 (note 69)
+
+  const expected = 440 * Math.pow(2, (69 - 69) / 12) / 400; // 1.1
+  expect(ctrlOutValue(midiIn)).toBeCloseTo(expected);
+});
+
+test('pitch mode: second note on same channel updates CTRLOUT to new pitch', () => {
+  const midiIn = new MidiIn();
+  midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger note 60
+  midiIn.receiveMIDIMessage(0x90, 69, 80);  // trigger note 69 (A4) while 60 still held
+
+  const expected = 440 * Math.pow(2, (69 - 69) / 12) / 400; // CV for A4
+  expect(ctrlOutValue(midiIn)).toBeCloseTo(expected);
+});
+
+test('pitch mode: CTRLOUT holds last pitch on NoteOff release (allows envelope release to complete)', () => {
+  const midiIn = new MidiIn();
+  midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger note 60
+  const pitchAfterNoteOn = ctrlOutValue(midiIn);
+  midiIn.receiveMIDIMessage(0x80, 60, 0);   // NoteOff
+
+  expect(ctrlOutValue(midiIn)).toBe(pitchAfterNoteOn);
+});
+
+// ---------------------------------------------------------------------------
+// Oscillator frequency (end-to-end CTRLOUT → CTRLIN)
+// ---------------------------------------------------------------------------
+
+test('pitch mode: pressing a note updates connected oscillator frequency', () => {
+  const midiIn = new MidiIn();
+  const oscillator = new TestOscillator();
+
+  // Connect MidiIn CTRLOUT (WEST) → Oscillator CTRLIN (EAST)
+  midiIn.plug([null, null, null, oscillator]);
+
+  midiIn.receiveMIDIMessage(0x90, 69, 80);  // A4 (note 69)
+
+  expect(oscillator.node?.frequency.value).toBeCloseTo(440);
+});
+
+test('pitch mode: pressing a second note updates connected oscillator frequency', () => {
+  const midiIn = new MidiIn();
+  const oscillator = new TestOscillator();
+
+  midiIn.plug([null, null, null, oscillator]);
+
+  midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger note 60
+
+  const freqBefore = oscillator.node?.frequency.value;
+
+  midiIn.receiveMIDIMessage(0x90, 69, 80);  // trigger note 69 while 60 held
+
+  expect(oscillator.node?.frequency.value).toBeCloseTo(440);
+  expect(oscillator.node?.frequency.value).not.toBeCloseTo(freqBefore as number);
+});
+
+// ---------------------------------------------------------------------------
+// Polyphonic / overlapping notes
+// ---------------------------------------------------------------------------
+
+test('releasing first note (vel-0) while second note is held does not silence output', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0xb0, 7, 64); // learn CC Ch1 #7 val=64
-  midiIn.receiveMIDIMessage(0xb0, 7, 96); // trigger CC val=96
+  midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger note 60
+  midiIn.receiveMIDIMessage(0x90, 65, 80);  // press note 65 — second pitch signal
+  // NoteOn-vel-0 for note 60 (not the active note 65): treated as a new press
+  // with default velocity — activeNote becomes 60, attack triggered at 64/127.
+  midiIn.receiveMIDIMessage(0x90, 60, 0);
 
-  expect(gainValue(midiIn)).toBeCloseTo(96 / 127);
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 64 / 127); // default vel, output is non-zero
 });
 
-test('beginLearn resets a previously learned signature', () => {
+test('releasing active note (vel-0) while no other note held silences output', () => {
   const midiIn = new MidiIn();
 
-  midiIn.beginLearn();
-  midiIn.receiveMIDIMessage(0x90, 60, 100); // learn note 60
   midiIn.receiveMIDIMessage(0x90, 60, 80);  // trigger
+  midiIn.receiveMIDIMessage(0x90, 60, 0);   // release same note via vel-0
 
-  midiIn.beginLearn(); // re-learn
-  midiIn.receiveMIDIMessage(0x90, 62, 100); // learn note 62
-
-  const beforeTrigger = gainValue(midiIn);
-  midiIn.receiveMIDIMessage(0x90, 60, 80); // old note — no longer matches
-  expect(gainValue(midiIn)).toBe(beforeTrigger);
-
-  midiIn.receiveMIDIMessage(0x90, 62, 80); // new note — matches
-  expect(gainValue(midiIn)).toBeCloseTo(80 / 127);
+  expect(envelopeNode(midiIn).triggerRelease).toHaveBeenCalled();
 });
+
+test('device that always sends vel=0: NoteOn triggers, NoteOff releases', () => {
+  const midiIn = new MidiIn();
+
+  midiIn.receiveMIDIMessage(0x90, 36, 0); // press note 36 (vel=0 → default 64/127)
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 64 / 127);
+
+  midiIn.receiveMIDIMessage(0x80, 36, 0); // NoteOff → release
+  expect(envelopeNode(midiIn).triggerRelease).toHaveBeenCalled();
+
+  midiIn.receiveMIDIMessage(0x90, 48, 0); // press another note
+  expect(envelopeNode(midiIn).triggerAttack).toHaveBeenLastCalledWith(undefined, 64 / 127);
+
+  midiIn.receiveMIDIMessage(0x80, 48, 0); // release
+  expect(envelopeNode(midiIn).triggerRelease).toHaveBeenCalledTimes(2);
+});
+
+

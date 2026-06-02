@@ -12,6 +12,21 @@ const createGainNode = () => ({
 
 const Gain = jest.fn(() => createGainNode());
 
+const createAmplitudeEnvelopeNode = () => ({
+  triggerAttack: jest.fn().mockReturnThis(),
+  triggerRelease: jest.fn().mockReturnThis(),
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+  dispose: jest.fn(),
+  input: {
+    channelCount: 2,
+    channelCountMode: 'max',
+    channelInterpretation: 'speakers',
+  },
+});
+
+const AmplitudeEnvelope = jest.fn(() => createAmplitudeEnvelopeNode());
+
 const getDestination = jest.fn(() => ({}));
 
 const createEffectNode = () => {
@@ -66,6 +81,7 @@ const Reverb = jest.fn(() => createEffectNode());
 
 export {
   Gain,
+  AmplitudeEnvelope,
   getDestination,
   Analyser,
   Chorus,
