@@ -71,6 +71,7 @@ interface ModSpec {
   x: number;
   y: number;
   text?: string;
+  value?: number;
 }
 
 interface RackSpec {
@@ -131,6 +132,9 @@ function validateDoc(doc: unknown): string[] {
     if (typeof mod.y !== 'number' || mod.y < 0 || !Number.isInteger(mod.y)) {
       errors.push(`mods[${String(i)}]: <code>y</code> must be a non-negative integer`);
     }
+    if (mod.value !== undefined && (typeof mod.value !== 'number' || mod.value < 0 || mod.value > 1)) {
+      errors.push(`mods[${String(i)}]: <code>value</code> must be a number between 0 and 1`);
+    }
   });
 
   return errors;
@@ -143,6 +147,10 @@ function instantiateMods(specs: ModSpec[]): { mod: Mod; x: number; y: number }[]
       spec.type === 'StickyNote'
         ? new (Ctor as unknown as new (text?: string) => Mod)(spec.text ?? '')
         : new Ctor();
+    if (mod instanceof Knob && spec.value !== undefined) {
+      mod.value = Math.max(0, Math.min(1, spec.value));
+      mod.pos = mod.range * (2 * mod.value - 1);
+    }
     return { mod, x: spec.x, y: spec.y };
   });
 }
@@ -199,6 +207,9 @@ export function exportRack(rack: Rack): string {
     const spec: ModSpec = { type: typeName, x: mod.x, y: mod.y };
     if (mod instanceof StickyNote) {
       spec.text = mod.text;
+    }
+    if (mod instanceof Knob) {
+      spec.value = mod.value;
     }
     mods.push(spec);
   });

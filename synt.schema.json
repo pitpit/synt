@@ -78,6 +78,12 @@
               "text": {
                 "type": "string",
                 "description": "Text content for StickyNote mods."
+              },
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Initial value for Knob mods (0–1)."
               }
             },
             "if": {
