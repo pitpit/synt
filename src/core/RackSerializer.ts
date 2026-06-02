@@ -12,6 +12,7 @@ import TriangleOscillator from '../oscillator/TriangleOscillator';
 import Gate from '../control/Gate';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
+import MidiIn from '../control/MidiIn';
 import Arpeggiator from '../control/Arpeggiator';
 import ControlMeter from '../control/ControlMeter';
 import Oscilloscope from '../control/Oscilloscope';
@@ -39,6 +40,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   HighPassFilter,
   Keyboard,
   Knob,
+  MidiIn,
   Oscilloscope,
   Panner,
   Phaser,

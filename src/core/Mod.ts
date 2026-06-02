@@ -426,6 +426,15 @@ export default abstract class Mod {
   }
 
   /**
+   * Hook called when the mod is first placed in the rack via addMod().
+   * Subclasses can override it to perform initialization that requires
+   * the mod to be live in the rack (e.g. requesting browser permissions).
+   */
+  onAdded(): void {
+    // Do nothing by default
+  }
+
+  /**
    * Hook called after all plugs have been unlinked in snatch().
    * Subclasses can override it to dispose Tone.js nodes.
    */

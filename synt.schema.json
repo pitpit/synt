@@ -48,6 +48,7 @@
                   "HighPassFilter",
                   "Keyboard",
                   "Knob",
+                  "MidiIn",
                   "Oscilloscope",
                   "Panner",
                   "Phaser",
