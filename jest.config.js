@@ -93,6 +93,7 @@ module.exports = {
   moduleNameMapper: {
     '^konva$': '<rootDir>/node_modules/konva/lib/index.js',
     '^tone$': '<rootDir>/tests/__mocks__/tone.ts',
+    '\\.svg$': '<rootDir>/tests/__mocks__/fileMock.ts',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
