@@ -6,6 +6,7 @@ import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
 import ControlSignal from '../core/ControlSignal';
 import Modal from '../ui/Modal';
+import midiInSvg from './midi-in.svg';
 
 export default class MidiIn extends EffectMod {
   private static instanceCounter = 0;
@@ -152,24 +153,16 @@ export default class MidiIn extends EffectMod {
   }
 
   draw(group: Konva.Group): void {
-    const cx = group.width() / 2;
-    const cy = group.height() / 2 - 6;
-
-    // DIN-5 MIDI connector outline
-    group.add(new Konva.Circle({
-      x: cx, y: cy, radius: 24, stroke: 'black', strokeWidth: 3,
-    }));
-
-    // 5 pin holes in standard DIN-5 pattern
-    const pins: [number, number][] = [
-      [cx - 9,  cy - 8],
-      [cx + 9,  cy - 8],
-      [cx - 14, cy + 6],
-      [cx + 14, cy + 6],
-      [cx,      cy + 12],
-    ];
-    pins.forEach(([px, py]) => {
-      group.add(new Konva.Circle({ x: px, y: py, radius: 1.5, fill: 'black' }));
+    const size = 64;
+    Konva.Image.fromURL(midiInSvg, (img) => {
+      img.setAttrs({
+        x: (group.width() - size) / 2,
+        y: 16,
+        width: size,
+        height: size,
+      });
+      group.add(img);
+      group.getLayer()?.batchDraw();
     });
 
     group.add(new Konva.Text({
