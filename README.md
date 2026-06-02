@@ -84,7 +84,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 ### Real world integration
 
-- [ ] add midi
+- [X] add midi
 - [ ] Keyboard input (assign a key to a switchOn)
 - [ ] set a direct value for a Mod?
 - [ ] have a smaller js bundle for smaller or older device acting as a client. Ability to push remotly a synt setup to it?

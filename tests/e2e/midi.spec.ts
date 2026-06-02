@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupMIDIMock, sendMIDIMessage } from './helpers/midi';
+import { setupMIDIMock, setupMIDIUnsupported, setupMIDIDenied, sendMIDIMessage } from './helpers/midi';
 
 // Rack layout constants — must stay in sync with src/core/Rack.ts
 const SLOT = 100;
@@ -196,6 +196,68 @@ test.describe('MidiIn — Web MIDI integration', () => {
     const bodyText = await page.locator('.tingle-modal__box').textContent();
     expect(bodyText).toContain('Learned:');
     expect(bodyText).toContain('Note On');
+
+    expect(errors).toHaveLength(0);
+  });
+});
+
+test.describe('MidiIn — Web MIDI unsupported browser', () => {
+  test('double-click shows unavailability message when API is absent', async ({
+    page,
+    isMobile,
+  }) => {
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await setupMIDIUnsupported(page);
+    await gotoMidiRack(page);
+
+    const canvas = page.locator('canvas').first();
+    const center = modCenter(0, 0);
+
+    if (isMobile) {
+      await canvas.tap({ position: center });
+      await canvas.tap({ position: center });
+    } else {
+      await canvas.dblclick({ position: center });
+    }
+
+    await page.waitForSelector('.tingle-modal__box', { timeout: 3000 });
+    const bodyText = await page.locator('.tingle-modal__box').textContent();
+    expect(bodyText).toContain('MIDI unavailable');
+
+    expect(errors).toHaveLength(0);
+  });
+});
+
+test.describe('MidiIn — Web MIDI access denied', () => {
+  test('double-click shows unavailability message when permission is denied', async ({
+    page,
+    isMobile,
+  }) => {
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await setupMIDIDenied(page);
+    await gotoMidiRack(page);
+
+    const canvas = page.locator('canvas').first();
+    const center = modCenter(0, 0);
+
+    if (isMobile) {
+      await canvas.tap({ position: center });
+      await canvas.tap({ position: center });
+    } else {
+      await canvas.dblclick({ position: center });
+    }
+
+    await page.waitForSelector('.tingle-modal__box', { timeout: 3000 });
+    const bodyText = await page.locator('.tingle-modal__box').textContent();
+    expect(bodyText).toContain('MIDI unavailable');
 
     expect(errors).toHaveLength(0);
   });

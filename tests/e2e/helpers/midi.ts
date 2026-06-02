@@ -64,6 +64,34 @@ export async function setupMIDIMock(page: Page): Promise<void> {
  * @param data1  - First data byte (e.g. note number)
  * @param data2  - Second data byte (e.g. velocity); use 127 for 2-byte messages
  */
+/**
+ * Simulates a browser that does not implement the Web MIDI API at all
+ * (e.g. Firefox, Safari without a MIDI extension).  Must be called BEFORE
+ * `page.goto()`.
+ */
+export async function setupMIDIUnsupported(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      get: () => undefined,
+      configurable: true,
+    });
+  });
+}
+
+/**
+ * Simulates a browser where the user has denied MIDI permission (or the
+ * permission prompt is blocked).  `requestMIDIAccess` is present but rejects
+ * with a `SecurityError` DOMException.  Must be called BEFORE `page.goto()`.
+ */
+export async function setupMIDIDenied(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      get: () => () => Promise.reject(new DOMException('Permission denied', 'SecurityError')),
+      configurable: true,
+    });
+  });
+}
+
 export async function sendMIDIMessage(
   page: Page,
   status: number,
