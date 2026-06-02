@@ -216,6 +216,17 @@ const PROTOS: ProtoEntry[] = [
 
 `x` and `y` are grid column/row positions in the palette (0-based). Pick an unused cell.
 
+### 4. `docs/05-module-reference.md` — module catalogue
+
+Add an entry for the new module (or update the existing one when changing an existing module). Include:
+
+- One-sentence purpose description
+- Plug layout table (NORTH / EAST / SOUTH / WEST, type, role)
+- CV mapping table (which plug → which parameter → which numeric range)
+- Any noteworthy behaviour or caveats
+
+See [05-module-reference.md](05-module-reference.md) for the format to follow.
+
 ---
 
 ## Testing
