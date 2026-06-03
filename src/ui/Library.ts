@@ -21,7 +21,6 @@ import ControlMeter from '../control/ControlMeter';
 import MidiIn from '../control/MidiIn';
 import Oscilloscope from '../control/Oscilloscope';
 import Speaker from '../output/Speaker';
-import StickyNote from '../core/StickyNote';
 
 type ModConstructor = new () => Mod;
 type Category = 'oscillator' | 'effect' | 'filter' | 'control' | 'output' | 'misc';
@@ -53,7 +52,6 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Oscilloscope,       label: 'scope',   category: 'control' },
   { Ctor: Speaker,            label: 'speaker', category: 'output' },
   { Ctor: MidiIn,             label: 'midi',    category: 'misc' },
-  { Ctor: StickyNote,         label: 'note',    category: 'misc' },
 ];
 
 const CATEGORY_ORDER: Category[] = ['oscillator', 'effect', 'filter', 'control', 'output', 'misc'];
@@ -66,6 +64,8 @@ const PANEL_PAD = 8;
 const SCROLLBAR_W = 6;
 /** Right margin for the scrollbar. */
 const SCROLLBAR_MARGIN = 4;
+/** Number of module columns visible in desktop library panel. */
+const DESKTOP_COLS = 4;
 /** Panel slide animation duration in ms. */
 const PANEL_ANIMATION_MS = 220;
 
@@ -117,7 +117,8 @@ export default class Library {
   }
 
   private get panelWidth(): number {
-    return window.innerWidth <= 768 ? window.innerWidth : Math.floor(window.innerWidth / 3);
+    if (window.innerWidth <= 768) return window.innerWidth;
+    return (PANEL_PAD * 2) + (this.rack.slotWidth * DESKTOP_COLS) + SCROLLBAR_W + (SCROLLBAR_MARGIN * 2);
   }
 
   /** Called from Rack.draw() with the main layer. Rebuilds the panel. */
@@ -127,6 +128,8 @@ export default class Library {
     this.mainLayer = layer;
     this.scrollY = 0;
     this.buildPanel(layer);
+    this.animatedScreenX = this.getTargetScreenX();
+    this.panelGroup?.visible(this.isOpen);
     this.syncTransform();
 
     // Re-register transform listeners under a namespace so they can be cleared
@@ -156,8 +159,8 @@ export default class Library {
 
   open(): void {
     this.isOpen = true;
-    this.rack.stage.draggable(false);
-    this.rack.disableStageGestures();
+    this.applyPanelTransform(this.animatedScreenX);
+    this.panelGroup?.visible(true);
     this.syncToggleButtonState();
     this.animatePanelToState();
   }
@@ -180,6 +183,7 @@ export default class Library {
 
   private syncToggleButtonState(): void {
     if (!this.toggleButton) return;
+    this.toggleButton.textContent = this.isOpen ? 'x' : '+';
     this.toggleButton.classList.toggle('is-open', this.isOpen);
     this.toggleButton.setAttribute('aria-pressed', this.isOpen ? 'true' : 'false');
     this.toggleButton.setAttribute('aria-label', this.isOpen ? 'Close mod library' : 'Open mod library');
@@ -202,6 +206,14 @@ export default class Library {
    * Animates the panel sliding in/out based on isOpen.
    */
   private syncTransform(): void {
+    if (this.animationFrameId === null && !this.isOpen) {
+      this.panelGroup?.visible(false);
+      this.mainLayer?.batchDraw();
+      return;
+    }
+
+    this.panelGroup?.visible(true);
+
     if (this.animationFrameId !== null) {
       this.applyPanelTransform(this.animatedScreenX);
       return;
@@ -262,6 +274,7 @@ export default class Library {
 
       this.animatedScreenX = targetScreenX;
       this.animationFrameId = null;
+      this.panelGroup?.visible(this.isOpen);
       this.applyPanelTransform(this.animatedScreenX);
     };
 
@@ -279,6 +292,17 @@ export default class Library {
     // Outer group: no clip — holds both clipped content and unclipped scrollbar.
     this.panelGroup = new Konva.Group();
     layer.add(this.panelGroup);
+
+    // Block stage gestures only while the pointer is over the panel.
+    this.panelGroup.on('mouseenter', () => {
+      if (!this.isOpen) return;
+      rack.stage.draggable(false);
+      rack.disableStageGestures();
+    });
+    this.panelGroup.on('mouseleave', () => {
+      rack.stage.draggable(true);
+      rack.enableStageGestures();
+    });
 
     // Background covers the full panel width.
     this.panelBg = new Konva.Rect({
@@ -401,7 +425,10 @@ export default class Library {
     rack.stage.on('mouseup.libthumb touchend.libthumb', () => {
       if (!thumbDragActive) return;
       thumbDragActive = false;
-      if (!this.isOpen) rack.stage.draggable(true);
+      if (!this.isOpen) {
+        rack.stage.draggable(true);
+        rack.enableStageGestures();
+      }
     });
 
     // Scroll via wheel.
@@ -540,7 +567,10 @@ export default class Library {
         if (upTouch.touches && upTouch.touches.length > 0) return;
 
         rack.stage.off('.libghost');
-        if (!this.isOpen) rack.stage.draggable(true);
+        if (!this.isOpen) {
+          rack.stage.draggable(true);
+          rack.enableStageGestures();
+        }
         document.body.style.cursor = '';
 
         if (snapHighlight) {

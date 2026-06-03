@@ -156,7 +156,13 @@ h1, h2, h3, h4, h5, h6 {
   touch-action: manipulation;
   transition: background 0.15s, color 0.15s;
 
-  &:hover,
+  @media (hover: hover) {
+    &:hover {
+      background: $black;
+      color: $white;
+    }
+  }
+
   &:focus-visible {
     background: $black;
     color: $white;
@@ -181,7 +187,7 @@ h1, h2, h3, h4, h5, h6 {
 // STICKY NOTE BUTTON
 #sticky-note-btn {
   position: fixed;
-  bottom: 76px;
+  bottom: 148px;
   right: 16px;
   z-index: 1000;
   display: flex;
@@ -199,7 +205,13 @@ h1, h2, h3, h4, h5, h6 {
   touch-action: manipulation;
   transition: background 0.15s, color 0.15s;
 
-  &:hover,
+  @media (hover: hover) {
+    &:hover {
+      background: $black;
+      color: $white;
+    }
+  }
+
   &:focus-visible {
     background: $black;
     color: $white;
@@ -223,7 +235,13 @@ h1, h2, h3, h4, h5, h6 {
   touch-action: manipulation;
   transition: background 0.15s, color 0.15s;
 
-  &:hover,
+  @media (hover: hover) {
+    &:hover {
+      background: $black;
+      color: $white;
+    }
+  }
+
   &:focus-visible {
     background: $black;
     color: $white;
@@ -251,7 +269,13 @@ h1, h2, h3, h4, h5, h6 {
     white-space: nowrap;
     touch-action: manipulation;
 
-    &:hover,
+    @media (hover: hover) {
+      &:hover {
+        background: $black;
+        color: $white;
+      }
+    }
+
     &:focus-visible {
       background: $black;
       color: $white;
