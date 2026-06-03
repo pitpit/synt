@@ -3,7 +3,7 @@ import * as Tone from 'tone';
 import Mod from './Mod';
 import Annotation from '../annotation/Annotation';
 import StickyNote from '../annotation/StickyNote';
-import SystemRack from './SystemRack';
+import type Library from '../ui/Library';
 import KnobMemory, { isKnobMemoryConsumer } from './KnobMemory';
 
 export default class Rack {
@@ -25,9 +25,11 @@ export default class Rack {
 
   private _resizeListenerAdded = false;
 
+  private gesturesEnabled = true;
+
   layer: Konva.Layer | null = null;
 
-  systemRack: SystemRack | null = null;
+  library: Library | null = null;
 
   mods: Array<Mod> = [];
 
@@ -163,6 +165,16 @@ export default class Rack {
     }
   }
 
+  /** Disable wheel-zoom and pinch-zoom (called when Library panel opens). */
+  disableStageGestures(): void {
+    this.gesturesEnabled = false;
+  }
+
+  /** Re-enable wheel-zoom and pinch-zoom. */
+  enableStageGestures(): void {
+    this.gesturesEnabled = true;
+  }
+
   /**
    * Draw the rack and all positionned Mods.
    * Attach events.
@@ -194,9 +206,6 @@ export default class Rack {
     const layer = new Konva.Layer();
     this.layer = layer;
 
-    // Draw the system rack (above the main rack) if configured
-    this.systemRack?.draw(layer);
-
     layer.add(new Konva.Rect({
       x: 0,
       y: 0,
@@ -224,12 +233,16 @@ export default class Rack {
     });
     this.stage.add(annotationLayer);
 
+    // Draw the library panel in its own layer on top of the rack layer
+    this.library?.draw(this.stage);
+
     // Enable single-finger pan on empty canvas areas
     this.stage.draggable(true);
 
     // Wheel zoom centered on pointer
     this.stage.on('wheel', (e) => {
       e.evt.preventDefault();
+      if (!this.gesturesEnabled) return;
       const scaleBy = 1.05;
       const oldScale = this.stage.scaleX();
       const pointer = this.stage.getPointerPosition();
@@ -256,6 +269,7 @@ export default class Rack {
       const { touches } = e.evt;
       if (touches.length >= 2) {
         e.evt.preventDefault();
+        if (!this.gesturesEnabled) return;
         // Disable drag during pinch to avoid conflation
         this.stage.draggable(false);
 
@@ -486,10 +500,11 @@ export default class Rack {
     );
 
     mod.events.on('checkDeleteZone', (x: number, y: number, w: number, h: number, result: { inDeleteZone: boolean }) => {
-      result.inDeleteZone = this.systemRack?.isInDeleteZone(x, y, w, h) ?? false;
-    });
-    mod.events.on('deleteZoneChange', (isIn: boolean) => {
-      this.systemRack?.setDeleteHighlight(isIn);
+      const centerX = x + w / 2;
+      const centerY = y + h / 2;
+      const rackMaxX = this.stageWidth * this.slotWidth + 2 * this.padding;
+      const rackMaxY = this.stageHeight * this.slotHeight + 2 * this.padding;
+      result.inDeleteZone = centerX < 0 || centerX > rackMaxX || centerY < 0 || centerY > rackMaxY;
     });
   }
 }

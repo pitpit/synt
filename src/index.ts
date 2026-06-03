@@ -1,12 +1,12 @@
 import Rack from './core/Rack';
-import SystemRack from './core/SystemRack';
+import Library from './ui/Library';
 import { importRack } from './core/RackSerializer';
 import BurgerMenu from './ui/BurgerMenu';
 import createStickyNoteButton from './ui/StickyNoteButton';
 import './index.scss';
 
 const rack = new Rack();
-rack.systemRack = new SystemRack(rack);
+rack.library = new Library(rack);
 
 new BurgerMenu(rack);
 createStickyNoteButton();

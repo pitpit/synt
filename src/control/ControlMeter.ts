@@ -45,7 +45,7 @@ export default class ControlMeter extends Mod {
     return [null, null, null, ctrlSignal];
   }
 
-  protected override onUnlinked(plugPosition: number, _prev: Mod): void {
+  protected override onUnlinked(plugPosition: number, _: Mod): void {
     if (plugPosition === PlugPosition.EAST) {
       this.cascadeReset();
     }

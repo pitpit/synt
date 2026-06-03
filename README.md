@@ -90,8 +90,11 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] have a smaller js bundle for smaller or older device acting as a client. Ability to push remotly a synt setup to it?
 - [X] import / export in yaml
 
+
 ### Modules
 
+- https://www.youtube.com/shorts/kY7BvhUemLE
+- https://teenage.engineering/store/po-33
 - [ ] create duplicable/instanciable modules (to build more complex instruments)
 - [ ] Add a file player Mod?
 - [ ] Protect against link loop?
@@ -129,7 +132,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 #### Effects
 - [ ] Delay — echo with time, feedback, and wet/dry
-- [ ] Reverb — convolution or algorithmic reverb
+- [X] Reverb — convolution or algorithmic reverb
 - [X] Chorus — multi-voice pitch detune effect
 - [X] Flanger — short delay with LFO modulation
 - [X] Phaser — all-pass chain swept by LFO
@@ -151,14 +154,44 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] Multiplier / Switch — routes a signal to one of N outputs
 - [ ] Scope / Oscilloscope — visual display of an audio or CV waveform
 
+
+### Built module
+
+#### Step sequencer
+
+- Clock / Tempo
+- Sequential switch (8 steps)
+
+#### arpegiator
+- **Clock / Tempo:** To drive the speed of the arpeggio.
+- **Sequencer (8 or 16 steps):** To program the specific note intervals of your chord.
+- **LFO-to-CV:** To create automated movement (like shifting octaves).
+- **Mixer or Attenuverter:** To combine our note sequence with our octave shifts.
+- **Quantizer:** To make sure all the raw voltages snap perfectly to musical notes.
+- **An oscillator :** To actually hear the sound.
+
+Step A: Establishing the RhythmPatch the Clock Out into the Clock In of the Sequencer. Your sequencer is now stepping at the speed of your project's tempo.
+
+Step B: Programming the ChordOn your Sequencer, manually dial in the notes of a chord across the steps. For example, if you want a minor triad, dial the knobs to step voltages that represent the Root, Minor 3rd, 5th, and Octave.Patch the CV Out of the sequencer into Input 1 of your Mixer/Attenuverter.
+
+Step C: Creating the "Octave Jump" Feature (The Arpeggiator Magic)An arpeggiator often jumps up an octave on subsequent repeats. We can fake this using a slow LFO or a second sequencer.4. Take a stepped or square wave from your LFO-to-CV (set to a slow rate, like 1/4 the speed of your sequencer).5. Patch that LFO into Input 2 of your Mixer/Attenuverter. Use the level knob to calibrate it so that when the LFO goes high, it adds exactly $1\text{V}$ (which equals one octave in the standard $1\text{V/Oct}$ protocol).
+
+Step D: Keeping it in TuneBecause manual sequencer knobs and LFOs are imprecise, we need a musical safety net.6. Patch the Output of your Mixer (which is now your Chord CV + Octave Shift CV combined) into the input of the Quantizer.7. Select your desired scale on the Quantizer. It will instantly correct the mathematical voltages into perfect musical pitches.
+
+Step E: Making SoundPatch the Quantizer CV Out into the 1V/Oct Input of your Wavetable Oscillator.Patch the Gate Out of your Sequencer into the Gate Input of the ADSR envelope.Route the ADSR Output to the CV input of your VCA to shape the volume of each arpeggiated note.
+
+
 ### UX
 
-- [X] extend the rotate/swipe zone of the knob to the outer circle
-- [X] extends the zone to click or tap the switchOn to the outter-square
-- [ ] on Rack, "drag" cursor when the mod can be drag, "finger" cursor when it can be click, "pan" cursor when the stage can be pan
-- [X] import/export current value of a mod in yaml
+- [ ] redesign StickyNote to note be in the Rack anymore and be on a layer above. Save the position in yaml export and restore it.
+- [ ] multi selection & multi drag'n drop for mass deletion
+- [ ] on Rack, set a "pan" cursor when the cursor is hover the stage and can be pan
 - [ ] Add several layers to put more Mods?
 - [ ] Ability to rotate Mod on Rack?
+- [X] import/export current value of the Knob in yaml
+- [X] extend the rotate/swipe zone of the knob to the outer circle
+- [X] extends the zone to click or tap the switchOn to the outter-square
+- [X] on Rack, "drag" cursor when the mod can be drag, "finger" cursor when it can be click
 - [X] drag'n drop new Mod in the interface
 - [X] add a sticky note mode to write info / doc / quick tour to explain how to use the interface
 - [X] replace the green and the red marker by a red & green marker (to show which plug can plug altogether)
@@ -166,7 +199,7 @@ An HTML report is generated in `playwright-report/` after each run.
 
 ### Codebase
 
-- [X] use vite preview instead of http-server for e2e tests
+- [X] Use vite preview instead of http-server for e2e tests
 - [ ] Enable again e2e test for firefox "AudioContext reaches running state after user gesture and Tone.start() does not reject"
 - [X] Add a public licence
 - [X] Switch from Gibberish to Tone.js?
