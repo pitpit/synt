@@ -73,9 +73,9 @@ synt:
     - type: Keyboard
       x: 0
       y: 5
-    - type: StickyNote
-      x: 5
-      y: 0
+  annotations:
+    - x: 504
+      y: 4
       text: |
         Welcome to the modular synthesizer!
 

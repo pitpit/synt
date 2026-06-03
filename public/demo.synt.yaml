@@ -16,9 +16,9 @@ synt:
     - type: Speaker
       x: 1
       y: 5
-    - type: StickyNote
-      x: 0
-      y: 0
+  annotations:
+    - x: 400
+      y: 400
       text: |
         Welcome to Synt, the modular synthesizer!
 

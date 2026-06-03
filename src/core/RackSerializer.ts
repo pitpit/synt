@@ -2,7 +2,7 @@ import * as yaml from 'js-yaml';
 import tingle from 'tingle.js';
 import Rack from './Rack';
 import Mod from './Mod';
-import StickyNote from './StickyNote';
+import StickyNote from '../annotation/StickyNote';
 import Speaker from '../output/Speaker';
 import Keyboard from '../control/Keyboard';
 import SineOscillator from '../oscillator/SineOscillator';
@@ -48,13 +48,14 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   SawtoothOscillator,
   SineOscillator,
   Speaker,
-  StickyNote,
   SquareOscillator,
   SwitchOn,
   Tremolo,
   TriangleOscillator,
   Vibrato,
 };
+
+const KNOWN_TYPES = new Set(Object.keys(MOD_REGISTRY));
 
 const REVERSE_REGISTRY = new Map<AnyModConstructor, string>(
   Object.entries(MOD_REGISTRY).map(([name, ctor]) => [ctor, name]),
@@ -70,8 +71,13 @@ interface ModSpec {
   type: string;
   x: number;
   y: number;
-  text?: string;
   value?: number;
+}
+
+interface AnnotationSpec {
+  x: number;
+  y: number;
+  text: string;
 }
 
 interface RackSpec {
@@ -83,6 +89,7 @@ interface SyntDoc {
   synt: {
     rack?: RackSpec;
     mods: ModSpec[];
+    annotations?: AnnotationSpec[];
   };
 }
 
@@ -123,7 +130,7 @@ function validateDoc(doc: unknown): string[] {
   synt.mods.forEach((mod, i) => {
     if (!mod.type) {
       errors.push(`mods[${String(i)}]: missing <code>type</code>`);
-    } else if (!(mod.type in MOD_REGISTRY)) {
+    } else if (!KNOWN_TYPES.has(mod.type)) {
       errors.push(`mods[${String(i)}]: unknown type <code>${mod.type}</code>`);
     }
     if (typeof mod.x !== 'number' || mod.x < 0 || !Number.isInteger(mod.x)) {
@@ -137,22 +144,34 @@ function validateDoc(doc: unknown): string[] {
     }
   });
 
+  (synt.annotations ?? []).forEach((ann, i) => {
+    if (typeof ann.x !== 'number' || ann.x < 0) {
+      errors.push(`annotations[${String(i)}]: <code>x</code> must be a non-negative number`);
+    }
+    if (typeof ann.y !== 'number' || ann.y < 0) {
+      errors.push(`annotations[${String(i)}]: <code>y</code> must be a non-negative number`);
+    }
+  });
+
   return errors;
 }
 
 function instantiateMods(specs: ModSpec[]): { mod: Mod; x: number; y: number }[] {
-  return specs.map((spec) => {
-    const Ctor = MOD_REGISTRY[spec.type];
-    const mod =
-      spec.type === 'StickyNote'
-        ? new (Ctor as unknown as new (text?: string) => Mod)(spec.text ?? '')
-        : new Ctor();
-    if (mod instanceof Knob && spec.value !== undefined) {
-      mod.value = Math.max(0, Math.min(1, spec.value));
-      mod.pos = mod.range * (2 * mod.value - 1);
-    }
-    return { mod, x: spec.x, y: spec.y };
-  });
+  return specs
+    .filter((spec) => spec.type !== 'StickyNote')
+    .map((spec) => {
+      const Ctor = MOD_REGISTRY[spec.type];
+      const mod = new Ctor();
+      if (mod instanceof Knob && spec.value !== undefined) {
+        mod.value = Math.max(0, Math.min(1, spec.value));
+        mod.pos = mod.range * (2 * mod.value - 1);
+      }
+      return { mod, x: spec.x, y: spec.y };
+    });
+}
+
+function instantiateNotes(specs: AnnotationSpec[]): { note: StickyNote; x: number; y: number }[] {
+  return specs.map((spec) => ({ note: new StickyNote(spec.text), x: spec.x, y: spec.y }));
 }
 
 function detectOverlaps(
@@ -205,19 +224,23 @@ export function exportRack(rack: Rack): string {
     if (!typeName) return;
 
     const spec: ModSpec = { type: typeName, x: mod.x, y: mod.y };
-    if (mod instanceof StickyNote) {
-      spec.text = mod.text;
-    }
     if (mod instanceof Knob) {
       spec.value = mod.value;
     }
     mods.push(spec);
   });
 
+  const annotations: AnnotationSpec[] = rack.annotations.map((annotation) => ({
+    x: annotation.pixelX,
+    y: annotation.pixelY,
+    text: (annotation as StickyNote).text,
+  }));
+
   const doc: SyntDoc = {
     synt: {
       rack: { width: rack.stageWidth, height: rack.stageHeight },
       mods,
+      ...(annotations.length > 0 ? { annotations } : {}),
     },
   };
 
@@ -249,6 +272,7 @@ export function importRack(yamlStr: string, rack: Rack, options: ImportOptions =
 
   // Instantiate mods to get their actual dimensions for overlap/bounds checking
   const instances = instantiateMods(synt.mods);
+  const noteInstances = instantiateNotes(synt.annotations ?? []);
   const overlapErrors = detectOverlaps(instances, synt.mods, rackWidth, rackHeight);
   if (overlapErrors.length > 0) {
     showError(
@@ -262,6 +286,7 @@ export function importRack(yamlStr: string, rack: Rack, options: ImportOptions =
     rack.stageWidth = rackWidth;
     rack.stageHeight = rackHeight;
     instances.forEach(({ mod, x, y }) => rack.add(mod, x, y));
+    noteInstances.forEach(({ note, x, y }) => rack.addAnnotation(note, x, y));
     rack.draw();
     rack.plugAll();
   };

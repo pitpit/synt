@@ -56,7 +56,6 @@
                   "SawtoothOscillator",
                   "SineOscillator",
                   "Speaker",
-                  "StickyNote",
                   "SquareOscillator",
                   "SwitchOn",
                   "Tremolo",
@@ -68,16 +67,12 @@
               "x": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "Horizontal slot position (0-based, left to right)."
+                "description": "Horizontal slot index."
               },
               "y": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "Vertical slot position (0-based, top to bottom)."
-              },
-              "text": {
-                "type": "string",
-                "description": "Text content for StickyNote mods."
+                "description": "Vertical slot index."
               },
               "value": {
                 "type": "number",
@@ -85,13 +80,30 @@
                 "maximum": 1,
                 "description": "Initial value for Knob mods (0–1)."
               }
-            },
-            "if": {
-              "properties": { "type": { "const": "StickyNote" } },
-              "required": ["type"]
-            },
-            "then": {
-              "required": ["text"]
+            }
+          }
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["x", "y", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Horizontal pixel position."
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Vertical pixel position."
+              },
+              "text": {
+                "type": "string",
+                "description": "Text content of the annotation."
+              }
             }
           }
         }
