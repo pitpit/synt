@@ -18,14 +18,14 @@ export default class Oscilloscope extends EffectMod {
   private _upmixNode: ToneGain | null = null;
 
   /** Number of samples drawn per frame — controls time window width. Range [16, 2048]. */
-  private samples: number = 128;
+  private samples: number = 1024;
 
   /** Amplitude multiplier applied to the waveform. Range [0.1, 10]. */
-  private amplitude: number = 1;
+  private amplitude: number = 0.5;
 
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.CTRLIN], 'scope', 2);
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.CTRLIN], 'scope');
   }
 
   protected createEffectNode(): ToneAudioNode {
@@ -58,13 +58,14 @@ export default class Oscilloscope extends EffectMod {
     const eastSignal = inputSignals[PlugPosition.EAST];
     if (eastSignal instanceof ControlSignal) {
       // Log scale [16, 2048]: knob left = zoomed in, knob right = zoomed out.
-      // 16 × 2^(value × 7) distributes evenly across zoom levels.
-      this.samples = Math.round(16 * Math.pow(2, eastSignal.value * 7));
+      // 16 × 2^(value × 12): default knob (0.5) → 1024 samples.
+      this.samples = Math.min(2048, Math.round(16 * Math.pow(2, eastSignal.value * 12)));
     }
     const westSignal = inputSignals[PlugPosition.WEST];
     if (westSignal instanceof ControlSignal) {
-      // Log scale [0.1, 10]: knob left = zoomed out, knob right = zoomed in.
-      this.amplitude = 0.1 * Math.pow(100, westSignal.value);
+      // Log scale [0.05, 5]: knob left = zoomed out, knob right = zoomed in.
+      // default knob (0.5) → amplitude 0.5.
+      this.amplitude = 0.05 * Math.pow(100, westSignal.value);
     }
     return super.onSignalChanged(inputSignals);
   }

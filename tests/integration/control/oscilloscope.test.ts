@@ -122,10 +122,10 @@ test('knob connected to WEST sets vertical zoom without throwing', () => {
 
   expect(() => { scope.plug([null, null, null, knob]); }).not.toThrow();
 
-  // At knob value 0 amplitude = 0.1; at 1 amplitude = 10
-  // At default 0.5 it equals exactly 1 (geometric midpoint), so check extremes via formula
+  // At knob value 0 amplitude = 0.05; at 1 amplitude = 5
+  // At default 0.5 it equals exactly 0.5 (geometric midpoint), so check extremes via formula
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((scope as any).amplitude).toBeCloseTo(1, 5);
+  expect((scope as any).amplitude).toBeCloseTo(0.5, 5);
 });
 
 test('waveform Y coordinates extend beyond display bounds when amplitude is large (clipped by canvas)', () => {
