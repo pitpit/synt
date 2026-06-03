@@ -9,7 +9,7 @@ export default abstract class Annotation {
 
   abstract init(slotWidth: number, slotHeight: number, group: Konva.Group): void;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   onDelete(): void {}
 
   snatch(): void {

@@ -34,7 +34,7 @@ export default class StickyNote extends Annotation {
     this.drawContent();
 
     group.on('mouseenter', (e) => {
-      let node: Konva.Node | null = e.target as Konva.Node;
+      let node: Konva.Node | null = e.target;
       while (node && node !== group) {
         if (node === this.deleteBtn) return;
         node = node.getParent();
@@ -92,10 +92,10 @@ export default class StickyNote extends Annotation {
     textarea.value = this.content;
     Object.assign(textarea.style, {
       position: 'fixed',
-      left: `${left}px`,
-      top: `${top}px`,
-      width: `${width}px`,
-      minHeight: `${height}px`,
+      left: `${String(left)}px`,
+      top: `${String(top)}px`,
+      width: `${String(width)}px`,
+      minHeight: `${String(height)}px`,
       padding: '0',
       margin: '0',
       border: 'none',
@@ -103,7 +103,7 @@ export default class StickyNote extends Annotation {
       background: 'transparent',
       resize: 'none',
       overflow: 'hidden',
-      fontSize: `${13 * scale}px`,
+      fontSize: `${String(13 * scale)}px`,
       fontFamily: '"Courier New", Courier, "Lucida Sans Typewriter", monospace',
       lineHeight: '1.4',
       color: '#222222',
