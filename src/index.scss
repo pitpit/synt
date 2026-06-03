@@ -139,8 +139,37 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  z-index: 1000;
+  z-index: 1001;
   font-family: 'Rubik', Helvetica, sans-serif;
+}
+
+// STICKY NOTE BUTTON
+#sticky-note-btn {
+  position: fixed;
+  bottom: 76px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid $black;
+  background: $white;
+  color: $black;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  touch-action: manipulation;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    background: $black;
+    color: $white;
+    outline: none;
+  }
 }
 
 #burger-btn {

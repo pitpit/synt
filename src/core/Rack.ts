@@ -1,6 +1,8 @@
 import Konva from 'konva';
 import * as Tone from 'tone';
 import Mod from './Mod';
+import Annotation from '../annotation/Annotation';
+import StickyNote from '../annotation/StickyNote';
 import SystemRack from './SystemRack';
 import KnobMemory, { isKnobMemoryConsumer } from './KnobMemory';
 
@@ -31,6 +33,10 @@ export default class Rack {
 
   grid: Array<Array<Mod|null>> = [];
 
+  annotations: Array<Annotation> = [];
+
+  annotationLayer: Konva.Layer | null = null;
+
   readonly knobMemory: KnobMemory = new KnobMemory();
 
   constructor() {
@@ -60,6 +66,13 @@ export default class Rack {
     };
     document.addEventListener('mousedown', resumeAudioContext);
     document.addEventListener('touchstart', resumeAudioContext);
+
+    document.addEventListener('synt:create-sticky-note', () => {
+      if (!this.annotationLayer) return;
+      const px = (window.innerWidth / 2 - this.stage.x()) / this.stage.scaleX();
+      const py = (window.innerHeight / 2 - this.stage.y()) / this.stage.scaleY();
+      this.addAnnotation(new StickyNote(), px, py);
+    });
   }
 
   /**
@@ -204,6 +217,13 @@ export default class Rack {
     });
     this.stage.add(layer);
 
+    const annotationLayer = new Konva.Layer();
+    this.annotationLayer = annotationLayer;
+    this.annotations.forEach((annotation) => {
+      this.initAnnotationInLayer(annotation, annotationLayer);
+    });
+    this.stage.add(annotationLayer);
+
     // Enable single-finger pan on empty canvas areas
     this.stage.draggable(true);
 
@@ -304,11 +324,37 @@ export default class Rack {
    */
   clear(): this {
     [...this.mods].forEach((mod) => { this.knobMemory.unobserve(mod); mod.snatch(); });
+    [...this.annotations].forEach((annotation) => { annotation.snatch(); });
     this.mods = [];
+    this.annotations = [];
     this.grid = [];
     this.layer = null;
+    this.annotationLayer = null;
     this.stage.destroyChildren();
     return this;
+  }
+
+  addAnnotation(annotation: Annotation, px: number, py: number): this {
+    annotation.pixelX = px;
+    annotation.pixelY = py;
+    this.annotations.push(annotation);
+    if (this.annotationLayer) {
+      this.initAnnotationInLayer(annotation, this.annotationLayer);
+      this.annotationLayer.batchDraw();
+    }
+    return this;
+  }
+
+  private initAnnotationInLayer(annotation: Annotation, layer: Konva.Layer): void {
+    const group = new Konva.Group({ draggable: true });
+    layer.add(group);
+    annotation.onDelete = () => {
+      annotation.snatch();
+      const idx = this.annotations.indexOf(annotation);
+      if (idx !== -1) this.annotations.splice(idx, 1);
+      layer.batchDraw();
+    };
+    annotation.init(this.slotWidth, this.slotHeight, group);
   }
 
   /**

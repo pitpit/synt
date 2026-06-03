@@ -9,13 +9,16 @@ export default class StickyNote extends Annotation {
 
   private textNode: Konva.Text | null = null;
 
-  private bgRect: Konva.Rect | null = null;
+  private bgShape: Konva.Shape | null = null;
+
+  private deleteBtn: Konva.Group | null = null;
 
   private slotWidth: number = 100;
 
   private slotHeight: number = 100;
 
   constructor(text: string = '') {
+    super();
     this.content = text;
   }
 
@@ -30,12 +33,19 @@ export default class StickyNote extends Annotation {
     group.position({ x: this.pixelX, y: this.pixelY });
     this.drawContent();
 
-    group.on('mouseenter', () => {
+    group.on('mouseenter', (e) => {
+      let node: Konva.Node | null = e.target as Konva.Node;
+      while (node && node !== group) {
+        if (node === this.deleteBtn) return;
+        node = node.getParent();
+      }
       document.body.style.cursor = 'grab';
+      group.getLayer()?.batchDraw();
     });
     group.on('mouseleave', () => {
       if (!group.isDragging()) {
         document.body.style.cursor = '';
+        group.getLayer()?.batchDraw();
       }
     });
     group.on('dragstart', () => {
@@ -120,7 +130,6 @@ export default class StickyNote extends Annotation {
 
     document.body.appendChild(textarea);
     textarea.focus();
-    textarea.select();
   }
 
   private drawContent(): void {
@@ -145,33 +154,61 @@ export default class StickyNote extends Annotation {
     const noteH = Math.max(minHeight, this.textNode.height() + 2 * NOTE_PADDING);
     group.size({ width: noteWidth, height: noteH });
 
-    this.bgRect = new Konva.Rect({
-      x: 0,
-      y: 0,
-      width: noteWidth,
-      height: noteH,
+    this.bgShape = new Konva.Shape({
       fill: '#ffe066',
-      cornerRadius: 2,
       shadowColor: 'black',
       shadowBlur: 12,
       shadowOffset: { x: 3, y: 3 },
       shadowOpacity: 0.3,
+      sceneFunc: (context: Konva.Context, shape: Konva.Shape) => {
+        const w = NOTE_SLOTS_WIDE * this.slotWidth;
+        const h = shape.getAttr('noteH') as number;
+        context.beginPath();
+        context.rect(0, 0, w, h);
+        context.arc(w, 0, 12, 0, Math.PI * 2);
+        context.fillStrokeShape(shape);
+      },
     });
-
-    group.add(this.bgRect);
+    this.bgShape.setAttr('noteH', noteH);
+    group.add(this.bgShape);
     group.add(this.textNode);
+
+    this.deleteBtn = new Konva.Group({
+      x: noteWidth,
+      y: 0,
+    });
+    this.deleteBtn.add(new Konva.Text({
+      text: '\u00D7',
+      fontSize: 18,
+      fontStyle: 'bold',
+      fill: 'black',
+      width: 24,
+      height: 24,
+      offsetX: 12,
+      offsetY: 10,
+      align: 'center',
+      verticalAlign: 'middle',
+    }));
+    this.deleteBtn.on('mouseenter', () => { document.body.style.cursor = 'pointer'; });
+    this.deleteBtn.on('mouseleave', () => { document.body.style.cursor = 'grab'; });
+    this.deleteBtn.on('click tap', (e) => {
+      e.cancelBubble = true;
+      this.onDelete();
+    });
+    group.add(this.deleteBtn);
   }
 
   private updateDisplay(): void {
-    if (!this.textNode || !this.bgRect || !this.group) return;
+    if (!this.textNode || !this.bgShape || !this.group) return;
 
     const noteWidth = NOTE_SLOTS_WIDE * this.slotWidth;
     const minHeight = 2 * this.slotHeight;
 
     this.textNode.text(this.content);
     const noteH = Math.max(minHeight, this.textNode.height() + 2 * NOTE_PADDING);
-    this.bgRect.height(noteH);
+    this.bgShape.setAttr('noteH', noteH);
     this.group.height(noteH);
+    this.deleteBtn?.position({ x: noteWidth, y: 0 });
 
     this.group.getLayer()?.batchDraw();
   }

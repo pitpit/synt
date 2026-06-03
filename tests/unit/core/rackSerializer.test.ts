@@ -1,6 +1,7 @@
 import { expect, test, jest } from '@jest/globals';
 import { exportRack, importRack } from '../../../src/core/RackSerializer';
 import Knob from '../../../src/control/Knob';
+import StickyNote from '../../../src/annotation/StickyNote';
 import type Mod from '../../../src/core/Mod';
 
 // ---------------------------------------------------------------------------
@@ -11,7 +12,9 @@ interface StubRack {
   stageWidth: number;
   stageHeight: number;
   mods: Mod[];
+  annotations: StickyNote[];
   add: ReturnType<typeof jest.fn>;
+  addAnnotation: ReturnType<typeof jest.fn>;
   draw: ReturnType<typeof jest.fn>;
   plugAll: ReturnType<typeof jest.fn>;
   clear: ReturnType<typeof jest.fn>;
@@ -22,7 +25,9 @@ function makeRack(mods: Mod[] = []): StubRack {
     stageWidth: 10,
     stageHeight: 10,
     mods,
+    annotations: [],
     add: jest.fn(),
+    addAnnotation: jest.fn(),
     draw: jest.fn(),
     plugAll: jest.fn(),
     clear: jest.fn(),

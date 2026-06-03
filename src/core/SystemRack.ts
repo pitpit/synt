@@ -21,7 +21,6 @@ import ControlMeter from '../control/ControlMeter';
 import MidiIn from '../control/MidiIn';
 import Oscilloscope from '../control/Oscilloscope';
 import Speaker from '../output/Speaker';
-import StickyNote from './StickyNote';
 
 type ModConstructor = new () => Mod;
 
@@ -53,7 +52,6 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: MidiIn,             label: 'midi',    x: 1, y: 3 },
   { Ctor: Speaker,            label: 'speaker', x: 0, y: 3 },
   { Ctor: Oscilloscope, label: 'scope',   x: 4, y: 2 },
-  { Ctor: StickyNote,   label: 'note',    x: 6, y: 2 },
 ];
 
 /** Number of grid rows in the System Rack. */

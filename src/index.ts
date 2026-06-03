@@ -2,12 +2,14 @@ import Rack from './core/Rack';
 import SystemRack from './core/SystemRack';
 import { importRack } from './core/RackSerializer';
 import BurgerMenu from './ui/BurgerMenu';
+import StickyNoteButton from './ui/StickyNoteButton';
 import './index.scss';
 
 const rack = new Rack();
 rack.systemRack = new SystemRack(rack);
 
 new BurgerMenu(rack);
+new StickyNoteButton();
 // Expose programmatic API (used by e2e tests)
 (window as unknown as { synt: { importRack: (yaml: string) => void } }).synt = { importRack: (yaml: string) => { importRack(yaml, rack, { silent: true }); } };
 
