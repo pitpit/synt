@@ -152,6 +152,10 @@ const PROTOS: ProtoEntry[] = [
 ];
 ```
 
+### 4. `docs/05-module-reference.md` — module catalogue
+
+Add (or update) the module's entry. Include purpose, plug layout table, CV mapping table, and any notable caveats. Match the format of existing entries in that file.
+
 ## Testing
 
 Integration tests live in `tests/integration/` mirroring `src/`. The Tone.js mock at `tests/__mocks__/tone.ts` is wired via `moduleNameMapper` in Jest config. Tests verify Tone.js graph wiring — that node-level `connect()` / `disconnect()` are called on the right audio nodes.
@@ -225,3 +229,4 @@ export { MyEffect, /* existing exports */ };
 - [ ] Registered in `MOD_REGISTRY`, `synt.schema.json`, and `SystemRack.ts`
 - [ ] File exported as `export default class ClassName`
 - [ ] Tone.js imports aliased to avoid name collisions (e.g. `import { Tremolo as ToneTremolo } from 'tone'`)
+- [ ] Entry added or updated in `docs/05-module-reference.md` (purpose, plug layout, CV mappings, caveats)
