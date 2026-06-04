@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/pitpit/synt/main/synt.schema.json
 synt:
   rack:
-    width: 6
-    height: 10
+    width: 12
+    height: 12
   mods:
     - type: Clock
       x: 3
@@ -10,45 +10,78 @@ synt:
     - type: Knob
       x: 4
       'y': 0
-      value: 0.095
-    - type: SequentialSwitch
+      value: 0.86
+    - type: Sequencer
       x: 3
       'y': 1
     - type: Knob
       x: 4
       'y': 1
-      value: 0.175
+      value: 0.08
     - type: Knob
       x: 4
       'y': 2
-      value: 0.815
+      value: 0.355
     - type: Knob
       x: 4
       'y': 3
-      value: 0.15
+      value: 0.45499999999999996
     - type: Knob
       x: 4
       'y': 4
-      value: 0.83
+      value: 0.18999999999999992
     - type: Knob
       x: 4
       'y': 5
-      value: 0.175
+      value: 0.16499999999999998
     - type: Knob
       x: 4
       'y': 6
-      value: 0.895
+      value: 0.355
     - type: Knob
       x: 4
       'y': 7
-      value: 0.235
+      value: 0.13499999999999998
     - type: Knob
       x: 4
       'y': 8
-      value: 0.91
+      value: 0.26
     - type: SineOscillator
       x: 2
       'y': 8
     - type: Speaker
       x: 2
+      'y': 11
+    - type: Chorus
+      x: 2
       'y': 9
+    - type: Phaser
+      x: 2
+      'y': 10
+    - type: Knob
+      x: 3
+      'y': 9
+      value: 0.915
+    - type: Knob
+      x: 3
+      'y': 10
+      value: 1
+  annotations:
+    - x: 568.6591736935475
+      'y': 34.02402819750671
+      text: >
+        Welcome to Synt, the modular synthesizer!
+
+
+        ⇑ ⇑ ⇑ Pan to the NORTH to get new modules to put in your Rack.
+
+
+        Connect modules by dragging from an output plug to an input plug.
+
+
+        Try by yourself: move the GATE module between the TRIANGLE oscillator
+        and SPEAKER. Adjust the KNOB clicking|tapping and vertically dragging to
+        change the oscillator's frequency.
+
+
+        Double-click any module to open its settings.

@@ -376,9 +376,9 @@ A free-running clock pulse generator. Toggles a `CLKOUT` signal between 0 and 1 
 
 ---
 
-### SequentialSwitch
+### Sequencer
 
-**Source**: [src/control/SequentialSwitch.ts](../src/control/SequentialSwitch.ts)
+**Source**: [src/control/Sequencer.ts](../src/control/Sequencer.ts)
 **Base**: `Mod`
 **Grid size**: 1 × 8
 
@@ -394,7 +394,7 @@ The perimeter layout for this 1 × 8 module follows the standard clockwise conve
 | WEST | row 7 | `CTRLOUT` | Active step CV output |
 | WEST | rows 0–6 | `NULL` | — |
 
-**Step advance**: triggers on any change of the incoming `ControlSignal` value (both edges). Connect a `Clock` SOUTH → SequentialSwitch NORTH; each toggle advances the step by one.
+**Step advance**: triggers on any change of the incoming `ControlSignal` value (both edges). Connect a `Clock` SOUTH → Sequencer NORTH; each toggle advances the step by one.
 
 ---
 

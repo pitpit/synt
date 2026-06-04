@@ -21,7 +21,7 @@ import ControlMeter from '../control/ControlMeter';
 import MidiIn from '../control/MidiIn';
 import Oscilloscope from '../control/Oscilloscope';
 import Clock from '../control/Clock';
-import SequentialSwitch from '../control/SequentialSwitch';
+import Sequencer from '../control/Sequencer';
 import Speaker from '../output/Speaker';
 
 type ModConstructor = new () => Mod;
@@ -47,7 +47,7 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Reverb,             label: 'reverb',  category: 'effect' },
   { Ctor: HighPassFilter,     label: 'hp-flt',  category: 'filter' },
   { Ctor: Gate,               label: 'gate',    category: 'control' },
-  { Ctor: SequentialSwitch,   label: 'seq-sw',  category: 'control' },
+  { Ctor: Sequencer,          label: 'seq-sw',  category: 'control' },
   { Ctor: Arpeggiator,        label: 'arp',     category: 'control' },
   { Ctor: Clock,              label: 'clock',   category: 'control' },
   { Ctor: Knob,               label: 'knob',    category: 'control' },

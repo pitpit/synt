@@ -6,7 +6,7 @@ import type Signals from '../core/Signals';
 
 const NUM_STEPS = 8;
 
-export default class SequentialSwitch extends Mod {
+export default class Sequencer extends Mod {
   currentStep: number = 0;
 
   private lastClockSignal: ControlSignal | null = null;

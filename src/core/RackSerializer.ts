@@ -25,7 +25,7 @@ import Phaser from '../effect/Phaser';
 import Reverb from '../effect/Reverb';
 import HighPassFilter from '../filter/HighPassFilter';
 import Clock from '../control/Clock';
-import SequentialSwitch from '../control/SequentialSwitch';
+import Sequencer from '../control/Sequencer';
 
 // ---------------------------------------------------------------------------
 // Mod registry
@@ -49,7 +49,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Phaser,
   Reverb,
   SawtoothOscillator,
-  SequentialSwitch,
+  Sequencer,
   SineOscillator,
   Speaker,
   SquareOscillator,

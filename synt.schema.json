@@ -55,7 +55,7 @@
                   "Phaser",
                   "Reverb",
                   "SawtoothOscillator",
-                  "SequentialSwitch",
+                  "Sequencer",
                   "SineOscillator",
                   "Speaker",
                   "SquareOscillator",
