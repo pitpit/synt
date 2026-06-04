@@ -7,6 +7,8 @@ const PlugType = {
   NULL: Symbol('null'),
   CTRLIN: Symbol('ctrlin'),
   CTRLOUT: Symbol('ctrlout'),
+  CLKIN: Symbol('clkin'),
+  CLKOUT: Symbol('clkout'),
 };
 
 export default PlugType;

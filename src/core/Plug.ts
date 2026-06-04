@@ -31,6 +31,12 @@ export default class Plug {
       ) || (
         PlugType.CTRLOUT === this.type
         && PlugType.CTRLIN === toPlug.type
+      ) || (
+        PlugType.CLKIN === this.type
+        && PlugType.CLKOUT === toPlug.type
+      ) || (
+        PlugType.CLKOUT === this.type
+        && PlugType.CLKIN === toPlug.type
       )
     ) {
       return true;
@@ -40,11 +46,11 @@ export default class Plug {
   }
 
   isOutput() {
-    return (this.type === PlugType.OUT || this.type === PlugType.CTRLOUT);
+    return (this.type === PlugType.OUT || this.type === PlugType.CTRLOUT || this.type === PlugType.CLKOUT);
   }
 
   isInput() {
-    return (this.type === PlugType.IN || this.type === PlugType.CTRLIN);
+    return (this.type === PlugType.IN || this.type === PlugType.CTRLIN || this.type === PlugType.CLKIN);
   }
 
   draw(
@@ -76,6 +82,8 @@ export default class Plug {
     } else if (
       PlugType.CTRLIN === this.type
       || PlugType.CTRLOUT === this.type
+      || PlugType.CLKIN === this.type
+      || PlugType.CLKOUT === this.type
     ) {
       this.drawCtrlPlug(
         group,
@@ -189,6 +197,12 @@ export default class Plug {
     } else if (PlugType.CTRLOUT === this.type) {
       color1 = 'orange';
       color2 = 'blue';
+    } else if (PlugType.CLKIN === this.type) {
+      color1 = 'deeppink';
+      color2 = 'cyan';
+    } else if (PlugType.CLKOUT === this.type) {
+      color1 = 'cyan';
+      color2 = 'deeppink';
     } else {
       throw new Error('Invalid plug type');
     }

@@ -21,7 +21,7 @@ export default class SequentialSwitch extends Mod {
     this.configure(
       [
         // NORTH (1 slot):
-        PlugType.CTRLIN,
+        PlugType.CLKIN,
         // EAST (8 slots, rows 0-7):
         PlugType.CTRLIN, PlugType.CTRLIN, PlugType.CTRLIN, PlugType.CTRLIN,
         PlugType.CTRLIN, PlugType.CTRLIN, PlugType.CTRLIN, PlugType.CTRLIN,
