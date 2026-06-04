@@ -242,6 +242,7 @@ h1, h2, h3, h4, h5, h6 {
     }
   }
 
+  &[aria-expanded="true"],
   &:focus-visible {
     background: $black;
     color: $white;
