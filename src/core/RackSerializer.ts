@@ -13,7 +13,6 @@ import Gate from '../control/Gate';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import MidiIn from '../control/MidiIn';
-import Arpeggiator from '../control/Arpeggiator';
 import ControlMeter from '../control/ControlMeter';
 import Oscilloscope from '../control/Oscilloscope';
 import Chorus from '../effect/Chorus';
@@ -34,7 +33,6 @@ import Sequencer from '../control/Sequencer';
 type AnyModConstructor = new (...args: never[]) => Mod;
 
 const MOD_REGISTRY: Record<string, AnyModConstructor> = {
-  Arpeggiator,
   Chorus,
   Clock,
   ControlMeter,

@@ -15,7 +15,7 @@ Unit tests cover individual module classes in isolation. Real source classes are
 
 - **Tone.js** is mocked globally via `tests/__mocks__/tone.ts`. It exports `jest.fn()` factories so classes that `import … from 'tone'` receive lightweight fakes that expose `connect`, `disconnect`, and `dispose` spies — no real audio graph is created.
 - Jest is configured with `clearMocks: true` and `restoreMocks: true`, so spy state never leaks between tests.
-- Time-dependent tests (e.g. `Arpeggiator`) use `jest.useFakeTimers()` / `jest.advanceTimersByTime()` in `beforeEach` / `afterEach`.
+- Time-dependent tests use `jest.useFakeTimers()` / `jest.advanceTimersByTime()` in `beforeEach` / `afterEach`.
 
 ---
 

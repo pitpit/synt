@@ -11,8 +11,6 @@ See the live demo here: https://pitpit.github.io/synt
 
 ![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot1.png)
 
-![Arpeggiator example](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot-arpegiator.png)
-
 ## License
 
 Copyright (C) 2026 Damien Pitard
@@ -113,7 +111,6 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] Random / S&H — random voltage generator (stepped or smooth)
 - [ ] Function generator — slew-limited ramp (rise/fall times)
 - [X>] Sequencer — step sequencer with CV and gate outputs (8 or 16 steps)
-- [ ] Arpeggiator — enhanced arpeggio patterns (already exists, keep improving)
 
 #### Filters
 - [ ] VCF low-pass — 12/24 dB/oct ladder-style low-pass filter with cutoff & resonance

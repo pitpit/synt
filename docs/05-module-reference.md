@@ -312,28 +312,6 @@ Displays a visual on-screen keyboard image. Outputs a CV signal on WEST represen
 
 ---
 
-### Arpeggiator
-
-**Source**: [src/control/Arpeggiator.ts](../src/control/Arpeggiator.ts)
-**Base**: `Mod`
-
-A 4-step CV sequencer that cycles through a fixed sequence at a tempo controlled by EAST CV. Outputs the current step's value on WEST.
-
-| Position | Type | Role |
-|----------|------|------|
-| NORTH | `NULL` | — |
-| EAST | `CTRLIN` | Tempo CV |
-| SOUTH | `NULL` | — |
-| WEST | `CTRLOUT` | Step CV output |
-
-| Plug | Parameter | Mapping |
-|------|-----------|---------|
-| EAST | Step interval | `(1 - value) × 1500` → 1500 ms (slow) to 0 ms (fast) — inverted |
-
-**Sequence**: `[0.3, 0.45, 0.55, 0.45]` repeating. The timer restarts whenever the tempo CV changes.
-
----
-
 ### MidiIn
 
 **Source**: [src/control/MidiIn.ts](../src/control/MidiIn.ts)

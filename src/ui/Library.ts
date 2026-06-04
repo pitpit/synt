@@ -14,7 +14,6 @@ import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
 import Reverb from '../effect/Reverb';
 import HighPassFilter from '../filter/HighPassFilter';
-import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import ControlMeter from '../control/ControlMeter';
@@ -48,7 +47,6 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: HighPassFilter,     label: 'hp-flt',  category: 'filter' },
   { Ctor: Gate,               label: 'gate',    category: 'control' },
   { Ctor: Sequencer,          label: 'seq-sw',  category: 'control' },
-  { Ctor: Arpeggiator,        label: 'arp',     category: 'control' },
   { Ctor: Clock,              label: 'clock',   category: 'control' },
   { Ctor: Knob,               label: 'knob',    category: 'control' },
   { Ctor: SwitchOn,           label: 'switch',  category: 'control' },
