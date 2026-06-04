@@ -96,8 +96,6 @@ An HTML report is generated in `playwright-report/` after each run.
 - https://www.youtube.com/shorts/kY7BvhUemLE
 - https://teenage.engineering/store/po-33
 - [ ] create duplicable/instanciable modules (to build more complex instruments)
-- [ ] Add a file player Mod?
-- [ ] Protect against link loop?
 - [X] when connecting a knob on a Mod, it should set its value to the linked Mod value (and animate)
 
 #### Oscillators & Sources
@@ -183,11 +181,11 @@ Step E: Making SoundPatch the Quantizer CV Out into the 1V/Oct Input of your Wav
 
 ### UX
 
-- [ ] redesign StickyNote to note be in the Rack anymore and be on a layer above. Save the position in yaml export and restore it.
-- [ ] multi selection & multi drag'n drop for mass deletion
+- [ ] multi selection & multi drag'n drop for mass deletion?
 - [ ] on Rack, set a "pan" cursor when the cursor is hover the stage and can be pan
 - [ ] Add several layers to put more Mods?
 - [ ] Ability to rotate Mod on Rack?
+- [X] redesign StickyNote to note be in the Rack anymore and be on a layer above. Save the position in yaml export and restore it.
 - [X] import/export current value of the Knob in yaml
 - [X] extend the rotate/swipe zone of the knob to the outer circle
 - [X] extends the zone to click or tap the switchOn to the outter-square
@@ -199,8 +197,8 @@ Step E: Making SoundPatch the Quantizer CV Out into the 1V/Oct Input of your Wav
 
 ### Codebase
 
-- [X] Use vite preview instead of http-server for e2e tests
 - [ ] Enable again e2e test for firefox "AudioContext reaches running state after user gesture and Tone.start() does not reject"
+- [X] Use vite preview instead of http-server for e2e tests
 - [X] Add a public licence
 - [X] Switch from Gibberish to Tone.js?
 - [X] Improve the src/ subtree structure to make it easier to understand

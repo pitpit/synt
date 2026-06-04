@@ -101,24 +101,14 @@ export default class PerformanceOverlay {
     const x = this.rack.stage.x();
     const y = this.rack.stage.y();
     const layers = this.rack.stage.getLayers().length;
-
-    const libraryState = this.rack.library?.getDebugState() ?? {
-      open: false,
-      scrollY: 0,
-      contentHeight: 0,
-      drawCalls: 0,
-      wheelEvents: 0,
-      pointerMoves: 0,
-    };
+    const libraryStatus = this.rack.library === null ? 'absent' : 'ready';
 
     this.elements.details.textContent = [
       `Frame ${this.frameMs.toFixed(1)} ms`,
       `Stage scale ${scale.toFixed(2)}`,
       `Stage pos ${x.toFixed(0)}, ${y.toFixed(0)}`,
       `Layers ${String(layers)} | Mods ${String(this.rack.mods.length)} | Notes ${String(this.rack.annotations.length)}`,
-      `Library ${libraryState.open ? 'open' : 'closed'} | Scroll ${libraryState.scrollY.toFixed(0)}/${libraryState.contentHeight.toFixed(0)}`,
-      `Library events/s wheel ${String(libraryState.wheelEvents)} pointer ${String(libraryState.pointerMoves)}`,
-      `Library draw/s ${String(libraryState.drawCalls)}`,
+      `Library ${libraryStatus}`,
     ].join('\n');
   }
 
