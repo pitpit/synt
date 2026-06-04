@@ -132,6 +132,9 @@ export default abstract class Mod {
     group.on('dragstart', () => {
       document.body.style.cursor = 'grab';
       shadow.show();
+      shadowVisible = true;
+      shadowSlotX = this.x;
+      shadowSlotY = this.y;
       shadow.moveToTop();
       group.moveToTop();
 
@@ -142,6 +145,21 @@ export default abstract class Mod {
     // to move the Mod back to this slot if dropped
     let targetX = this.x;
     let targetY = this.y;
+    let shadowVisible = false;
+    let shadowSlotX = targetX;
+    let shadowSlotY = targetY;
+    let drawScheduled = false;
+
+    const scheduleStageDraw = (): void => {
+      const stage = group.getStage();
+      if (!stage || drawScheduled) return;
+      drawScheduled = true;
+
+      requestAnimationFrame(() => {
+        drawScheduled = false;
+        stage.batchDraw();
+      });
+    };
 
     group.on('dragend', () => {
       document.body.style.cursor = '';
@@ -156,6 +174,7 @@ export default abstract class Mod {
       this.events.emit('checkDeleteZone', group.x(), group.y(), this.width * slotWidth, this.height * slotHeight, deleteResult);
       if (deleteResult.inDeleteZone) {
         shadow.hide();
+        shadowVisible = false;
         this.events.emit('delete');
         return;
       }
@@ -199,9 +218,12 @@ export default abstract class Mod {
       this.events.emit('checkDeleteZone', group.x(), group.y(), this.width * slotWidth, this.height * slotHeight, moveResult);
 
       if (moveResult.inDeleteZone) {
-        shadow.hide();
+        if (shadowVisible) {
+          shadow.hide();
+          shadowVisible = false;
+          scheduleStageDraw();
+        }
         this.events.emit('deleteZoneChange', true);
-        group.getStage()?.batchDraw();
         return;
       }
 
@@ -209,8 +231,11 @@ export default abstract class Mod {
 
       // Above the main rack (but not in delete zone): hide snap shadow
       if (group.y() < 0) {
-        shadow.hide();
-        group.getStage()?.batchDraw();
+        if (shadowVisible) {
+          shadow.hide();
+          shadowVisible = false;
+          scheduleStageDraw();
+        }
         return;
       }
 
@@ -218,7 +243,11 @@ export default abstract class Mod {
       document.body.style.cursor = 'grab';
 
       // Restore shadow visibility if it was hidden while above rack
-      shadow.show();
+      if (!shadowVisible) {
+        shadow.show();
+        shadowVisible = true;
+        scheduleStageDraw();
+      }
 
       // Compute new position
       let x = Math.round(group.x() / slotWidth);
@@ -228,21 +257,20 @@ export default abstract class Mod {
 
       if (!this.rack.isBusy(x, y, this)) {
         // Move the shadow to the current slot
-        shadow.position({
-          x: padding + x * slotWidth,
-          y: padding + y * slotHeight,
-        });
+        if (x !== shadowSlotX || y !== shadowSlotY) {
+          shadow.position({
+            x: padding + x * slotWidth,
+            y: padding + y * slotHeight,
+          });
+          shadowSlotX = x;
+          shadowSlotY = y;
+          scheduleStageDraw();
+        }
 
         // Store the position, to move the Mod to this position
         // if next slot is busy
         targetX = x;
         targetY = y;
-
-        const stage = group.getStage();
-        if (!stage) {
-          throw new Error('No Stage attached to this Konva Group');
-        }
-        stage.batchDraw();
 
         this.events.emit('dragmove');
       }
