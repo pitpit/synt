@@ -1,6 +1,8 @@
 import Konva from 'konva';
 import * as Tone from 'tone';
 import Mod from './Mod';
+import PlugType from './PlugType';
+import PlugPosition from './PlugPosition';
 import Annotation from '../annotation/Annotation';
 import StickyNote from '../annotation/StickyNote';
 import type Library from '../ui/Library';
@@ -400,7 +402,70 @@ export default class Rack {
         this.getFromGrid(mod.x, mod.y + mod.height),     // South
         this.getFromGrid(mod.x - 1, mod.y),              // West
       ]);
+      this.plugExtended(mod);
     });
+  }
+
+  /**
+   * Wire each extended plug (index 4+) of a mod to the adjacent neighbour
+   * at the grid cell determined by the plug's side and slotOffset.
+   */
+  private plugExtended(mod: Mod): void {
+    mod.plugs.items.forEach((plug, i) => {
+      if (i < 4 || plug.type === PlugType.NULL || plug.side === -1) return;
+      let neighbor: Mod | null = null;
+      if (plug.side === PlugPosition.NORTH) {
+        neighbor = this.getFromGrid(mod.x + plug.slotOffset, mod.y - 1);
+      } else if (plug.side === PlugPosition.EAST) {
+        neighbor = this.getFromGrid(mod.x + mod.width, mod.y + plug.slotOffset);
+      } else if (plug.side === PlugPosition.SOUTH) {
+        neighbor = this.getFromGrid(mod.x + plug.slotOffset, mod.y + mod.height);
+      } else if (plug.side === PlugPosition.WEST) {
+        neighbor = this.getFromGrid(mod.x - 1, mod.y + plug.slotOffset);
+      }
+      if (!neighbor) return;
+      const oppSide = PlugPosition.opposite(plug.side);
+      const targetIdx = neighbor.plugs.findFirstBySide(oppSide);
+      if (targetIdx === -1) return;
+      const targetPlug = neighbor.plugs.getPlug(targetIdx);
+      if (plug.isLinkable(targetPlug)) {
+        mod.link(i, neighbor, targetIdx);
+        mod.findEntries().forEach((entry) => { entry.start(); });
+      }
+    });
+  }
+
+  /**
+   * After placing a new mod, rewire extended plugs on any adjacent multi-slot mods
+   * that may now have a neighbour facing one of their extended plug positions.
+   */
+  private rewireNeighborExtended(mod: Mod): void {
+    // Check all grid cells adjacent to this mod for multi-slot neighbours
+    const checked = new Set<Mod>();
+    for (let row = 0; row < mod.height; row += 1) {
+      const neighbors = [
+        this.getFromGrid(mod.x - 1, mod.y + row),
+        this.getFromGrid(mod.x + mod.width, mod.y + row),
+      ];
+      neighbors.forEach((neighbor) => {
+        if (neighbor && neighbor !== mod && !checked.has(neighbor) && neighbor.plugs.items.length > 4) {
+          checked.add(neighbor);
+          this.plugExtended(neighbor);
+        }
+      });
+    }
+    for (let col = 0; col < mod.width; col += 1) {
+      const neighbors = [
+        this.getFromGrid(mod.x + col, mod.y - 1),
+        this.getFromGrid(mod.x + col, mod.y + mod.height),
+      ];
+      neighbors.forEach((neighbor) => {
+        if (neighbor && neighbor !== mod && !checked.has(neighbor) && neighbor.plugs.items.length > 4) {
+          checked.add(neighbor);
+          this.plugExtended(neighbor);
+        }
+      });
+    }
   }
 
   /**
@@ -417,6 +482,8 @@ export default class Rack {
       this.getFromGrid(mod.x, mod.y + mod.height),     // South
       this.getFromGrid(mod.x - 1, mod.y),              // West
     ]);
+    this.plugExtended(mod);
+    this.rewireNeighborExtended(mod);
     this.layer.batchDraw();
     mod.onAdded();
   }
@@ -440,6 +507,8 @@ export default class Rack {
         this.getFromGrid(mod.x, mod.y + mod.height),     // South
         this.getFromGrid(mod.x - 1, mod.y),              // West
       ]);
+      this.plugExtended(mod);
+      this.rewireNeighborExtended(mod);
       mod.onAdded();
     });
 

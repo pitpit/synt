@@ -24,6 +24,7 @@ import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
 import Reverb from '../effect/Reverb';
 import HighPassFilter from '../filter/HighPassFilter';
+import SequentialSwitch from '../control/SequentialSwitch';
 
 // ---------------------------------------------------------------------------
 // Mod registry
@@ -46,6 +47,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Phaser,
   Reverb,
   SawtoothOscillator,
+  SequentialSwitch,
   SineOscillator,
   Speaker,
   SquareOscillator,

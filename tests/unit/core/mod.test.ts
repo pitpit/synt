@@ -10,24 +10,24 @@ test('findEntries: mod with no plugs is not an entry', () => {
 
 test('findEntries: mod is an entry', () => {
   const mod = new TestMod();
-  mod.configure([PlugType.OUT]);
+  mod.configure([PlugType.OUT, PlugType.NULL, PlugType.NULL, PlugType.NULL]);
 
   expect(mod.findEntries()).toStrictEqual([mod]);
 });
 
 test('findEntries: mod is not an entry because is has an input plug', () => {
   const mod = new TestMod();
-  mod.configure([PlugType.OUT, PlugType.IN]);
+  mod.configure([PlugType.OUT, PlugType.IN, PlugType.NULL, PlugType.NULL]);
 
   expect(mod.findEntries()).toStrictEqual([]);
 });
 
 test('findEntries: linked mod is an entry', () => {
   const mod1 = new TestMod();
-  mod1.configure([PlugType.OUT, PlugType.NULL, PlugType.IN]);
+  mod1.configure([PlugType.OUT, PlugType.NULL, PlugType.IN, PlugType.NULL]);
 
   const mod2 = new TestMod();
-  mod2.configure([PlugType.OUT]);
+  mod2.configure([PlugType.OUT, PlugType.NULL, PlugType.NULL, PlugType.NULL]);
   mod2.link(PlugPosition.NORTH, mod1);
 
   expect(mod1.findEntries()).toStrictEqual([mod2]);
@@ -35,10 +35,10 @@ test('findEntries: linked mod is an entry', () => {
 
 test('findEntries: linked mods are entries', () => {
   const mod1 = new TestMod();
-  mod1.configure([PlugType.OUT, PlugType.IN, PlugType.IN]);
+  mod1.configure([PlugType.OUT, PlugType.IN, PlugType.IN, PlugType.NULL]);
 
   const mod2 = new TestMod();
-  mod2.configure([PlugType.OUT]);
+  mod2.configure([PlugType.OUT, PlugType.NULL, PlugType.NULL, PlugType.NULL]);
   mod2.link(PlugPosition.NORTH, mod1);
 
   const mod3 = new TestMod();
@@ -50,14 +50,14 @@ test('findEntries: linked mods are entries', () => {
 
 test('findEntries: linked mod to linked mod is an entry', () => {
   const mod1 = new TestMod();
-  mod1.configure([PlugType.OUT, PlugType.IN, PlugType.IN]);
+  mod1.configure([PlugType.OUT, PlugType.IN, PlugType.IN, PlugType.NULL]);
 
   const mod2 = new TestMod();
-  mod2.configure([PlugType.OUT, PlugType.NULL, PlugType.IN]);
+  mod2.configure([PlugType.OUT, PlugType.NULL, PlugType.IN, PlugType.NULL]);
   mod2.link(PlugPosition.NORTH, mod1);
 
   const mod3 = new TestMod();
-  mod3.configure([PlugType.OUT]);
+  mod3.configure([PlugType.OUT, PlugType.NULL, PlugType.NULL, PlugType.NULL]);
   mod3.link(PlugPosition.NORTH, mod2);
 
   expect(mod1.findEntries()).toStrictEqual([mod3]);
@@ -71,14 +71,14 @@ test('isEntry: mod with no plugs is not an entry', () => {
 
 test('isEntry: mod with outputs and no input is an entry', () => {
   const mod = new TestMod();
-  mod.configure([PlugType.OUT, PlugType.OUT]);
+  mod.configure([PlugType.OUT, PlugType.OUT, PlugType.NULL, PlugType.NULL]);
 
   expect(mod.isEntry()).toBeTruthy();
 });
 
 test('isEntry: mod with one input is not an entry', () => {
   const mod = new TestMod();
-  mod.configure([PlugType.OUT, PlugType.IN, PlugType.OUT]);
+  mod.configure([PlugType.OUT, PlugType.IN, PlugType.OUT, PlugType.NULL]);
 
   expect(mod.isEntry()).toBeFalsy();
 });

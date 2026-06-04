@@ -183,6 +183,7 @@ Step E: Making SoundPatch the Quantizer CV Out into the 1V/Oct Input of your Wav
 
 ### UX
 
+- [ ] when double clicking on stage, it open the modal with to integer input to set the stage size
 - [ ] multi selection & multi drag'n drop for mass deletion?
 - [ ] on Rack, set a "pan" cursor when the cursor is hover the stage and can be pan
 - [ ] Add several layers to put more Mods?

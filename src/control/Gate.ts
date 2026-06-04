@@ -6,7 +6,7 @@ import PlugType from '../core/PlugType';
 export default class Gate extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
+    this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT, PlugType.NULL]);
   }
 
   protected createEffectNode(): ToneAudioNode {
