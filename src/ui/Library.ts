@@ -21,7 +21,6 @@ import ControlMeter from '../control/ControlMeter';
 import MidiIn from '../control/MidiIn';
 import Oscilloscope from '../control/Oscilloscope';
 import Speaker from '../output/Speaker';
-import StickyNote from '../annotation/StickyNote';
 
 type ModConstructor = new () => Mod;
 type Category = 'oscillator' | 'effect' | 'filter' | 'control' | 'output' | 'misc';
@@ -53,7 +52,6 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Oscilloscope,       label: 'scope',   category: 'control' },
   { Ctor: Speaker,            label: 'speaker', category: 'output' },
   { Ctor: MidiIn,             label: 'midi',    category: 'misc' },
-  { Ctor: StickyNote,         label: 'note',    category: 'misc' },
 ];
 
 const CATEGORY_ORDER: Category[] = ['oscillator', 'effect', 'filter', 'control', 'output', 'misc'];
@@ -67,7 +65,7 @@ const SCROLLBAR_W = 6;
 /** Right margin for the scrollbar. */
 const SCROLLBAR_MARGIN = 4;
 /** Number of module columns visible in desktop library panel. */
-const DESKTOP_COLS = 4;
+const DESKTOP_COLS = 3;
 /** Panel slide animation duration in ms. */
 const PANEL_ANIMATION_MS = 220;
 
@@ -215,6 +213,7 @@ export default class Library {
     }
 
     this.panelGroup?.visible(true);
+
     if (this.animationFrameId !== null) {
       this.applyPanelTransform(this.animatedScreenX);
       return;
@@ -304,6 +303,7 @@ export default class Library {
       rack.stage.draggable(true);
       rack.enableStageGestures();
     });
+
     // Background covers the full panel width.
     this.panelBg = new Konva.Rect({
       x: 0,
@@ -458,7 +458,8 @@ export default class Library {
       layer.batchDraw();
     });
 
-    // Block stage pan for any click anywhere inside the panel.
+    // Block stage pan for any click anywhere inside the panel (belt-and-suspenders
+    // alongside stage.draggable(false) set in open()).
     this.panelGroup.on('mousedown touchstart', (e) => {
       if (!this.isOpen) return;
       e.cancelBubble = true;

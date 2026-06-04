@@ -11,6 +11,7 @@
     "test:coverage": "jest --coverage",
     "build": "vite build",
     "start": "vite",
+    "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "setup:chrome": "node scripts/setup-chrome.mjs",
