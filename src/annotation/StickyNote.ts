@@ -13,6 +13,8 @@ export default class StickyNote extends Annotation {
 
   private deleteBtn: Konva.Group | null = null;
 
+  private closeEditor: (() => void) | null = null;
+
   private slotWidth: number = 100;
 
   private slotHeight: number = 100;
@@ -70,20 +72,7 @@ export default class StickyNote extends Annotation {
     const stage = group.getStage();
     if (!stage) return;
 
-    const container = stage.container();
-    const containerRect = container.getBoundingClientRect();
-    const absTransform = group.getAbsoluteTransform();
-    const scale = stage.scaleX();
-
     const noteWidth = NOTE_SLOTS_WIDE * this.slotWidth;
-    const noteHeight = group.height();
-
-    // Position of text area relative to the page
-    const textOrigin = absTransform.point({ x: NOTE_PADDING, y: NOTE_PADDING });
-    const left = containerRect.left + textOrigin.x;
-    const top = containerRect.top + textOrigin.y;
-    const width = (noteWidth - 2 * NOTE_PADDING) * scale;
-    const height = Math.max(0, noteHeight * scale - 2 * NOTE_PADDING * scale);
 
     textNode.visible(false);
     group.getLayer()?.batchDraw();
@@ -92,10 +81,6 @@ export default class StickyNote extends Annotation {
     textarea.value = this.content;
     Object.assign(textarea.style, {
       position: 'fixed',
-      left: `${String(left)}px`,
-      top: `${String(top)}px`,
-      width: `${String(width)}px`,
-      minHeight: `${String(height)}px`,
       padding: '0',
       margin: '0',
       border: 'none',
@@ -103,7 +88,6 @@ export default class StickyNote extends Annotation {
       background: 'transparent',
       resize: 'none',
       overflow: 'hidden',
-      fontSize: `${String(13 * scale)}px`,
       fontFamily: '"Courier New", Courier, "Lucida Sans Typewriter", monospace',
       lineHeight: '1.4',
       color: '#222222',
@@ -111,22 +95,51 @@ export default class StickyNote extends Annotation {
       boxSizing: 'border-box',
     });
 
-    const commit = () => {
-      this.content = textarea.value;
-      textarea.remove();
-      textNode.visible(true);
-      this.updateDisplay();
+    const syncPosition = (): void => {
+      const containerRect = stage.container().getBoundingClientRect();
+      const absTransform = group.getAbsoluteTransform();
+      const scale = stage.scaleX();
+      const noteHeight = group.height();
+      const textOrigin = absTransform.point({ x: NOTE_PADDING, y: NOTE_PADDING });
+      textarea.style.left = `${String(containerRect.left + textOrigin.x)}px`;
+      textarea.style.top = `${String(containerRect.top + textOrigin.y)}px`;
+      textarea.style.width = `${String((noteWidth - 2 * NOTE_PADDING) * scale)}px`;
+      textarea.style.minHeight = `${String(Math.max(0, noteHeight * scale - 2 * NOTE_PADDING * scale))}px`;
+      textarea.style.fontSize = `${String(13 * scale)}px`;
     };
 
-    textarea.addEventListener('blur', commit);
+    syncPosition();
+
+    const onStageTransform = (): void => { syncPosition(); };
+    stage.on('xChange.stickyedit yChange.stickyedit scaleXChange.stickyedit scaleYChange.stickyedit', onStageTransform);
+
+    const cleanup = (save: boolean) => {
+      if (!this.closeEditor) return;
+      this.closeEditor = null;
+      stage.off('.stickyedit');
+      textarea.removeEventListener('blur', onBlur);
+      document.removeEventListener('touchstart', onOutsideTouch, true);
+      if (save) this.content = textarea.value;
+      textarea.remove();
+      textNode.visible(true);
+      if (save) this.updateDisplay();
+      else group.getLayer()?.batchDraw();
+    };
+
+    const onBlur = () => { cleanup(true); };
+
+    const onOutsideTouch = (e: TouchEvent) => {
+      if (!textarea.contains(e.target as Node)) cleanup(true);
+    };
+
+    this.closeEditor = () => { cleanup(false); };
+
+    textarea.addEventListener('blur', onBlur);
     textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        textarea.removeEventListener('blur', commit);
-        textarea.remove();
-        textNode.visible(true);
-        group.getLayer()?.batchDraw();
-      }
+      if (e.key === 'Escape') cleanup(false);
     });
+    // Use capture so we see the event before Konva swallows it.
+    document.addEventListener('touchstart', onOutsideTouch, true);
 
     document.body.appendChild(textarea);
     textarea.focus();
@@ -193,6 +206,7 @@ export default class StickyNote extends Annotation {
     this.deleteBtn.on('mouseleave', () => { document.body.style.cursor = 'grab'; });
     this.deleteBtn.on('click tap', (e) => {
       e.cancelBubble = true;
+      this.closeEditor?.();
       this.onDelete();
     });
     group.add(this.deleteBtn);
