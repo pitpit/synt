@@ -15,7 +15,7 @@ This document describes every audio module in synt — its purpose, plug layout,
 | 2 | SOUTH | Audio or control output |
 | 3 | WEST | Second control input / control output |
 
-Plug types: `IN` audio input · `OUT` audio output · `CTRLIN` CV input · `CTRLOUT` CV output · `NULL` no plug.
+Plug types: `IN` audio input · `OUT` audio output · `CTRLIN` CV input · `CTRLOUT` CV output · `CLKIN` clock input · `CLKOUT` clock output · `NULL` no plug.
 
 ---
 
@@ -353,6 +353,48 @@ Connects to a hardware MIDI input device via the Web MIDI API. Translates incomi
 (maps MIDI note number to the same 0–400 Hz scale used by oscillators; A4 = 0.825 CV)
 
 **Gate behaviour**: NoteOn triggers the envelope attack; NoteOff releases it. Auto-selects the first available MIDI input on initialisation.
+
+---
+
+### Clock
+
+**Source**: [src/control/Clock.ts](../src/control/Clock.ts)
+**Base**: `Mod`
+
+A free-running clock pulse generator. Toggles a `CLKOUT` signal between 0 and 1 at a configurable rate. The clock starts when its SOUTH plug is connected and stops when it is disconnected or the module is removed from the rack. Rate CV on EAST adjusts the tick frequency while the clock is running.
+
+| Position | Type | Role |
+|----------|------|------|
+| NORTH | `NULL` | — |
+| EAST | `CTRLIN` | Rate CV |
+| SOUTH | `CLKOUT` | Clock pulse output |
+| WEST | `NULL` | — |
+
+| Plug | Parameter | Mapping |
+|------|-----------|---------|
+| EAST | Frequency | `0.5 + value × 9.5` → 0.5–10 Hz |
+
+---
+
+### SequentialSwitch
+
+**Source**: [src/control/SequentialSwitch.ts](../src/control/SequentialSwitch.ts)
+**Base**: `Mod`
+**Grid size**: 1 × 8
+
+An 8-step sequential switch. On each rising or falling clock edge received on NORTH, it advances to the next step and forwards that step's CV input (from the corresponding EAST slot) to the WEST output. Each step's CV is supplied by a separate `CTRLIN` plug arranged top-to-bottom on the EAST face.
+
+The perimeter layout for this 1 × 8 module follows the standard clockwise convention (2 × (1 + 8) = 18 slots):
+
+| Face | Slots | Type | Role |
+|------|-------|------|------|
+| NORTH | 1 | `CLKIN` | Clock input |
+| EAST | 8 (rows 0–7) | `CTRLIN` | Step 0–7 CV inputs |
+| SOUTH | 1 | `NULL` | — |
+| WEST | row 7 | `CTRLOUT` | Active step CV output |
+| WEST | rows 0–6 | `NULL` | — |
+
+**Step advance**: triggers on any change of the incoming `ControlSignal` value (both edges). Connect a `Clock` SOUTH → SequentialSwitch NORTH; each toggle advances the step by one.
 
 ---
 

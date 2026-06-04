@@ -38,7 +38,7 @@ export default class SequentialSwitch extends Mod {
   }
 
   override onSignalChanged(inputSignals: Signals): Signals {
-    // Index 0 = NORTH CTRLIN (clock)
+    // Index 0 = NORTH CLKIN (clock)
     const clockSignal = inputSignals[0];
     if (clockSignal instanceof ControlSignal) {
       if (this.lastClockSignal === null || !clockSignal.eq(this.lastClockSignal)) {
@@ -47,8 +47,9 @@ export default class SequentialSwitch extends Mod {
       }
     }
 
-    // Indices 4-11 = extended EAST CTRLIN for steps 0-7
-    const stepSignal = inputSignals[4 + this.currentStep];
+    // Step 0 → canonical EAST plug at index 1; steps 1-7 → extended plugs at indices 4-10
+    const stepIndex = this.currentStep === 0 ? 1 : this.currentStep + 3;
+    const stepSignal = inputSignals[stepIndex];
     const output: Signals = Array(this.plugs.items.length).fill(null) as Signals;
     if (stepSignal instanceof ControlSignal) {
       // Index 3 = WEST CTRLOUT

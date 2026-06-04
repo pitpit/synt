@@ -1,4 +1,3 @@
-import Konva from 'konva';
 import Mod from '../core/Mod';
 import PlugType from '../core/PlugType';
 import PlugPosition from '../core/PlugPosition';
@@ -63,18 +62,5 @@ export default class Clock extends Mod {
 
   protected override onSnatched(): void {
     this.stopClock();
-  }
-
-  override draw(group: Konva.Group): void {
-    group.add(new Konva.Text({
-      x: 0,
-      y: group.height() / 2 - 7,
-      width: group.width(),
-      text: 'CLK',
-      fontSize: 13,
-      fontStyle: 'bold',
-      fill: 'cyan',
-      align: 'center',
-    }));
   }
 }
