@@ -3,6 +3,7 @@ import Library from './ui/Library';
 import { importRack } from './core/RackSerializer';
 import BurgerMenu from './ui/BurgerMenu';
 import createStickyNoteButton from './ui/StickyNoteButton';
+import PerformanceOverlay from './ui/PerformanceOverlay';
 import './index.scss';
 
 const rack = new Rack();
@@ -10,6 +11,9 @@ rack.library = new Library(rack);
 
 new BurgerMenu(rack);
 createStickyNoteButton();
+if (__SHOW_FPS__) {
+  new PerformanceOverlay(rack);
+}
 // Expose programmatic API (used by e2e tests)
 (window as unknown as { synt: { importRack: (yaml: string) => void } }).synt = { importRack: (yaml: string) => { importRack(yaml, rack, { silent: true }); } };
 

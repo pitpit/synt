@@ -9,6 +9,8 @@ import ControlSignal from '../core/ControlSignal';
 import Signals from '../core/Signals';
 
 export default class Oscilloscope extends EffectMod {
+  private static readonly TARGET_FRAME_MS = 33;
+
   private waveformLineLeft: Konva.Line | null = null;
 
   private waveformLineRight: Konva.Line | null = null;
@@ -22,6 +24,12 @@ export default class Oscilloscope extends EffectMod {
 
   /** Amplitude multiplier applied to the waveform. Range [0.1, 10]. */
   private amplitude: number = 0.5;
+
+  private leftPoints: number[] = [];
+
+  private rightPoints: number[] = [];
+
+  private lastFrameTs = 0;
 
   constructor() {
     super();
@@ -74,14 +82,41 @@ export default class Oscilloscope extends EffectMod {
    * Find the first rising zero-crossing in the buffer, leaving at least `samples`
    * entries after the index. Returns 0 as fallback when no crossing is found.
    */
-  private findTriggerIndex(data: Float32Array): number {
-    const searchLimit = data.length - this.samples;
+  private findTriggerIndex(data: Float32Array, samples: number): number {
+    const searchLimit = data.length - samples;
     for (let i = 1; i < searchLimit; i += 1) {
       if (data[i - 1] < 0 && data[i] >= 0) {
         return i;
       }
     }
     return 0;
+  }
+
+  private hasInputSource(): boolean {
+    return this.plugs.getPlug(PlugPosition.NORTH).mod !== null;
+  }
+
+  private fillPoints(
+    data: Float32Array,
+    triggerIdx: number,
+    samples: number,
+    points: number[],
+    padX: number,
+    dw: number,
+    midY: number,
+    ampScale: number,
+  ): number[] {
+    const needed = samples * 2;
+    if (points.length !== needed) {
+      points.length = needed;
+    }
+    const stepX = samples > 1 ? dw / (samples - 1) : 0;
+
+    for (let i = 0; i < samples; i += 1) {
+      points[2 * i] = padX + i * stepX;
+      points[2 * i + 1] = midY - data[triggerIdx + i] * ampScale;
+    }
+    return points;
   }
 
   draw(group: Konva.Group): void {
@@ -133,10 +168,14 @@ export default class Oscilloscope extends EffectMod {
     });
     clipGroup.add(this.waveformLineRight);
 
-    this.startAnimation(group);
+    if (this.hasInputSource()) {
+      this.startAnimation(group);
+    }
   }
 
   private startAnimation(group: Konva.Group): void {
+    if (this.animationFrameId !== null) return;
+
     const w = group.width();
     const h = group.height();
     const padX = 10;
@@ -145,32 +184,47 @@ export default class Oscilloscope extends EffectMod {
     const dh = h - 2 * padY;
     const midY = padY + dh / 2;
 
-    const buildPoints = (data: Float32Array, triggerIdx: number, samples: number): number[] => {
-      const points: number[] = [];
-      for (let i = 0; i < samples; i += 1) {
-        points.push(padX + (i / (samples - 1)) * dw);
-        points.push(midY - data[triggerIdx + i] * this.amplitude * (dh / 2 - 2));
-      }
-      return points;
-    };
-
-    const animate = () => {
+    const animate = (timestamp: number) => {
       this.animationFrameId = requestAnimationFrame(animate);
 
       if (!this.effectNode || !this.waveformLineLeft || !this.waveformLineRight) return;
+      if (!this.hasInputSource()) return;
+      if (timestamp - this.lastFrameTs < Oscilloscope.TARGET_FRAME_MS) return;
+
+      this.lastFrameTs = timestamp;
 
       const [left, right] = (this.effectNode as ToneAnalyser).getValue() as Float32Array[];
-      const samples = this.samples;
+      const samples = Math.max(16, Math.min(this.samples, left.length, right.length));
+      const ampScale = this.amplitude * (dh / 2 - 2);
 
-      const triggerIdxLeft = this.findTriggerIndex(left);
-      this.waveformLineLeft.points(buildPoints(left, triggerIdxLeft, samples));
+      const triggerIdxLeft = this.findTriggerIndex(left, samples);
+      this.waveformLineLeft.points(this.fillPoints(
+        left,
+        triggerIdxLeft,
+        samples,
+        this.leftPoints,
+        padX,
+        dw,
+        midY,
+        ampScale,
+      ));
 
-      const triggerIdxRight = this.findTriggerIndex(right);
-      this.waveformLineRight.points(buildPoints(right, triggerIdxRight, samples));
+      const triggerIdxRight = this.findTriggerIndex(right, samples);
+      this.waveformLineRight.points(this.fillPoints(
+        right,
+        triggerIdxRight,
+        samples,
+        this.rightPoints,
+        padX,
+        dw,
+        midY,
+        ampScale,
+      ));
 
       group.getLayer()?.batchDraw();
     };
 
+    this.lastFrameTs = 0;
     this.animationFrameId = requestAnimationFrame(animate);
   }
 
@@ -186,6 +240,11 @@ export default class Oscilloscope extends EffectMod {
 
   protected override onUnlinked(plugPosition: number, prev: Mod): void {
     if (plugPosition === PlugPosition.NORTH) {
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+      this.lastFrameTs = 0;
       this.waveformLineLeft?.points([]);
       this.waveformLineRight?.points([]);
       this.waveformLineLeft?.getLayer()?.batchDraw();

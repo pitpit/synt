@@ -162,7 +162,6 @@ h1, h2, h3, h4, h5, h6 {
       color: $white;
     }
   }
-
   &:focus-visible {
     background: $black;
     color: $white;
@@ -217,6 +216,50 @@ h1, h2, h3, h4, h5, h6 {
     color: $white;
     outline: none;
   }
+}
+
+// PERFORMANCE OVERLAY
+#perf-overlay {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#perf-overlay-badge {
+  pointer-events: auto;
+  border: 2px solid $black;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: $black;
+  font-family: 'Rubik', Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 8px 10px;
+  cursor: pointer;
+  min-width: 76px;
+  text-align: center;
+}
+
+#perf-overlay-details {
+  pointer-events: auto;
+  white-space: pre;
+  border: 2px solid $black;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.96);
+  color: $black;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 10px;
+  min-width: 250px;
+  max-width: min(360px, calc(100vw - 32px));
 }
 
 #burger-btn {

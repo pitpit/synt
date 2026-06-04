@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ mode }) => {
   const { default: cssInjectedByJsPlugin } = await import('vite-plugin-css-injected-by-js');
   return {
     base: '/synt/',
@@ -30,6 +30,9 @@ export default defineConfig(async () => {
       port: 9000,
       open: true,
       host: '0.0.0.0'
+    },
+    define: {
+      __SHOW_FPS__: mode !== 'production',
     },
   };
 });

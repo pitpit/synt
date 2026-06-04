@@ -81,6 +81,30 @@ items.forEach(function(item) { process(item); });
 - No floating promises — always `await` or explicitly `.catch()` async calls.
 - No unused variables (warn).
 
+### Preventing Unsafe Debug-State Access
+
+- Never read debug/diagnostic objects through untyped APIs (implicit `any` or unresolved method types).
+- If a class exposes debug state, define and export an explicit interface for the return shape.
+- Type the producing method return value (for example: `getDebugState(): DebugState`).
+- Consume debug state only through that typed contract, not via casts like `as any`.
+- If a typed contract is not available yet, prefer rendering a minimal safe fallback string/value instead of unsafe property access.
+
+```ts
+// ✅ preferred: typed producer + typed consumer
+export interface LibraryDebugState {
+	open: boolean;
+	scrollY: number;
+}
+
+getDebugState(): LibraryDebugState {
+	return { open: this.isOpen, scrollY: this.scrollY };
+}
+
+// ❌ avoid: unresolved/untyped call chain used in template expressions
+const state = rack.library?.getDebugState();
+label.text = `${state.open} ${state.scrollY}`;
+```
+
 Project override: `@typescript-eslint/no-unused-vars` is configured as a warning (not an error), which is useful for temporary scaffolding while iterating.
 
 ## Running the Linter

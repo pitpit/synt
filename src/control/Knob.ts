@@ -180,10 +180,7 @@ export default class Knob extends Mod implements KnobMemoryConsumer {
         x,
         y,
       });
-      if (this.innerCircle) {
-        this.innerCircle.draw();
-      }
-      this.pinCircle.draw();
+      this.pinCircle.getLayer()?.batchDraw();
     }
   }
 
