@@ -8,7 +8,7 @@ const MIN_FREQ = 0.5;
 const MAX_FREQ = 10;
 
 export default class Clock extends Mod {
-  private intervalId: ReturnType<typeof setInterval> | null = null;
+  private intervalId: ReturnType<typeof setTimeout> | null = null;
 
   private tickValue: number = 0;
 
@@ -22,17 +22,23 @@ export default class Clock extends Mod {
     );
   }
 
-  private startClock(): void {
-    this.stopClock();
-    this.intervalId = setInterval(() => {
+  private scheduleNext(): void {
+    this.intervalId = setTimeout(() => {
+      if (this.intervalId === null) return;
       this.tickValue = this.tickValue === 0 ? 1 : 0;
       this.pushOutput(PlugPosition.SOUTH, new ControlSignal(this.tickValue));
+      this.scheduleNext();
     }, 1000 / this.frequencyHz);
+  }
+
+  private startClock(): void {
+    this.stopClock();
+    this.scheduleNext();
   }
 
   private stopClock(): void {
     if (this.intervalId !== null) {
-      clearInterval(this.intervalId);
+      clearTimeout(this.intervalId);
       this.intervalId = null;
     }
   }
@@ -41,9 +47,6 @@ export default class Clock extends Mod {
     const rateSignal = inputSignals[PlugPosition.EAST];
     if (rateSignal instanceof ControlSignal) {
       this.frequencyHz = MIN_FREQ + rateSignal.value * (MAX_FREQ - MIN_FREQ);
-      if (this.intervalId !== null) {
-        this.startClock();
-      }
     }
     return Array(this.plugs.items.length).fill(null) as Signals;
   }
