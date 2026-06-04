@@ -97,6 +97,9 @@ export default class Library {
 
   private animationFrameId: number | null = null;
 
+  /** rAF id used to debounce multiple stage-transform events into one syncTransform call. */
+  private syncTransformRafId: number | null = null;
+
   private scrollY = 0;
 
   private totalContentHeight = 0;
@@ -121,8 +124,34 @@ export default class Library {
     return (PANEL_PAD * 2) + (this.rack.slotWidth * DESKTOP_COLS) + SCROLLBAR_W + (SCROLLBAR_MARGIN * 2);
   }
 
-  /** Called from Rack.draw() with the main layer. Rebuilds the panel. */
+  /** Deferred, deduplicated syncTransform — collapses up to 4 stage-change events per frame. */
+  private readonly scheduleTransformSync = (): void => {
+    if (this.syncTransformRafId !== null) return;
+    this.syncTransformRafId = requestAnimationFrame(() => {
+      this.syncTransformRafId = null;
+      this.syncTransform();
+    });
+  };
+
+  /** Called from Rack.draw() with the main layer. Rebuilds the panel only when necessary. */
   draw(stage: Konva.Stage): void {
+    // Always re-register listeners — stage event target may change on rack.draw().
+    this.rack.stage.off('.libpanel');
+    this.rack.stage.on(
+      'xChange.libpanel yChange.libpanel scaleXChange.libpanel scaleYChange.libpanel',
+      this.scheduleTransformSync,
+    );
+    window.removeEventListener('resize', this.onResize);
+    window.addEventListener('resize', this.onResize);
+
+    // Reuse the existing panel when its layer is still attached to the stage.
+    // rack.clear() calls stage.destroyChildren(), which detaches the layer so
+    // getStage() returns null — fall through to rebuild in that case.
+    if (this.mainLayer?.getStage()) {
+      this.syncTransform();
+      return;
+    }
+
     const layer = new Konva.Layer();
     stage.add(layer);
     this.mainLayer = layer;
@@ -131,16 +160,6 @@ export default class Library {
     this.animatedScreenX = this.getTargetScreenX();
     this.panelGroup?.visible(this.isOpen);
     this.syncTransform();
-
-    // Re-register transform listeners under a namespace so they can be cleared
-    this.rack.stage.off('.libpanel');
-    this.rack.stage.on(
-      'xChange.libpanel yChange.libpanel scaleXChange.libpanel scaleYChange.libpanel',
-      () => { this.syncTransform(); },
-    );
-
-    window.removeEventListener('resize', this.onResize);
-    window.addEventListener('resize', this.onResize);
   }
 
   private readonly onResize = (): void => {
@@ -313,10 +332,6 @@ export default class Library {
       fill: '#f2f2f2',
       stroke: '#111111',
       strokeWidth: 2,
-      shadowColor: 'rgba(0,0,0,0.18)',
-      shadowBlur: 18,
-      shadowOffsetX: -4,
-      shadowOffsetY: 0,
     });
     this.panelGroup.add(this.panelBg);
 
@@ -519,11 +534,12 @@ export default class Library {
       });
       layer.add(snapHighlight);
 
-      // Ghost group in main layer (world coords)
-      ghost = new Konva.Group({ x: layerX - grabOffsetX, y: layerY - grabOffsetY });
+      // Clone the thumbnail visual already rendered in the panel.
+      // Avoids constructing a new Mod (and its audio nodes) for a purely visual ghost.
+      ghost = protoGroup.clone();
+      ghost.listening(false);
+      ghost.position({ x: layerX - grabOffsetX, y: layerY - grabOffsetY });
       layer.add(ghost);
-      const ghostMod = new proto.Ctor();
-      ghostMod.drawVisual(ghost, slotWidth, slotHeight);
       layer.batchDraw();
 
       rack.stage.on('mousemove.libghost touchmove.libghost', (moveEvt) => {
