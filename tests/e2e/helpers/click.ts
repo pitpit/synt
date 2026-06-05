@@ -15,7 +15,9 @@ export async function clickOrTap(
     // hit canvas overlays the render canvas at the same coordinates.
     await locator.tap({ position, force: true });
   } else {
-    await locator.click({ position });
+    // force: true bypasses Playwright's hit-test, which fails when Konva's
+    // hit canvas overlays the render canvas at the same coordinates.
+    await locator.click({ position, force: true });
   }
 }
 
