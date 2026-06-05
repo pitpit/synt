@@ -1,7 +1,6 @@
-# Device support
+# Supported Devices
 
-This table summarises the results of the automated end-to-end test suite across all tested devices.
-Device models listed here are emulated; real-device results will be added in a future revision.
+This document tracks feature support across emulated and real devices.
 
 **Legend**
 
@@ -10,7 +9,17 @@ Device models listed here are emulated; real-device results will be added in a f
 | ✅ | Supported |
 | ⚠️ | Partially supported |
 | ❌ | Unsupported |
-| — | Not applicable |
+| — | Not applicable / not yet tested |
+
+**Features**
+
+| Column | What is tested |
+|--------|---------------|
+| App Bootstrap | App loads, canvas renders, modules instantiate without errors |
+| Canvas Interactions | Drag, resize, and selection gestures work correctly |
+| Plug Connections | Cables can be drawn and disconnected between modules |
+| Web Audio API | `AudioContext` reaches `running` state and audio is produced |
+| MIDI | Web MIDI API is available and MIDI input events are received |
 
 ---
 
@@ -18,10 +27,9 @@ Device models listed here are emulated; real-device results will be added in a f
 
 | Device / Browser | App Bootstrap | Canvas Interactions | Plug Connections | Web Audio API | MIDI |
 |-----------------|:-------------:|:-------------------:|:----------------:|:-------------:|:----:|
-| Desktop Firefox | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Desktop Safari (WebKit) | ✅ | ✅ | ✅ | ✅ | ❌ |
-
-¹ The `AudioContext reaches running state` test is intentionally skipped on Firefox headless — Firefox does not reliably grant user activation to the Web Audio API in CI.
+| Desktop Firefox (latest) | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Desktop Safari (WebKit, latest) | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Desktop Chrome (latest) | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ---
 

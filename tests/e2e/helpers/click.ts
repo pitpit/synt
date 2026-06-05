@@ -11,8 +11,31 @@ export async function clickOrTap(
   { position, isMobile = false }: { position?: { x: number; y: number }; isMobile?: boolean } = {},
 ): Promise<void> {
   if (isMobile) {
-    await locator.tap({ position });
+    // force: true bypasses Playwright's hit-test, which fails when Konva's
+    // hit canvas overlays the render canvas at the same coordinates.
+    await locator.tap({ position, force: true });
   } else {
     await locator.click({ position });
+  }
+}
+
+/**
+ * Double-clicks or double-taps a locator using the appropriate input method:
+ *
+ * - **Desktop**: uses `locator.dblclick()` with `force: true` to bypass
+ *   Playwright's hit-test, which fails when Konva's hit canvas overlays the
+ *   render canvas (observed on WebKit and Firefox headless).
+ * - **Touch / mobile**: fires two rapid `tap()` calls to trigger Konva's
+ *   `dbltap` event, also with `force: true` for the same reason.
+ */
+export async function dblClickOrDblTap(
+  locator: Locator,
+  { position, isMobile = false }: { position?: { x: number; y: number }; isMobile?: boolean } = {},
+): Promise<void> {
+  if (isMobile) {
+    await locator.tap({ position, force: true });
+    await locator.tap({ position, force: true });
+  } else {
+    await locator.dblclick({ position, force: true });
   }
 }
