@@ -134,7 +134,12 @@ test.describe('MidiIn — Web MIDI integration', () => {
     await dblClickOrDblTap(canvas, { position: center, isMobile });
     await page.waitForSelector('[id$="-input-select"]', { timeout: 3000 });
     await page.locator('.tingle-modal--visible .tingle-btn--primary').click();
-    await page.waitForTimeout(100);
+    // Wait for the modal to be fully hidden, then outlast Konva's 300 ms dbltap
+    // window so that any touch events leaked by the save-button click cannot
+    // combine with the upcoming double-tap and cause the overlay to close the
+    // freshly-reopened modal.
+    await page.waitForSelector('.tingle-modal--visible', { state: 'hidden', timeout: 2000 });
+    await page.waitForTimeout(350);
 
     // Re-open the modal
     await dblClickOrDblTap(canvas, { position: center, isMobile });
