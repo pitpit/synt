@@ -49,9 +49,12 @@ export async function setupMIDIMock(page: Page): Promise<void> {
     // Expose input reference for sendMIDIMessage()
     (window as unknown as MidiMockWindow).__midiMockInput = mockInput;
 
-    // Override the MIDI API
-    (navigator as unknown as Record<string, unknown>).requestMIDIAccess =
-      () => Promise.resolve(mockAccess);
+    // Override the MIDI API — use defineProperty so the override works on
+    // newer Chrome where requestMIDIAccess is non-configurable via assignment.
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      get: () => () => Promise.resolve(mockAccess),
+      configurable: true,
+    });
   });
 }
 

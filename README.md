@@ -25,6 +25,8 @@ This program is free software: you can redistribute it and/or modify it under th
 - [Writing an AudioMod](docs/02-writing-an-audiomod.md) — step-by-step guide to implementing a new audio module
 - [Testing](docs/03-testing-strategy.md) — unit, integration, and end-to-end browser testing strategy
 - [Web MIDI & MidiIn](docs/04-web-midi-and-midiin.md) — Web MIDI API integration, the MidiIn module, implicit learn workflow, and browser support
+- [Module Reference](docs/05-module-reference.md) — catalogue of all built-in modules with their plugs and parameters
+- [Supported Devices](docs/06-supported-devices.md) — tested browsers, OS versions, and hardware devices
 
 ## Inspiration
 

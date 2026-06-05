@@ -58,6 +58,8 @@ const chromeProjects = chromeVersions
     use: {
       ...getDevice(device),
       executablePath: manifest[version],
+      // Pre-grant MIDI permissions — only Chromium supports these permission strings.
+      permissions: ['midi', 'midi-sysex'],
     },
   }));
 
@@ -72,7 +74,7 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:8080/synt/',
-    screenshot: 'only-on-failure',
+    //screenshot: 'only-on-failure',
     //video: 'retain-on-failure',
   },
 

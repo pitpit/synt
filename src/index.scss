@@ -43,6 +43,7 @@ h1, h2, h3, h4, h5, h6 {
 
 // MODAL
 .tingle-modal {
+  z-index: 1200 !important;
 
   background: rgba(255, 255, 255, 0.25);
   -webkit-backdrop-filter: blur(10px);
@@ -83,7 +84,7 @@ h1, h2, h3, h4, h5, h6 {
     }
   }
 
-  @media (pointer: coarse) {
+  @media (pointer: coarse) and (max-width: 599px) {
     // tingle's own max-width:540px rule sets display:block + padding-top:60px,
     // which causes the box to overflow. Reset that here.
     & {
