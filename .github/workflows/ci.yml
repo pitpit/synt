@@ -94,7 +94,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [lint, test, build]
+    needs: [lint, test, build, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
