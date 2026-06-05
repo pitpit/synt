@@ -33,7 +33,7 @@ This document tracks feature support across emulated and real devices.
 
 ---
 
-## iOS (emulated)
+## iOS
 
 | Device | Engine | App Bootstrap | Canvas Interactions | Plug Connections | Web Audio API | MIDI |
 |--------|--------|:-------------:|:-------------------:|:----------------:|:-------------:|:----:|
@@ -43,18 +43,18 @@ This document tracks feature support across emulated and real devices.
 
 ---
 
-## Android Chrome (emulated)
+## Android Chrome
 
 | Device | Chrome version | App Bootstrap | Canvas Interactions | Plug Connections | Web Audio API | MIDI |
 |--------|:--------------:|:-------------:|:-------------------:|:----------------:|:-------------:|:----:|
-| Moto G4 (emulated) | 55 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Galaxy S8 (emulated) | 63 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Nexus 6P (emulated) | 70 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Pixel 4 (emulated) | 79 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Galaxy Tab S4 (emulated) | 86 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Pixel 5 (emulated) | 96 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Galaxy S9+ (emulated) | 107 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Galaxy Tab S9 (emulated) | 116 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Galaxy A55 (emulated) | 124 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Pixel 7 (emulated) | latest | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Moto G4 (emulated) | 55 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Galaxy S8 (emulated) | 63 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Nexus 6P (emulated) | 70 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Pixel 4 (emulated) | 79 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Galaxy Tab S4 (emulated) | 86 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Pixel 5 (emulated) | 96 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Galaxy S9+ (emulated) | 107 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Galaxy Tab S9 (emulated) | 116 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Galaxy A55 (emulated) | 124 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Pixel 7 (emulated) | latest | ✅ | ✅ | ✅ | ✅ | ✅ |
 
