@@ -13,7 +13,6 @@ import Gate from '../control/Gate';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import MidiIn from '../control/MidiIn';
-import Arpeggiator from '../control/Arpeggiator';
 import ControlMeter from '../control/ControlMeter';
 import Oscilloscope from '../control/Oscilloscope';
 import Chorus from '../effect/Chorus';
@@ -24,6 +23,8 @@ import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
 import Reverb from '../effect/Reverb';
 import HighPassFilter from '../filter/HighPassFilter';
+import Clock from '../control/Clock';
+import Sequencer from '../control/Sequencer';
 
 // ---------------------------------------------------------------------------
 // Mod registry
@@ -32,8 +33,8 @@ import HighPassFilter from '../filter/HighPassFilter';
 type AnyModConstructor = new (...args: never[]) => Mod;
 
 const MOD_REGISTRY: Record<string, AnyModConstructor> = {
-  Arpeggiator,
   Chorus,
+  Clock,
   ControlMeter,
   Flanger,
   Gate,
@@ -46,6 +47,7 @@ const MOD_REGISTRY: Record<string, AnyModConstructor> = {
   Phaser,
   Reverb,
   SawtoothOscillator,
+  Sequencer,
   SineOscillator,
   Speaker,
   SquareOscillator,

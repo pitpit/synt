@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default abstract class Oscillator extends SourceMod {
   constructor() {
     super();
-    this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT], 'osc');
+    this.configure([PlugType.NULL, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'osc');
   }
 
   protected abstract createOutputNode(): ToneOscillator;

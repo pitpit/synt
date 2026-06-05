@@ -130,7 +130,6 @@ Default plug layout:
 | Module | Plug layout | Behaviour |
 |--------|-------------|-----------|
 | `Knob` | NORTH: `NULL`, EAST: `CTRLOUT`, SOUTH: `NULL`, WEST: `CTRLOUT` | Mouse-wheel or vertical touch-drag changes value in [0, 1]. Emits a `ControlSignal` from both EAST and WEST. |
-| `Arpeggiator` | NORTH: `NULL`, EAST: `CTRLIN`, SOUTH: `NULL`, WEST: `CTRLOUT` | Emits a stepped `ControlSignal` sequence; EAST control input maps 0–1 to the arpeggio clock interval. |
 | `Gate` | NORTH: `IN`, EAST: `NULL`, SOUTH: `OUT`, WEST: `NULL` | Extends `EffectMod` with a `ToneGain(1)` effect node — audio passes through at full volume. |
 | `SwitchOn` | NORTH: `IN`, EAST: `NULL`, SOUTH: `OUT`, WEST: `NULL` | Extends `EffectMod` with a `ToneGain(0)` — press on/off toggles gain between 1 and 0. |
 | `Keyboard` | NORTH: `NULL`, EAST: `NULL`, SOUTH: `NULL`, WEST: `CTRLOUT` | Visual keyboard display; in `src/control/Keyboard.ts` the exported class is currently named `Knob`. |
@@ -197,7 +196,6 @@ classDiagram
     class SwitchOn
     class Gate
     class Knob
-    class Arpeggiator
     class Keyboard
     class StickyNote
 
@@ -205,7 +203,6 @@ classDiagram
     Mod <|-- EffectMod
     Mod <|-- SinkMod
     Mod <|-- Knob
-    Mod <|-- Arpeggiator
     Mod <|-- Keyboard
     Mod <|-- StickyNote
     SourceMod <|-- Oscillator

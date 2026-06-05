@@ -46,6 +46,22 @@ const obj = { name, getValue() { return 1; } };
 const obj = { name: name, getValue: function() { return 1; } };
 ```
 
+## Unnecessary Conditions
+
+Do not write conditions that TypeScript can prove are always true or always false. This triggers `@typescript-eslint/no-unnecessary-condition`.
+
+```ts
+// ✅ — only guard when the type is genuinely nullable
+const slot: SlotPlugTypes | undefined = arr[row]?.[col];
+if (!slot) return;
+
+// ❌ — SlotPlugTypes is [symbol,symbol,symbol,symbol], never falsy
+const slot: SlotPlugTypes = arr[row][col];
+if (!slot) continue; // always false — remove it
+```
+
+Also remove optional chaining (`?.`) when the left-hand side is already a non-nullable type.
+
 ## Template Literals
 
 Use template literals instead of string concatenation.

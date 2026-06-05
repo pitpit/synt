@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class Tremolo extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'tremolo');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'tremolo');
   }
 
   protected createEffectNode(): ToneAudioNode {

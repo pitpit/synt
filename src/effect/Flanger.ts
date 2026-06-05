@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class Flanger extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'flanger');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'flanger');
   }
 
   protected createEffectNode(): ToneAudioNode {

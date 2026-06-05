@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class Chorus extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'chorus');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'chorus');
   }
 
   protected createEffectNode(): ToneAudioNode {

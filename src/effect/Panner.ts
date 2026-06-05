@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class Panner extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'pan');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'pan');
   }
 
   protected createEffectNode(): ToneAudioNode {

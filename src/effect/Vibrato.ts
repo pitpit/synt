@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class Vibrato extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'vibrato');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'vibrato');
   }
 
   protected createEffectNode(): ToneAudioNode {

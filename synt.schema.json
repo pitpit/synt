@@ -40,8 +40,8 @@
               "type": {
                 "type": "string",
                 "enum": [
-                  "Arpeggiator",
                   "Chorus",
+                  "Clock",
                   "ControlMeter",
                   "Flanger",
                   "Gate",
@@ -54,6 +54,7 @@
                   "Phaser",
                   "Reverb",
                   "SawtoothOscillator",
+                  "Sequencer",
                   "SineOscillator",
                   "Speaker",
                   "SquareOscillator",

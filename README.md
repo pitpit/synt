@@ -11,8 +11,6 @@ See the live demo here: https://pitpit.github.io/synt
 
 ![Synt screenshot](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot1.png)
 
-![Arpeggiator example](https://raw.githubusercontent.com/pitpit/synt/main/public/img/screenshot-arpegiator.png)
-
 ## License
 
 Copyright (C) 2026 Damien Pitard
@@ -112,8 +110,7 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] LFO-to-CV — dedicated slow LFO with depth and rate knobs
 - [ ] Random / S&H — random voltage generator (stepped or smooth)
 - [ ] Function generator — slew-limited ramp (rise/fall times)
-- [ ] Sequencer — step sequencer with CV and gate outputs (8 or 16 steps)
-- [ ] Arpeggiator — enhanced arpeggio patterns (already exists, keep improving)
+- [X>] Sequencer — step sequencer with CV and gate outputs (8 or 16 steps)
 
 #### Filters
 - [ ] VCF low-pass — 12/24 dB/oct ladder-style low-pass filter with cutoff & resonance
@@ -155,34 +152,10 @@ An HTML report is generated in `playwright-report/` after each run.
 - [ ] Scope / Oscilloscope — visual display of an audio or CV waveform
 
 
-### Built module
-
-#### Step sequencer
-
-- Clock / Tempo
-- Sequential switch (8 steps)
-
-#### arpegiator
-- **Clock / Tempo:** To drive the speed of the arpeggio.
-- **Sequencer (8 or 16 steps):** To program the specific note intervals of your chord.
-- **LFO-to-CV:** To create automated movement (like shifting octaves).
-- **Mixer or Attenuverter:** To combine our note sequence with our octave shifts.
-- **Quantizer:** To make sure all the raw voltages snap perfectly to musical notes.
-- **An oscillator :** To actually hear the sound.
-
-Step A: Establishing the RhythmPatch the Clock Out into the Clock In of the Sequencer. Your sequencer is now stepping at the speed of your project's tempo.
-
-Step B: Programming the ChordOn your Sequencer, manually dial in the notes of a chord across the steps. For example, if you want a minor triad, dial the knobs to step voltages that represent the Root, Minor 3rd, 5th, and Octave.Patch the CV Out of the sequencer into Input 1 of your Mixer/Attenuverter.
-
-Step C: Creating the "Octave Jump" Feature (The Arpeggiator Magic)An arpeggiator often jumps up an octave on subsequent repeats. We can fake this using a slow LFO or a second sequencer.4. Take a stepped or square wave from your LFO-to-CV (set to a slow rate, like 1/4 the speed of your sequencer).5. Patch that LFO into Input 2 of your Mixer/Attenuverter. Use the level knob to calibrate it so that when the LFO goes high, it adds exactly $1\text{V}$ (which equals one octave in the standard $1\text{V/Oct}$ protocol).
-
-Step D: Keeping it in TuneBecause manual sequencer knobs and LFOs are imprecise, we need a musical safety net.6. Patch the Output of your Mixer (which is now your Chord CV + Octave Shift CV combined) into the input of the Quantizer.7. Select your desired scale on the Quantizer. It will instantly correct the mathematical voltages into perfect musical pitches.
-
-Step E: Making SoundPatch the Quantizer CV Out into the 1V/Oct Input of your Wavetable Oscillator.Patch the Gate Out of your Sequencer into the Gate Input of the ADSR envelope.Route the ADSR Output to the CV input of your VCA to shape the volume of each arpeggiated note.
-
 
 ### UX
 
+- [ ] when double clicking on stage, it open the modal with to integer input to set the stage size
 - [ ] multi selection & multi drag'n drop for mass deletion?
 - [ ] on Rack, set a "pan" cursor when the cursor is hover the stage and can be pan
 - [ ] Add several layers to put more Mods?

@@ -14,12 +14,13 @@ import Panner from '../effect/Panner';
 import Phaser from '../effect/Phaser';
 import Reverb from '../effect/Reverb';
 import HighPassFilter from '../filter/HighPassFilter';
-import Arpeggiator from '../control/Arpeggiator';
 import Knob from '../control/Knob';
 import SwitchOn from '../control/SwitchOn';
 import ControlMeter from '../control/ControlMeter';
 import MidiIn from '../control/MidiIn';
 import Oscilloscope from '../control/Oscilloscope';
+import Clock from '../control/Clock';
+import Sequencer from '../control/Sequencer';
 import Speaker from '../output/Speaker';
 
 type ModConstructor = new () => Mod;
@@ -45,7 +46,8 @@ const PROTOS: ProtoEntry[] = [
   { Ctor: Reverb,             label: 'reverb',  category: 'effect' },
   { Ctor: HighPassFilter,     label: 'hp-flt',  category: 'filter' },
   { Ctor: Gate,               label: 'gate',    category: 'control' },
-  { Ctor: Arpeggiator,        label: 'arp',     category: 'control' },
+  { Ctor: Sequencer,          label: 'seq-sw',  category: 'control' },
+  { Ctor: Clock,              label: 'clock',   category: 'control' },
   { Ctor: Knob,               label: 'knob',    category: 'control' },
   { Ctor: SwitchOn,           label: 'switch',  category: 'control' },
   { Ctor: ControlMeter,       label: 'ctrl-m',  category: 'control' },
@@ -366,21 +368,22 @@ export default class Library {
       cursor += HEADER_H;
 
       const rowStart = cursor;
-      entries.forEach((proto, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
+      const colCursors = Array(cols).fill(0) as number[];
+      entries.forEach((proto) => {
+        const col = colCursors.indexOf(Math.min(...colCursors));
         const group = new Konva.Group({
           x: PANEL_PAD + col * slotWidth,
-          y: rowStart + row * slotHeight,
+          y: rowStart + colCursors[col],
         });
         scrollGroup.add(group);
 
         const tempMod = new proto.Ctor();
+        colCursors[col] += tempMod.height * slotHeight;
         tempMod.drawVisual(group, slotWidth, slotHeight);
         this.attachGhostDrag(layer, group, proto);
       });
 
-      cursor += Math.ceil(entries.length / cols) * slotHeight + PANEL_PAD;
+      cursor += Math.max(...colCursors) + PANEL_PAD;
     });
     this.totalContentHeight = cursor;
 
@@ -513,6 +516,11 @@ export default class Library {
       // Close the panel after a short delay so the user sees the drag start
       setTimeout(() => { this.close(); }, 150);
 
+      // Instantiate ghost mod early to read its dimensions
+      const ghostMod = new proto.Ctor();
+      const modW = ghostMod.width;
+      const modH = ghostMod.height;
+
       // Get pointer in layer (world) coords
       const screenPos = rack.stage.getPointerPosition();
       if (!screenPos) return;
@@ -524,8 +532,8 @@ export default class Library {
       let snapHighlight: Konva.Rect | null = new Konva.Rect({
         x: 0,
         y: 0,
-        width: slotWidth,
-        height: slotHeight,
+        width: modW * slotWidth,
+        height: modH * slotHeight,
         fill: '#cccccc',
         opacity: 0.6,
         stroke: '#dddddd',
@@ -560,8 +568,8 @@ export default class Library {
           const gridY = Math.round((gy - padding) / slotHeight);
           if (
             gridX >= 0 && gridY >= 0
-            && gridX < rack.stageWidth && gridY < rack.stageHeight
-            && this.isSlotFree(gridX, gridY)
+            && gridX + modW <= rack.stageWidth && gridY + modH <= rack.stageHeight
+            && this.isSlotFree(gridX, gridY, modW, modH)
           ) {
             snapHighlight.position({
               x: padding + gridX * slotWidth,
@@ -607,9 +615,9 @@ export default class Library {
         if (
           gridX >= 0
           && gridY >= 0
-          && gridX < rack.stageWidth
-          && gridY < rack.stageHeight
-          && this.isSlotFree(gridX, gridY)
+          && gridX + modW <= rack.stageWidth
+          && gridY + modH <= rack.stageHeight
+          && this.isSlotFree(gridX, gridY, modW, modH)
         ) {
           rack.addMod(new proto.Ctor(), gridX, gridY);
         }
@@ -618,14 +626,14 @@ export default class Library {
   }
 
   /**
-   * Check whether a 1×1 slot is free in the main rack without
+   * Check whether a slot is free in the main rack without
    * instantiating a Mod (avoids audio side-effects for abandoned drops).
    */
-  private isSlotFree(x: number, y: number): boolean {
+  private isSlotFree(x: number, y: number, width = 1, height = 1): boolean {
     return !this.rack.mods.some(
       (mod) => (
-        x < mod.x + mod.width && x + 1 > mod.x
-        && y < mod.y + mod.height && y + 1 > mod.y
+        x < mod.x + mod.width && x + width > mod.x
+        && y < mod.y + mod.height && y + height > mod.y
       ),
     );
   }

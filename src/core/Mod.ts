@@ -38,7 +38,8 @@ export default abstract class Mod {
 
   private outputSignals: Signals = [null, null, null, null];
 
-  private inputSignals: Signals = [null, null, null, null];
+  // Indexed by plug position; resized in configure() to match plugs.items.length
+  inputSignals: Signals = [null, null, null, null];
 
   /**
    * This method is called when drawing.
@@ -56,24 +57,32 @@ export default abstract class Mod {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSignalChanged(inputSignals: Signals): Signals {
-    return [null, null, null, null];
+    return Array(this.plugs.items.length).fill(null) as Signals;
   }
 
   /**
-   * Configure the Mod
+   * Configure the Mod.
+   * plugTypes is a flat clockwise array of plug types around the module perimeter:
+   *   NORTH left→right, EAST top→bottom, SOUTH right→left, WEST bottom→top.
+   * For a 1×1 mod this is [N, E, S, W] (4 elements).
+   * For an M×N mod this is 2*(width+height) elements.
    * @helper
    */
   configure(
-    plugTypes:Array<symbol> = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
+    plugTypes: symbol[] = [PlugType.NULL, PlugType.NULL, PlugType.NULL, PlugType.NULL],
     label: string = '',
-    width:number = 1,
-    height:number = 1,
+    width: number = 1,
+    height: number = 1,
   ): void {
     this.label = label;
     this.width = width;
     this.height = height;
 
-    this.plugs.setTypes(plugTypes);
+    this.plugs.setTypes(plugTypes, width, height);
+
+    const n = this.plugs.items.length;
+    this.inputSignals = Array(n).fill(null) as Signals;
+    this.outputSignals = Array(n).fill(null) as Signals;
   }
 
   /**
@@ -360,16 +369,20 @@ export default abstract class Mod {
 
   /**
    * Plug current Mod to every passed targets Mods (north, east, south, west).
+   * Only considers canonical plugs (indices 0-3).
    */
   plug(targets: Array<Mod|null>): void {
     // this.plugs.resetUntriggeredLinkedInput();
     targets.forEach((target, plugPosition) => {
-      const oppositePlugPosition = PlugPosition.opposite(plugPosition);
       if (target) {
         const fromPlug = this.plugs.getPlug(plugPosition);
-        const toPlug = target.plugs.getPlug(oppositePlugPosition);
-        if (fromPlug.isLinkable(toPlug)) {
-          this.link(plugPosition, target);
+        const oppSide = PlugPosition.opposite(plugPosition);
+        const toIdx = target.plugs.findFirstBySide(oppSide);
+        if (toIdx !== -1) {
+          const toPlug = target.plugs.getPlug(toIdx);
+          if (fromPlug.isLinkable(toPlug)) {
+            this.link(plugPosition, target);
+          }
         }
       }
     });
@@ -385,52 +398,51 @@ export default abstract class Mod {
   /**
    * TODO move it to Plugs or Plug
    */
-  link(plugPosition: number, target: Mod): void {
-    // TODO validate link (is the mod linked to another plug of this mod?)
-    const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-
+  link(plugPosition: number, target: Mod, targetPlugIndex?: number): void {
     const plug = this.plugs.getPlug(plugPosition);
+    const effSide = plug.side !== -1 ? plug.side : plugPosition;
+
+    // Resolve which index on the target receives this connection.
+    // Fall back to PlugPosition.opposite() for unconfigured mods (side=-1).
+    const oppSide = PlugPosition.opposite(effSide);
+    const foundIdx = targetPlugIndex !== undefined ? targetPlugIndex : target.plugs.findFirstBySide(oppSide);
+    const resolvedTargetIdx = foundIdx !== -1 ? foundIdx : oppSide;
+
     if (plug.mod) {
       if (target === plug.mod) {
         // Already linked to Mod {target}, abort
         return;
       }
-
-      // Unlink current linked Mod to free the plug
-      plug.mod.unlink(oppositePlugPosition);
+      // Unlink the currently connected mod to free the plug
+      const oldRemote = plug.remoteIndex !== -1 ? plug.remoteIndex : resolvedTargetIdx;
+      plug.mod.unlink(oldRemote);
     }
 
     plug.mod = target;
+    plug.remoteIndex = resolvedTargetIdx;
     // Notify e2e tests that a plug connection was established.
     window.dispatchEvent(new CustomEvent('test:mod:link'));
 
     // Clear the target's receiving slot (if it's an input) before onLinked fires,
     // so the first incoming signal always triggers onSignalChanged even when the
     // value equals the stale cached entry from before the disconnect.
-    // This is done here (not in the reverse target.link call) so the clearing
-    // happens before onLinked pushes a signal, and is not repeated afterwards.
-    const targetOppPlug = target.plugs.getPlug(oppositePlugPosition);
-    if (targetOppPlug.isInput()) {
-      target.inputSignals[oppositePlugPosition] = null;
+    const targetPlug = target.plugs.getPlug(resolvedTargetIdx);
+    if (targetPlug.isInput()) {
+      target.inputSignals[resolvedTargetIdx] = null;
     }
 
     this.onLinked(plugPosition, target);
 
-    // Reserse link
-    target.link(oppositePlugPosition, this);
+    // Reverse link (pass our index so the target knows which slot to map back)
+    target.link(resolvedTargetIdx, this, plugPosition);
 
     // Replay the cached output signal to the newly connected target.
-    // Only do this when there is an active upstream source (at least one input
-    // plug is currently linked). If the mod has no input plugs at all (e.g.
-    // Knob) it is always considered active. This prevents a pass-through mod
-    // like ControlMeter from replaying a stale signal when it is connected
-    // downstream while its own input is not live.
     if (plug.isOutput()) {
       const cachedOutput = this.outputSignals[plugPosition];
       const hasInputPlugs = this.plugs.items.some((p: Plug) => p.isInput());
       const hasLinkedInput = this.plugs.items.some((p: Plug) => p.isInput() && p.mod !== null);
       if (cachedOutput && (!hasInputPlugs || hasLinkedInput)) {
-        target.pushInput(oppositePlugPosition, cachedOutput);
+        target.pushInput(resolvedTargetIdx, cachedOutput);
       }
     }
   }
@@ -477,13 +489,20 @@ export default abstract class Mod {
     const plug = this.plugs.getPlug(plugPosition);
     if (plug.mod) {
       const { mod } = plug;
+      const remoteIdx = plug.remoteIndex;
       this.onUnlinked(plugPosition, mod);
       plug.mod = null;
+      plug.remoteIndex = -1;
       // Notify e2e tests that a plug connection was removed.
       window.dispatchEvent(new CustomEvent('test:mod:unlink'));
 
       // Reverse unlink target Mod
-      mod.unlink(PlugPosition.opposite(plugPosition));
+      if (remoteIdx !== -1) {
+        mod.unlink(remoteIdx);
+      } else {
+        const effSide = plug.side !== -1 ? plug.side : plugPosition;
+        mod.unlink(PlugPosition.opposite(effSide));
+      }
     }
   }
 
@@ -491,11 +510,7 @@ export default abstract class Mod {
    * Compute state changes on plugs and trigger Mod onChange
    */
   private processInputs(inputSignals: Signals): Signals {
-    let outputSignals: Signals = [null, null, null, null];
-
-    outputSignals = this.onSignalChanged(inputSignals);
-
-    return outputSignals;
+    return this.onSignalChanged(inputSignals);
   }
 
   /**
@@ -504,7 +519,7 @@ export default abstract class Mod {
    * it propagate them to every output plugs.
    */
   start() {
-    this.inputSignals = [null, null, null, null];
+    this.inputSignals = Array(this.plugs.items.length).fill(null) as Signals;
     const outputSignals: Signals = this.processInputs(this.inputSignals);
 
     this.pushOutputs(outputSignals);
@@ -553,13 +568,7 @@ export default abstract class Mod {
       // Do not recompute output but propagate it directly
       outputSignals = this.outputSignals;
     } else {
-      const snapshot: Signals = [
-        this.inputSignals[0],
-        this.inputSignals[1],
-        this.inputSignals[2],
-        this.inputSignals[3],
-      ];
-      outputSignals = this.processInputs(snapshot);
+      outputSignals = this.processInputs([...this.inputSignals] as Signals);
     }
 
     this.pushOutputs(outputSignals);
@@ -583,13 +592,14 @@ export default abstract class Mod {
    * @helper
    */
   pushOutput(plugPosition: number, outputSignal: Signal|null): void {
-    // TODO store outputSignal for later diff
     this.outputSignals[plugPosition] = outputSignal;
 
     const plug = this.plugs.getPlug(plugPosition);
     if (plug.mod && plug.isOutput()) {
-      const oppositePlugPosition = PlugPosition.opposite(plugPosition);
-      plug.mod.pushInput(oppositePlugPosition, outputSignal);
+      const targetIdx = plug.remoteIndex !== -1
+        ? plug.remoteIndex
+        : PlugPosition.opposite(plug.side !== -1 ? plug.side : plugPosition);
+      plug.mod.pushInput(targetIdx, outputSignal);
     }
   }
 

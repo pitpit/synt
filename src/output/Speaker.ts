@@ -6,7 +6,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class Speaker extends SinkMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN]);
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.NULL, PlugType.NULL]);
   }
 
   draw(group: Konva.Group) {

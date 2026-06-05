@@ -13,7 +13,7 @@ export default class SwitchOn extends EffectMod {
 
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT]);
+    this.configure([PlugType.IN, PlugType.NULL, PlugType.OUT, PlugType.NULL]);
   }
 
   protected createEffectNode(): ToneAudioNode {

@@ -7,7 +7,7 @@ import PlugPosition from '../core/PlugPosition';
 export default class HighPassFilter extends EffectMod {
   constructor() {
     super();
-    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT], 'high-pass');
+    this.configure([PlugType.IN, PlugType.CTRLIN, PlugType.OUT, PlugType.NULL], 'high-pass');
   }
 
   protected createEffectNode(): ToneAudioNode {
